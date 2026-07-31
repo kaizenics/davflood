@@ -1,0 +1,48 @@
+{
+  "name": "web",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite dev",
+    "build": "vite build",
+    "serve": "vite preview",
+    "start": "vite",
+    "check-types": "vite build && tsc --noEmit"
+  },
+  "dependencies": {
+    "@hookform/resolvers": "^5.5.7",
+    "@my-better-t-app/api": "workspace:*",
+    "@my-better-t-app/env": "workspace:*",
+    "@my-better-t-app/ui": "workspace:*",
+    "@orpc/client": "catalog:",
+    "@orpc/server": "catalog:",
+    "@orpc/tanstack-query": "catalog:",
+    "@tailwindcss/vite": "^4.3.3",
+    "@tanstack/react-form": "catalog:",
+    "@tanstack/react-query": "catalog:",
+    "@tanstack/react-router": "^1.170.18",
+    "better-auth": "catalog:",
+    "dotenv": "catalog:",
+    "lucide-react": "catalog:",
+    "next-themes": "catalog:",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "sonner": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@my-better-t-app/config": "workspace:*",
+    "@tanstack/react-query-devtools": "^5.101.4",
+    "@tanstack/react-router-devtools": "^1.167.0",
+    "@tanstack/router-plugin": "^1.168.23",
+    "@types/node": "^22.20.1",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "catalog:",
+    "@vitejs/plugin-react": "^6.0.4",
+    "postcss": "^8.5.24",
+    "tailwindcss": "catalog:",
+    "typescript": "^6.0.3",
+    "vite": "^8.1.5"
+  }
+}

@@ -1,0 +1,24 @@
+packages:
+  - apps/*
+  - packages/*
+allowBuilds:
+  esbuild: true
+catalog:
+  dotenv: ^17.4.2
+  zod: ^4.4.3
+  hono: ^4.12.32
+  "@orpc/server": ^1.14.12
+  "@orpc/openapi": ^1.14.12
+  "@orpc/zod": ^1.14.12
+  better-auth: 1.6.25
+  lucide-react: ^1.27.0
+  next-themes: ^0.4.6
+  sonner: ^2.0.7
+  "@orpc/tanstack-query": ^1.14.12
+  "@orpc/client": ^1.14.12
+  "@tanstack/react-query": ^5.101.4
+  "@tanstack/react-form": ^1.33.2
+  "@types/react-dom": ^19.2.3
+  tailwindcss: ^4.3.3
+  tailwind-merge: ^3.6.0
+  "@better-auth/expo": 1.6.25
