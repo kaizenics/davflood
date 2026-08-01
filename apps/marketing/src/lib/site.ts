@@ -2,7 +2,20 @@
  * Single source of truth for every string and list on the marketing site.
  * Components read from here and never hardcode copy — so retitling a
  * section, or translating the whole site into Bisaya, is one file.
+ *
+ * Safety- and licence-critical content lives in `@naboflood/hazard` and is
+ * re-exported below, so the mobile app and this site physically cannot
+ * disagree about what "medium hazard" means or who the data belongs to.
+ * Everything defined *in this file* is web chrome only.
  */
+
+export { disclaimer } from "@naboflood/hazard/copy";
+export { dataSources } from "@naboflood/hazard/copy";
+export type { DataSource } from "@naboflood/hazard/copy";
+export { hazardTiers } from "@naboflood/hazard/tiers";
+export type { HazardTier, HazardId } from "@naboflood/hazard/tiers";
+export { scenarios } from "@naboflood/hazard/scenarios";
+export type { Scenario } from "@naboflood/hazard/scenarios";
 
 export const site = {
 	name: "NaboFlood",
@@ -32,90 +45,10 @@ export const nav = [
 ] as const;
 
 /* ------------------------------------------------------------------ */
-/* The disclaimer. This is the single most important sentence on the
-   site — model-based hazard maps read as live flood status to people
-   who are scared and in a hurry. It appears above the fold.           */
+/* `disclaimer`, `hazardTiers` and `scenarios` are re-exported at the
+   top of this file from @naboflood/hazard — they are shared with the
+   mobile app and must not be redefined here.                          */
 /* ------------------------------------------------------------------ */
-
-export const disclaimer = {
-	short: "This is a hazard map, not a flood sensor.",
-	long: "NaboFlood shows modelled flood hazard — how deep water is expected to get in a given area during a storm of a given severity. It does not show water on the ground right now. For live warnings, follow PAGASA and your barangay's disaster risk reduction office.",
-} as const;
-
-/* ------------------------------------------------------------------ */
-/* Hazard tiers — these depth bands are the UP NOAH classification.    */
-/* ------------------------------------------------------------------ */
-
-export type HazardTier = {
-	id: "low" | "medium" | "high";
-	label: string;
-	name: string;
-	depth: string;
-	depthShort: string;
-	summary: string;
-	/** what it actually looks like at your front door */
-	human: string;
-	/** what a resident should do */
-	action: string;
-	/** tailwind colour token suffix — text-haz-low, bg-haz-low, … */
-	token: "haz-low" | "haz-med" | "haz-high";
-};
-
-export const hazardTiers: HazardTier[] = [
-	{
-		id: "low",
-		label: "Low",
-		name: "Shallow flooding",
-		depth: "0.1 – 0.5 metres",
-		depthShort: "0.1–0.5 m",
-		summary: "Ankle to knee deep.",
-		human: "Water reaches your ankles or knees. Streets become impassable to motorcycles and small cars. Anything stored on the floor gets wet.",
-		action: "Move belongings off the floor. Avoid driving through it — half a metre of moving water can float a small car.",
-		token: "haz-low",
-	},
-	{
-		id: "medium",
-		label: "Medium",
-		name: "Moderate flooding",
-		depth: "0.5 – 1.5 metres",
-		depthShort: "0.5–1.5 m",
-		summary: "Waist to chest deep.",
-		human: "Water reaches your waist or chest. A single-storey house takes water throughout. Electrical outlets are submerged. Wading becomes dangerous once it moves.",
-		action: "Evacuate early, before the water reaches this depth. Cut power at the breaker if it is safe to do so.",
-		token: "haz-med",
-	},
-	{
-		id: "high",
-		label: "High",
-		name: "Deep flooding",
-		depth: "Over 1.5 metres",
-		depthShort: "> 1.5 m",
-		summary: "Above head height.",
-		human: "Water goes over an adult's head. Single-storey homes are fully submerged. This depth is life-threatening regardless of how well you swim, because of current and debris.",
-		action: "Do not wait. Evacuate as soon as a storm is forecast — not when the water arrives.",
-		token: "haz-high",
-	},
-];
-
-/* ------------------------------------------------------------------ */
-
-export const scenarios = [
-	{
-		years: "5",
-		label: "5-year",
-		blurb: "The flood you can expect roughly every few years. The most useful one for everyday planning.",
-	},
-	{
-		years: "25",
-		label: "25-year",
-		blurb: "A serious storm. Bigger footprint, deeper water, more barangays affected.",
-	},
-	{
-		years: "100",
-		label: "100-year",
-		blurb: "The worst case in the model. Use it to know where you would go, not where you'd stay.",
-	},
-] as const;
 
 export const stats = [
 	{ value: "40", label: "barangays covered", sub: "all of Panabo City" },
@@ -180,47 +113,8 @@ export const steps = [
 	},
 ] as const;
 
-/* ------------------------------------------------------------------ */
-/* Attribution is a licence obligation, not a nicety.                  */
-/* ------------------------------------------------------------------ */
-
-export const dataSources = [
-	{
-		name: "UP NOAH",
-		full: "Nationwide Operational Assessment of Hazards",
-		role: "Flood hazard maps for the 5, 25 and 100-year return periods.",
-		licence: "Open data, attribution required",
-		url: "https://noah.up.edu.ph/",
-	},
-	{
-		name: "Phil-LiDAR 1 / LiPAD",
-		full: "LiDAR Portal for Archiving and Distribution",
-		role: "High-resolution elevation model used to build the 3D terrain.",
-		licence: "Research and public use, attribution required",
-		url: "https://lipad.dream.upd.edu.ph/",
-	},
-	{
-		name: "OpenStreetMap",
-		full: "OpenStreetMap contributors",
-		role: "Roads, buildings and place names underneath the hazard layers.",
-		licence: "ODbL 1.0",
-		url: "https://www.openstreetmap.org/copyright",
-	},
-	{
-		name: "OpenFreeMap",
-		full: "OpenFreeMap",
-		role: "Free basemap tile hosting.",
-		licence: "Open, no API key",
-		url: "https://openfreemap.org/",
-	},
-	{
-		name: "Open-Meteo",
-		full: "Open-Meteo weather API",
-		role: "Current conditions and the 3-day rainfall forecast.",
-		licence: "CC BY 4.0",
-		url: "https://open-meteo.com/",
-	},
-] as const;
+/* `dataSources` is re-exported from @naboflood/hazard — attribution is a
+   licence obligation and must be identical in the app and on the site. */
 
 /* ------------------------------------------------------------------ */
 

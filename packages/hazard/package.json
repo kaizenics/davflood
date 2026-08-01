@@ -1,0 +1,32 @@
+{
+  "name": "@naboflood/hazard",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./tiers": "./src/tiers.ts",
+    "./tokens": "./src/tokens.ts",
+    "./geo": "./src/geo.ts",
+    "./barangays": "./src/barangays.ts",
+    "./scenarios": "./src/scenarios.ts",
+    "./copy": "./src/copy.ts",
+    "./schema": "./src/schema.ts",
+    "./style": "./src/style.ts",
+    "./layers": "./src/layers.ts",
+    "./rainfall": "./src/rainfall.ts",
+    "./data/*": "./src/data/*"
+  },
+  "scripts": {
+    "check-types": "tsc --noEmit",
+    "generate:data": "node scripts/generate-synthetic.ts"
+  },
+  "dependencies": {
+    "@maplibre/maplibre-gl-style-spec": "24.8.5",
+    "@types/geojson": "^7946.0.16"
+  },
+  "devDependencies": {
+    "@naboflood/config": "workspace:*",
+    "@types/node": "^22.20.1",
+    "typescript": "^6.0.3"
+  }
+}
