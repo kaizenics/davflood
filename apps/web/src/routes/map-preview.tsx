@@ -12,7 +12,7 @@ import { asHazardProperties, formatDepth } from "@naboflood/hazard/schema";
 import type { HazardCollection, HazardProperties } from "@naboflood/hazard/schema";
 import { DEFAULT_SCENARIO, scenarios } from "@naboflood/hazard/scenarios";
 import type { ScenarioYears } from "@naboflood/hazard/scenarios";
-import { buildBaseStyle } from "@naboflood/hazard/style";
+import { SOURCE_TERRAIN, buildBaseStyle } from "@naboflood/hazard/style";
 import { hazardById, hazardTiers } from "@naboflood/hazard/tiers";
 import { colors } from "@naboflood/hazard/tokens";
 import { createFileRoute } from "@tanstack/react-router";
@@ -142,7 +142,7 @@ function MapPreview() {
   useEffect(() => {
     if (!ready || !map.current) return;
     map.current.setTerrain(
-      terrain ? { source: "terrain-dem", exaggeration: 1.4 } : null,
+      terrain ? { source: SOURCE_TERRAIN, exaggeration: 1.4 } : null,
     );
   }, [terrain, ready]);
 

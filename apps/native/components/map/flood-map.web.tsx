@@ -10,7 +10,7 @@ import {
 import { asHazardProperties } from "@naboflood/hazard/schema";
 import type { HazardProperties } from "@naboflood/hazard/schema";
 import type { ScenarioYears } from "@naboflood/hazard/scenarios";
-import { buildBaseStyle } from "@naboflood/hazard/style";
+import { SOURCE_TERRAIN, buildBaseStyle } from "@naboflood/hazard/style";
 // maplibre-gl v6 ships named exports only — there is no default export
 import * as maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
@@ -38,6 +38,22 @@ export type FloodMapHandle = {
   resetCamera: () => void;
 };
 
+/**
+ * Both helpers no-op until the layer/source they touch actually exists.
+ * maplibre-gl throws when asked about a missing layer, and the hazard layers
+ * only appear once the style has loaded — so every caller has to tolerate
+ * being early rather than assume it is late.
+ */
+function applySelection(m: maplibregl.Map, zoneId: string | null) {
+  if (!m.getLayer(LAYER_IDS.selected)) return;
+  m.setFilter(LAYER_IDS.selected, ["==", ["get", "zone_id"], zoneId ?? ""]);
+}
+
+function applyTerrain(m: maplibregl.Map, enabled: boolean) {
+  if (!m.getSource(SOURCE_TERRAIN)) return;
+  m.setTerrain(enabled ? { source: SOURCE_TERRAIN, exaggeration: 1.4 } : null);
+}
+
 type Props = {
   scenario: ScenarioYears;
   selectedZoneId: string | null;
@@ -52,10 +68,19 @@ export const FloodMap = forwardRef<FloodMapHandle, Props>(function FloodMap(
 ) {
   const container = useRef<HTMLDivElement | null>(null);
   const map = useRef<maplibregl.Map | null>(null);
-  const ready = useRef(false);
-  // keep the latest handler without re-registering the click listener
+
+  // The map is created once, but props can change before `load` fires. These
+  // refs let the load handler read CURRENT values instead of the ones its
+  // closure captured on first render — otherwise a scenario picked during
+  // loading would be silently discarded.
   const onSelectRef = useRef(onSelect);
   onSelectRef.current = onSelect;
+  const scenarioRef = useRef(scenario);
+  scenarioRef.current = scenario;
+  const selectedRef = useRef(selectedZoneId);
+  selectedRef.current = selectedZoneId;
+  const terrainRef = useRef(terrain);
+  terrainRef.current = terrain;
 
   useImperativeHandle(ref, () => ({
     flyTo(center, zoom = 14) {
@@ -95,15 +120,26 @@ export const FloodMap = forwardRef<FloodMapHandle, Props>(function FloodMap(
     });
 
     m.on("load", () => {
-      m.addSource(SOURCE_HAZARD, { type: "geojson", data: loadScenario(scenario) });
+      m.addSource(SOURCE_HAZARD, {
+        type: "geojson",
+        data: loadScenario(scenarioRef.current),
+      });
       for (const layer of hazardLayers()) {
         m.addLayer(layer as maplibregl.LayerSpecification, HAZARD_BEFORE_ID);
       }
-      ready.current = true;
+      // re-apply anything that changed while the style was still loading
+      applySelection(m, selectedRef.current);
+      applyTerrain(m, terrainRef.current);
     });
 
+    // Registered once, outside `load`, so a style reload cannot double-bind
+    // it. That means it can fire before the hazard layers exist, and
+    // querying a missing layer is an error in maplibre-gl — so ask only for
+    // the layers actually present.
     m.on("click", (e) => {
-      const hits = m.queryRenderedFeatures(e.point, { layers: HAZARD_FILL_LAYER_IDS });
+      const layers = HAZARD_FILL_LAYER_IDS.filter((id) => m.getLayer(id));
+      if (layers.length === 0) return;
+      const hits = m.queryRenderedFeatures(e.point, { layers });
       // fills draw low -> high, so the last hit is the most severe zone
       const top = hits[hits.length - 1];
       onSelectRef.current(top ? (asHazardProperties(top.properties) ?? null) : null);
@@ -113,9 +149,9 @@ export const FloodMap = forwardRef<FloodMapHandle, Props>(function FloodMap(
     return () => {
       m.remove();
       map.current = null;
-      ready.current = false;
     };
-    // built once — scenario/terrain are applied by the effects below
+    // built once; prop changes are applied by the effects below and re-applied
+    // on load, so nothing set during style loading is lost
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -128,19 +164,11 @@ export const FloodMap = forwardRef<FloodMapHandle, Props>(function FloodMap(
   }, [scenario]);
 
   useEffect(() => {
-    if (!ready.current) return;
-    map.current?.setFilter(LAYER_IDS.selected, [
-      "==",
-      ["get", "zone_id"],
-      selectedZoneId ?? "",
-    ]);
+    if (map.current) applySelection(map.current, selectedZoneId);
   }, [selectedZoneId]);
 
   useEffect(() => {
-    if (!ready.current) return;
-    map.current?.setTerrain(
-      terrain ? { source: "terrain-dem", exaggeration: 1.4 } : null,
-    );
+    if (map.current) applyTerrain(map.current, terrain);
   }, [terrain]);
 
   return (
