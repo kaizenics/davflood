@@ -12,7 +12,7 @@ export const Route = createFileRoute("/about")({
 function AboutScreen() {
   return (
     <div className="absolute inset-0 overflow-y-auto">
-      <div className="mx-auto max-w-2xl px-5 py-6">
+      <div className="mx-auto max-w-3xl px-6 py-10 sm:px-8 lg:py-14">
         {DATA_IS_PLACEHOLDER && (
           <div
             className="rounded-card mb-6 border p-4"
@@ -40,7 +40,7 @@ function AboutScreen() {
           </div>
         )}
 
-        <h1 className="text-ink text-xl font-bold">{disclaimer.short}</h1>
+        <h1 className="text-ink text-3xl font-bold tracking-tight sm:text-4xl">{disclaimer.short}</h1>
         <p className="text-ink-dim mt-2 text-sm leading-relaxed">
           {disclaimer.long}
         </p>
@@ -48,13 +48,13 @@ function AboutScreen() {
           {disclaimer.independence}
         </p>
 
-        <h2 className="text-ink mt-8 text-lg font-bold">Data sources</h2>
+        <h2 className="text-ink mt-14 text-2xl font-bold tracking-tight">Data sources</h2>
         <p className="text-ink-dim mt-1 text-sm leading-relaxed">
           Every layer is public data produced by people who made it public on
           purpose. Crediting them is a licence obligation, not a courtesy.
         </p>
 
-        <ul className="mt-4 flex flex-col gap-3">
+        <ul className="mt-5 grid gap-3 sm:grid-cols-2">
           {dataSources.map((source) => (
             <li key={source.name}>
               <a

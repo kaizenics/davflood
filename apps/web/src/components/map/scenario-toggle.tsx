@@ -17,7 +17,7 @@ export function ScenarioToggle({ value, onChange }: Props) {
     <div
       role="radiogroup"
       aria-label="Flood scenario"
-      className="border-hairline bg-abyss/90 rounded-pill flex gap-1 border p-1 backdrop-blur"
+      className="border-hairline rounded-pill flex w-full gap-1 border p-1"
     >
       {scenarios.map((s) => {
         const active = s.years === value;
@@ -29,10 +29,8 @@ export function ScenarioToggle({ value, onChange }: Props) {
             aria-checked={active}
             aria-label={`${s.label} flood scenario`}
             onClick={() => onChange(s.years)}
-            className={`rounded-pill px-3.5 py-1.5 text-xs font-bold transition ${
-              active
-                ? "bg-tide text-abyss"
-                : "text-ink-dim hover:text-ink"
+            className={`rounded-pill flex-1 px-3 py-2 text-xs font-bold transition ${
+              active ? "bg-tide text-abyss" : "text-ink-dim hover:text-ink"
             }`}
           >
             {s.label}

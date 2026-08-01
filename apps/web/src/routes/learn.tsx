@@ -14,9 +14,9 @@ const HORIZONS = [1, 10, 30, 50];
 function LearnScreen() {
   return (
     <div className="absolute inset-0 overflow-y-auto">
-      <div className="mx-auto max-w-2xl px-5 py-6">
-        <h1 className="text-ink text-2xl font-bold">Reading the map</h1>
-        <p className="text-ink-dim mt-1.5 text-sm leading-relaxed">
+      <div className="mx-auto max-w-3xl px-6 py-10 sm:px-8 lg:py-14">
+        <h1 className="text-ink text-3xl font-bold tracking-tight sm:text-4xl">Reading the map</h1>
+        <p className="text-ink-dim mt-3 max-w-2xl text-base leading-relaxed">
           A colour is only useful if you know what it costs you. Here is each
           hazard level in metres, and what it means at your front door.
         </p>
@@ -45,7 +45,7 @@ function LearnScreen() {
                 </span>
               </div>
               <p className="text-ink mt-1.5 text-sm font-semibold">{tier.name}</p>
-              <p className="text-ink-dim mt-1.5 text-sm leading-relaxed">
+              <p className="text-ink-dim mt-3 max-w-2xl text-base leading-relaxed">
                 {tier.human}
               </p>
               <div className="border-hairline/60 mt-3 flex gap-2 border-t pt-3">
@@ -64,10 +64,10 @@ function LearnScreen() {
         </div>
 
         {/* ---- return periods ---- */}
-        <h2 className="text-ink mt-10 text-xl font-bold">
+        <h2 className="text-ink mt-14 text-2xl font-bold tracking-tight">
           A “100-year flood” is not a once-a-century flood
         </h2>
-        <p className="text-ink-dim mt-1.5 text-sm leading-relaxed">
+        <p className="text-ink-dim mt-3 max-w-2xl text-base leading-relaxed">
           It means a 1-in-100 chance in any given year. Two can land in
           consecutive years without the model being wrong — the same way rolling
           two sixes in a row doesn&apos;t break the dice. And the risk compounds:

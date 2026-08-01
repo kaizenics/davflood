@@ -3,7 +3,7 @@ import { disclaimer } from "@naboflood/hazard/copy";
 import { HeadContent, Scripts, createRootRoute } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 
-import { AppNav } from "@/components/app-nav";
+import { AppHeader } from "@/components/app-header";
 import appCss from "@/styles/app.css?url";
 
 export const Route = createRootRoute({
@@ -36,8 +36,8 @@ function RootDocument({ children }: { children: ReactNode }) {
       </head>
       <body className="bg-abyss text-ink">
         <div className="flex h-dvh flex-col">
+          <AppHeader />
           <main className="relative min-h-0 flex-1">{children}</main>
-          <AppNav />
         </div>
         <Scripts />
       </body>

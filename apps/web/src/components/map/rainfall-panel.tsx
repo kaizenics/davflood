@@ -23,7 +23,7 @@ export function RainfallPanel() {
   const band = today ? rainBand(today.precipitation) : "none";
 
   return (
-    <div className="border-hairline bg-abyss/90 rounded-card overflow-hidden border backdrop-blur">
+    <div className="border-hairline rounded-card overflow-hidden border">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}

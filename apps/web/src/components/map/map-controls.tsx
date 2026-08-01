@@ -102,7 +102,7 @@ function ControlButton({
       aria-label={label}
       title={label}
       aria-pressed={active}
-      className={`border-hairline flex size-10 items-center justify-center rounded-full border backdrop-blur transition ${
+      className={`border-hairline flex size-10 items-center justify-center rounded-full border shadow-lg backdrop-blur transition ${
         active ? "bg-tide text-abyss" : "bg-abyss/90 text-ink hover:border-tide"
       }`}
     >

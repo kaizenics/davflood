@@ -8,26 +8,28 @@ import { hazardTiers } from "@naboflood/hazard/tiers";
  */
 export function HazardLegend() {
   return (
-    <div className="border-hairline bg-abyss/90 rounded-card border p-3 backdrop-blur">
-      <p className="text-ink-dim mb-2 text-[10px] font-bold tracking-widest uppercase">
-        Hazard level
-      </p>
-      <ul className="flex flex-col gap-1.5">
+    <div className="border-hairline rounded-card border p-3">
+      <ul className="flex flex-col gap-2">
         {hazardTiers.map((tier) => (
-          <li key={tier.id} className="flex items-center gap-2">
+          <li key={tier.id} className="flex items-baseline gap-2.5">
             <span
-              className="size-3 rounded-[3px]"
+              className="size-3 shrink-0 translate-y-0.5 rounded-[3px]"
               style={{ backgroundColor: tier.color }}
               aria-hidden="true"
             />
-            <span className="text-ink text-xs font-bold">{tier.label}</span>
-            <span className="text-ink-dim text-xs" data-numeric>
+            <span className="text-ink w-16 shrink-0 text-xs font-bold">
+              {tier.label}
+            </span>
+            <span className="text-ink-dim shrink-0 text-xs" data-numeric>
               {tier.depthShort}
+            </span>
+            <span className="text-ink-dim ml-auto truncate text-[11px]">
+              {tier.summary}
             </span>
           </li>
         ))}
       </ul>
-      <p className="text-ink-dim mt-2.5 max-w-[15rem] text-[9px] leading-relaxed">
+      <p className="border-hairline text-ink-dim mt-3 border-t pt-2.5 text-[10px] leading-relaxed">
         {mapAttribution}
       </p>
     </div>

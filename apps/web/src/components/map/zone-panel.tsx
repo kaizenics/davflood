@@ -25,7 +25,7 @@ export function ZonePanel({ zone, onClose }: Props) {
   return (
     <aside
       aria-label={`Selected zone: Barangay ${zone.barangay}`}
-      className="border-hairline bg-abyss/95 rounded-card pointer-events-auto w-full overflow-hidden border backdrop-blur sm:w-80"
+      className="border-hairline rounded-card w-full overflow-hidden border"
     >
       <div className="h-1 w-full" style={{ backgroundColor: tier.color }} />
       <div className="p-4">

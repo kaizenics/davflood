@@ -14,9 +14,9 @@ function BarangaysScreen() {
 
   return (
     <div className="absolute inset-0 flex flex-col overflow-hidden">
-      <header className="shrink-0 px-5 pt-5 pb-3">
-        <h1 className="text-ink text-2xl font-bold">Find your barangay</h1>
-        <p className="text-ink-dim mt-1 text-sm">
+      <header className="mx-auto w-full max-w-3xl shrink-0 px-6 pt-10 pb-4 sm:px-8">
+        <h1 className="text-ink text-3xl font-bold tracking-tight sm:text-4xl">Find your barangay</h1>
+        <p className="text-ink-dim mt-3 text-base">
           All {barangays.length} barangays of Panabo City. Pick one to jump the
           map there.
         </p>
@@ -44,13 +44,13 @@ function BarangaysScreen() {
         </div>
       </header>
 
-      <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-5">
+      <div className="mx-auto min-h-0 w-full max-w-3xl flex-1 overflow-y-auto px-6 pb-10 sm:px-8">
         {results.length === 0 ? (
           <p className="text-ink-dim py-16 text-center text-sm">
             No barangay matches “{query}”.
           </p>
         ) : (
-          <ul>
+          <ul className="grid sm:grid-cols-2 sm:gap-x-6">
             {results.map((b) => (
               <li key={b.name}>
                 <button
