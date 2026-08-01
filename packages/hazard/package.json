@@ -18,7 +18,8 @@
   },
   "scripts": {
     "check-types": "tsc --noEmit",
-    "generate:data": "node scripts/generate-synthetic.ts"
+    "generate:data": "tsx scripts/generate-synthetic.ts",
+    "validate:style": "tsx scripts/validate-style.ts"
   },
   "dependencies": {
     "@maplibre/maplibre-gl-style-spec": "24.8.5",
@@ -27,6 +28,7 @@
   "devDependencies": {
     "@naboflood/config": "workspace:*",
     "@types/node": "^22.20.1",
+    "tsx": "^4.20.6",
     "typescript": "^6.0.3"
   }
 }
