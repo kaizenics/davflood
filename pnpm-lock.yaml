@@ -184,6 +184,9 @@ importers:
       heroui-native:
         specifier: ^1.0.7
         version: 1.0.8(ab208b1dd2b78a72a7a6d26c49187b2b)
+      maplibre-gl:
+        specifier: ^6.1.0
+        version: 6.1.0
       react:
         specifier: 19.2.3
         version: 19.2.3
