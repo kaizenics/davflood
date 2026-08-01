@@ -1,4 +1,4 @@
-import { cn } from "@my-better-t-app/ui/lib/utils";
+import { cn } from "@naboflood/ui/lib/utils";
 import * as React from "react";
 
 function Card({

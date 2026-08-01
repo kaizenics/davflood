@@ -1,5 +1,5 @@
-import type { AppRouterClient } from "@my-better-t-app/api/routers/index";
-import { Toaster } from "@my-better-t-app/ui/components/sonner";
+import type { AppRouterClient } from "@naboflood/api/routers/index";
+import { Toaster } from "@naboflood/ui/components/sonner";
 import { createORPCClient } from "@orpc/client";
 import { createTanstackQueryUtils } from "@orpc/tanstack-query";
 import type { QueryClient } from "@tanstack/react-query";
@@ -24,11 +24,11 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
   head: () => ({
     meta: [
       {
-        title: "my-better-t-app",
+        title: "naboflood",
       },
       {
         name: "description",
-        content: "my-better-t-app is a web application",
+        content: "naboflood is a web application",
       },
     ],
     links: [

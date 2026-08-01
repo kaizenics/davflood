@@ -1,0 +1,67 @@
+---
+import NoiseOverlay from "@/components/decor/NoiseOverlay.astro";
+import Footer from "@/components/nav/Footer.astro";
+import Header from "@/components/nav/Header.astro";
+import { site } from "@/lib/site";
+import "@/styles/global.css";
+
+interface Props {
+	title?: string;
+	description?: string;
+	/** page-specific <h1> is elsewhere; this drives <title> only */
+	ogType?: string;
+}
+
+const {
+	title,
+	description = site.description,
+	ogType = "website",
+} = Astro.props;
+
+const pageTitle = title ? `${title} — ${site.name}` : `${site.name} — ${site.tagline}`;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+---
+
+<!doctype html>
+<html lang="en-PH" class="scroll-smooth">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta name="generator" content={Astro.generator} />
+		<link rel="canonical" href={canonical} />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<meta name="theme-color" content="#0a0e14" />
+
+		<title>{pageTitle}</title>
+		<meta name="description" content={description} />
+
+		<meta property="og:type" content={ogType} />
+		<meta property="og:title" content={pageTitle} />
+		<meta property="og:description" content={description} />
+		<meta property="og:url" content={canonical} />
+		<meta property="og:site_name" content={site.name} />
+		<meta property="og:locale" content="en_PH" />
+		<meta name="twitter:card" content="summary_large_image" />
+		<meta name="twitter:title" content={pageTitle} />
+		<meta name="twitter:description" content={description} />
+	</head>
+
+	<body class="bg-abyss text-ink min-h-dvh antialiased">
+		<a
+			href="#main"
+			class="focus:bg-tide focus:text-abyss sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[100] focus:rounded-lg focus:px-4 focus:py-2 focus:font-semibold"
+		>
+			Skip to content
+		</a>
+
+		<NoiseOverlay />
+
+		<div class="relative z-10 flex min-h-dvh flex-col">
+			<Header />
+			<main id="main" class="flex-1">
+				<slot />
+			</main>
+			<Footer />
+		</div>
+	</body>
+</html>

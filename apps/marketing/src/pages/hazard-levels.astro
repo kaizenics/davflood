@@ -1,0 +1,144 @@
+---
+import CtaSection from "@/components/sections/CtaSection.astro";
+import HazardScale from "@/components/sections/HazardScale.astro";
+import Card from "@/components/ui/Card.astro";
+import PageHeader from "@/components/ui/PageHeader.astro";
+import Section from "@/components/ui/Section.astro";
+import Base from "@/layouts/Base.astro";
+import { scenarios } from "@/lib/site";
+import { Icon } from "astro-icon/components";
+
+const chance = [
+	{ span: "1 year", pct: "1%" },
+	{ span: "10 years", pct: "10%" },
+	{ span: "30 years", pct: "26%" },
+	{ span: "50 years", pct: "39%" },
+];
+---
+
+<Base
+	title="Hazard levels"
+	description="What low, medium and high flood hazard actually mean in metres, at your front door — and what a 100-year flood really is."
+>
+	<PageHeader
+		eyebrow="Reference"
+		title="What the colours actually mean."
+		lede="A colour on a map is only useful if you know what it costs you. Here is each hazard level in metres, in furniture, and in decisions."
+	/>
+
+	<HazardScale detailed showCta={false} id="levels" />
+
+	<!-- ── return periods ─────────────────────────────────────── -->
+	<Section
+		id="return-periods"
+		eyebrow="The other number"
+		title="A “100-year flood” is not a once-a-century flood."
+		lede="This is the single most misunderstood term in flood mapping, and it causes real harm — people assume a 100-year flood “already happened in 2011” and treat themselves as safe."
+	>
+		<div class="mt-12 grid gap-4 lg:grid-cols-[1.15fr_1fr]">
+			<Card static class="flex flex-col gap-4">
+				<h3 class="text-ink text-lg font-semibold">What it really means</h3>
+				<p class="text-ink-dim text-[0.95rem] leading-relaxed">
+					A 100-year flood is a flood with a <strong class="text-ink font-semibold"
+						>1-in-100 chance of happening in any given year</strong
+					>. That's it. It is a statement about probability per year, not about spacing
+					in time. Two 100-year floods can land in consecutive years without the model
+					being wrong — the same way rolling two sixes in a row doesn't break the dice.
+				</p>
+				<p class="text-ink-dim text-[0.95rem] leading-relaxed">
+					The practical consequence: a 1% annual chance compounds. Over the length of a
+					mortgage, it stops being a remote possibility.
+				</p>
+			</Card>
+
+			<Card static class="flex flex-col gap-5">
+				<h3 class="text-ink text-lg font-semibold">
+					Chance of at least one 100-year flood
+				</h3>
+				<ul class="flex flex-col gap-4">
+					{
+						chance.map((c) => (
+							<li class="flex items-center gap-4">
+								<span class="text-ink-dim w-20 shrink-0 text-sm" data-numeric>
+									{c.span}
+								</span>
+								<span class="bg-raised/70 h-2 flex-1 overflow-hidden rounded-full">
+									<span
+										class="bg-tide block h-full rounded-full"
+										style={`width:${c.pct}`}
+									/>
+								</span>
+								<span class="text-ink w-12 shrink-0 text-right text-sm font-semibold" data-numeric>
+									{c.pct}
+								</span>
+							</li>
+						))
+					}
+				</ul>
+				<p class="text-ink-dim text-xs leading-relaxed">
+					Assumes independent years at a 1% annual probability.
+				</p>
+			</Card>
+		</div>
+
+		<div class="mt-4 grid gap-4 sm:grid-cols-3">
+			{
+				scenarios.map((s) => (
+					<Card class="reveal flex flex-col gap-3">
+						<span class="text-tide text-sm font-semibold tracking-[0.14em] uppercase">
+							{s.label}
+						</span>
+						<p class="text-ink-dim text-[0.94rem] leading-relaxed">{s.blurb}</p>
+					</Card>
+				))
+			}
+		</div>
+	</Section>
+
+	<!-- ── limits ─────────────────────────────────────────────── -->
+	<Section
+		eyebrow="Limits"
+		title="Where this map stops being right."
+		lede="Being honest about the edges of a model is part of making it safe to use."
+		size="default"
+	>
+		<div class="mt-12 flex flex-col gap-px">
+			{
+				[
+					{
+						icon: "lucide:ruler",
+						t: "It is neighbourhood-scale, not lot-scale.",
+						b: "Hazard models are built from elevation data at a fixed grid resolution. A raised foundation, a new subdivision, or a canal that was cleared last month are not in the model.",
+					},
+					{
+						icon: "lucide:clock",
+						t: "It does not know about today.",
+						b: "The hazard layer is the same whether it is the dry season or the third day of a typhoon. Pair it with the rainfall forecast and official advisories.",
+					},
+					{
+						icon: "lucide:construction",
+						t: "The ground changes; the model lags.",
+						b: "New roads, drainage works and land reclamation all move water around. Hazard maps are republished infrequently, so recent changes may not be reflected.",
+					},
+					{
+						icon: "lucide:eye",
+						t: "Your own eyes outrank it.",
+						b: "If your street floods and the map says it shouldn't, believe your street — and please tell us.",
+					},
+				].map((r) => (
+					<div class="reveal border-hairline/60 flex items-start gap-5 border-t py-7">
+						<span class="border-hairline/70 bg-raised/50 mt-0.5 inline-flex size-10 shrink-0 items-center justify-center rounded-xl border">
+							<Icon name={r.icon} class="text-ink-dim size-4.5" aria-hidden="true" />
+						</span>
+						<div class="flex flex-col gap-1.5">
+							<h3 class="text-ink text-base font-semibold">{r.t}</h3>
+							<p class="text-ink-dim max-w-3xl text-[0.94rem] leading-relaxed">{r.b}</p>
+						</div>
+					</div>
+				))
+			}
+		</div>
+	</Section>
+
+	<CtaSection />
+</Base>

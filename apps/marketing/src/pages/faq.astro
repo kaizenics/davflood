@@ -1,0 +1,23 @@
+---
+import CtaSection from "@/components/sections/CtaSection.astro";
+import Faq from "@/components/sections/Faq.astro";
+import PageHeader from "@/components/ui/PageHeader.astro";
+import Base from "@/layouts/Base.astro";
+import { faqs } from "@/lib/site";
+---
+
+<Base
+	title="FAQ"
+	description="Common questions about NaboFlood — what the data is, what it isn't, whether it works offline, and why it's free."
+>
+	<PageHeader
+		eyebrow="FAQ"
+		title="Questions people actually ask."
+		lede="If something here is still unclear, that's a documentation bug on our side."
+	/>
+
+	{/* bare — the page header above already carries the eyebrow and title */}
+	<Faq items={faqs} id="all" bare />
+
+	<CtaSection />
+</Base>

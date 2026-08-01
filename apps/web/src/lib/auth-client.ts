@@ -1,4 +1,4 @@
-import { env } from "@my-better-t-app/env/web";
+import { env } from "@naboflood/env/web";
 import { createAuthClient } from "better-auth/react";
 
 function getServerUrl(url: string) {

@@ -1,0 +1,76 @@
+---
+import Wordmark from "@/components/brand/Wordmark.astro";
+import Container from "@/components/ui/Container.astro";
+import { disclaimer, footerNav, site } from "@/lib/site";
+import { Icon } from "astro-icon/components";
+
+const year = 2026;
+---
+
+<footer class="border-hairline/60 mt-auto border-t">
+	<Container size="wide">
+		<div class="grid gap-12 py-16 lg:grid-cols-[1.4fr_2fr]">
+			<div class="flex flex-col gap-5">
+				<Wordmark />
+				<p class="text-ink-dim max-w-sm text-sm leading-relaxed">
+					Flood hazard maps for every barangay in {site.city}, {site.province}. Free,
+					offline-capable, and built entirely on open data.
+				</p>
+				<p
+					class="border-hairline/70 text-ink-dim max-w-sm rounded-xl border border-dashed p-3 text-xs leading-relaxed"
+				>
+					<Icon
+						name="lucide:triangle-alert"
+						class="text-haz-med mr-1 inline size-3.5 align-[-2px]"
+						aria-hidden="true"
+					/>
+					{disclaimer.short} Not affiliated with any government agency. For live warnings,
+					follow PAGASA and your local DRRM office.
+				</p>
+			</div>
+
+			<div class="grid grid-cols-2 gap-8 sm:grid-cols-3">
+				{
+					footerNav.map((col) => (
+						<div class="flex flex-col gap-3">
+							<h2 class="text-ink text-xs font-semibold tracking-[0.16em] uppercase">
+								{col.heading}
+							</h2>
+							<ul class="flex flex-col gap-2.5">
+								{col.links.map((link) => (
+									<li>
+										<a
+											href={link.href}
+											rel={"external" in link && link.external ? "noopener noreferrer" : undefined}
+											target={"external" in link && link.external ? "_blank" : undefined}
+											class="text-ink-dim hover:text-tide inline-flex items-center gap-1.5 text-sm transition"
+										>
+											{link.label}
+											{"external" in link && link.external && (
+												<Icon
+													name="lucide:arrow-up-right"
+													class="size-3.5 opacity-60"
+													aria-hidden="true"
+												/>
+											)}
+										</a>
+									</li>
+								))}
+							</ul>
+						</div>
+					))
+				}
+			</div>
+		</div>
+
+		<div
+			class="border-hairline/60 flex flex-col gap-4 border-t py-7 sm:flex-row sm:items-center sm:justify-between"
+		>
+			<p class="text-ink-dim text-xs">
+				© {year} {site.name}. Hazard data © UP NOAH. Map data © OpenStreetMap contributors,
+				ODbL.
+			</p>
+			<p class="text-ink-dim text-xs">Made in {site.city}.</p>
+		</div>
+	</Container>
+</footer>

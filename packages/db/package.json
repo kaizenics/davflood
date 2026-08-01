@@ -1,5 +1,5 @@
 {
-  "name": "@my-better-t-app/db",
+  "name": "@naboflood/db",
   "type": "module",
   "exports": {
     ".": {
@@ -18,14 +18,14 @@
   },
   "dependencies": {
     "@libsql/client": "0.17.4",
-    "@my-better-t-app/env": "workspace:*",
+    "@naboflood/env": "workspace:*",
     "dotenv": "catalog:",
     "drizzle-orm": "^0.45.2",
     "libsql": "0.5.29",
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@my-better-t-app/config": "workspace:*",
+    "@naboflood/config": "workspace:*",
     "drizzle-kit": "^0.31.10",
     "typescript": "^6.0.3"
   }

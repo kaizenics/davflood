@@ -37,6 +37,11 @@ yarn-error.log*
 lerna-debug.log*
 .pnpm-debug.log*
 
+# Local database
+local.db
+local.db-shm
+local.db-wal
+
 # Turbo
 .turbo
 .nx

@@ -1,0 +1,32 @@
+---
+import Section from "@/components/ui/Section.astro";
+import { steps } from "@/lib/site";
+---
+
+<Section
+	id="how-it-works"
+	eyebrow="How it works"
+	title="Three taps from opening the app to knowing your risk."
+>
+	<div class="mt-14 grid gap-10 sm:grid-cols-3 sm:gap-8">
+		{
+			steps.map((s, i) => (
+				<div class="reveal relative flex flex-col gap-3">
+					<div class="flex items-center gap-4">
+						<span class="text-tide text-sm font-semibold tracking-[0.2em]" data-numeric>
+							{s.n}
+						</span>
+						{i < steps.length - 1 && (
+							<span
+								class="from-hairline hidden h-px flex-1 bg-gradient-to-r to-transparent sm:block"
+								aria-hidden="true"
+							/>
+						)}
+					</div>
+					<h3 class="text-ink text-lg font-semibold">{s.title}</h3>
+					<p class="text-ink-dim text-[0.94rem] leading-relaxed">{s.body}</p>
+				</div>
+			))
+		}
+	</div>
+</Section>

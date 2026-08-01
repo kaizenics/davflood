@@ -1,0 +1,16 @@
+---
+interface Props {
+	class?: string;
+	/** small leading dot — purely decorative */
+	dot?: boolean;
+}
+
+const { class: className = "", dot = false } = Astro.props;
+---
+
+<span
+	class={`border-hairline bg-surface/60 text-ink-dim inline-flex items-center gap-2 rounded-pill border px-3 py-1 text-xs font-medium backdrop-blur-sm ${className}`}
+>
+	{dot && <span class="bg-tide size-1.5 rounded-full" aria-hidden="true"></span>}
+	<slot />
+</span>

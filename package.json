@@ -1,5 +1,5 @@
 {
-  "name": "my-better-t-app",
+  "name": "naboflood",
   "private": true,
   "workspaces": [
     "apps/*",
@@ -13,19 +13,20 @@
     "dev:native": "turbo run dev -F native",
     "dev:web": "turbo run dev -F web",
     "dev:server": "turbo run dev -F server",
-    "db:push": "turbo run db:push -F @my-better-t-app/db",
-    "db:studio": "turbo run db:studio -F @my-better-t-app/db",
-    "db:generate": "turbo run db:generate -F @my-better-t-app/db",
-    "db:migrate": "turbo run db:migrate -F @my-better-t-app/db",
-    "db:local": "turbo run db:local -F @my-better-t-app/db"
+    "dev:marketing": "turbo run dev -F marketing",
+    "db:push": "turbo run db:push -F @naboflood/db",
+    "db:studio": "turbo run db:studio -F @naboflood/db",
+    "db:generate": "turbo run db:generate -F @naboflood/db",
+    "db:migrate": "turbo run db:migrate -F @naboflood/db",
+    "db:local": "turbo run db:local -F @naboflood/db"
   },
   "dependencies": {
-    "@my-better-t-app/env": "workspace:*",
+    "@naboflood/env": "workspace:*",
     "dotenv": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@my-better-t-app/config": "workspace:*",
+    "@naboflood/config": "workspace:*",
     "@types/node": "^22.20.1",
     "turbo": "^2.10.7",
     "typescript": "^6.0.3"

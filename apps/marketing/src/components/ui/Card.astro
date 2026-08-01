@@ -1,0 +1,25 @@
+---
+interface Props {
+	class?: string;
+	as?: string;
+	/** disable the hover lift for static/reference cards */
+	static?: boolean;
+}
+
+const {
+	class: className = "",
+	as: tag = "div",
+	static: isStatic = false,
+} = Astro.props as Props;
+const Tag = tag as any;
+
+const hover = isStatic
+	? ""
+	: "transition duration-300 hover:border-hairline hover:bg-raised/50 hover:-translate-y-1";
+---
+
+<Tag
+	class={`border-hairline/70 bg-surface/50 rounded-card border p-6 sm:p-7 ${hover} ${className}`}
+>
+	<slot />
+</Tag>

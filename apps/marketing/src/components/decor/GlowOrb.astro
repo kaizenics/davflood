@@ -1,0 +1,21 @@
+---
+interface Props {
+	class?: string;
+	/** css colour — defaults to the brand tide */
+	color?: string;
+	size?: string;
+}
+
+const {
+	class: className = "",
+	color = "oklch(0.55 0.11 210 / 0.4)",
+	size = "42rem",
+} = Astro.props;
+---
+
+<div
+	class={`pointer-events-none absolute rounded-full blur-[100px] ${className}`}
+	style={`width:${size};height:${size};background:radial-gradient(circle, ${color} 0%, transparent 70%)`}
+	aria-hidden="true"
+>
+</div>

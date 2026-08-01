@@ -1,0 +1,54 @@
+---
+import MapMockup from "@/components/mockup/MapMockup.astro";
+import PhoneFrame from "@/components/mockup/PhoneFrame.astro";
+import Section from "@/components/ui/Section.astro";
+
+const screens = [
+	{
+		variant: "map" as const,
+		caption: "Tap a zone",
+		sub: "Hazard level and expected depth, in plain words.",
+		barangay: "Brgy. New Pandan",
+		tier: "high" as const,
+		depth: "1.6 m",
+	},
+	{
+		variant: "layers" as const,
+		caption: "Switch the scenario",
+		sub: "5, 25 and 100-year models on one control.",
+	},
+	{
+		variant: "rainfall" as const,
+		caption: "Check the rain",
+		sub: "Current conditions and a 3-day forecast.",
+	},
+];
+---
+
+<Section
+	eyebrow="A look inside"
+	title="Designed to be read fast, in bad light, on a cheap phone."
+	lede="Large type, high contrast, and no interface chrome competing with the map. Screens shown are design mockups of the app in development."
+>
+	<div class="mt-14 grid gap-10 sm:grid-cols-3 sm:gap-6">
+		{
+			screens.map((s) => (
+				<figure class="reveal flex flex-col items-center gap-5">
+					<PhoneFrame glow={false} class="w-[13.5rem] sm:w-full sm:max-w-[15rem]">
+						<MapMockup
+							variant={s.variant}
+							barangay={s.barangay}
+							tier={s.tier}
+							depth={s.depth}
+							class="block w-full"
+						/>
+					</PhoneFrame>
+					<figcaption class="flex flex-col gap-1 text-center">
+						<span class="text-ink text-base font-semibold">{s.caption}</span>
+						<span class="text-ink-dim text-sm">{s.sub}</span>
+					</figcaption>
+				</figure>
+			))
+		}
+	</div>
+</Section>

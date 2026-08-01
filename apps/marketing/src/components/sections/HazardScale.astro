@@ -1,0 +1,107 @@
+---
+import Button from "@/components/ui/Button.astro";
+import Section from "@/components/ui/Section.astro";
+import { hazardTiers } from "@/lib/site";
+import { Icon } from "astro-icon/components";
+
+interface Props {
+	/** the reference page shows the full guidance; the landing page doesn't */
+	detailed?: boolean;
+	showCta?: boolean;
+	id?: string;
+}
+
+const { detailed = false, showCta = true, id = "hazard" } = Astro.props;
+
+// literal classes only — Tailwind cannot resolve interpolated names
+const styles = {
+	low: {
+		dot: "bg-haz-low",
+		text: "text-haz-low",
+		ring: "border-haz-low/35",
+		wash: "bg-haz-low/8",
+		bar: "bg-haz-low",
+	},
+	medium: {
+		dot: "bg-haz-med",
+		text: "text-haz-med",
+		ring: "border-haz-med/35",
+		wash: "bg-haz-med/8",
+		bar: "bg-haz-med",
+	},
+	high: {
+		dot: "bg-haz-high",
+		text: "text-haz-high",
+		ring: "border-haz-high/35",
+		wash: "bg-haz-high/8",
+		bar: "bg-haz-high",
+	},
+} as const;
+
+const widths = { low: "w-1/3", medium: "w-2/3", high: "w-full" } as const;
+---
+
+<Section
+	id={id}
+	eyebrow="Reading the map"
+	title="Three levels. One thing they all mean: get out early."
+	lede="Colours follow the UP NOAH hazard classification. Every zone in the app carries both the colour and the words — colour alone is never enough when the information matters this much."
+>
+	<div class="mt-14 flex flex-col gap-4">
+		{
+			hazardTiers.map((t) => {
+				const s = styles[t.id];
+				return (
+					<article
+						class={`reveal rounded-card border ${s.ring} ${s.wash} overflow-hidden`}
+					>
+						<div class="grid gap-6 p-6 sm:p-8 lg:grid-cols-[16rem_1fr] lg:gap-10">
+							<div class="flex flex-col gap-3">
+								<div class="flex items-center gap-3">
+									<span class={`size-3.5 rounded-[5px] ${s.dot}`} aria-hidden="true" />
+									<h3 class={`text-xl font-semibold ${s.text}`}>{t.label}</h3>
+								</div>
+								<p class="text-ink text-base font-medium">{t.name}</p>
+								<p class="text-ink-dim text-sm" data-numeric>
+									{t.depth}
+								</p>
+								<div class="bg-raised/70 mt-1 h-1.5 w-full overflow-hidden rounded-full">
+									<div class={`h-full ${widths[t.id]} ${s.bar} rounded-full`} />
+								</div>
+								<p class="text-ink-dim text-xs">{t.summary}</p>
+							</div>
+
+							<div class="flex flex-col gap-4">
+								<p class="text-ink-dim text-[0.94rem] leading-relaxed">{t.human}</p>
+								{detailed && (
+									<div class="border-hairline/60 flex items-start gap-3 border-t pt-4">
+										<Icon
+											name="lucide:shield-alert"
+											class={`mt-0.5 size-4 shrink-0 ${s.text}`}
+											aria-hidden="true"
+										/>
+										<p class="text-ink text-[0.94rem] leading-relaxed">
+											<span class="font-semibold">What to do: </span>
+											{t.action}
+										</p>
+									</div>
+								)}
+							</div>
+						</div>
+					</article>
+				);
+			})
+		}
+	</div>
+
+	{
+		showCta && (
+			<div class="reveal mt-10">
+				<Button href="/hazard-levels" variant="outline">
+					What each level means at your door
+					<Icon name="lucide:arrow-right" class="size-4" aria-hidden="true" />
+				</Button>
+			</div>
+		)
+	}
+</Section>

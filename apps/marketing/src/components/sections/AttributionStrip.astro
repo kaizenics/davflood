@@ -1,0 +1,72 @@
+---
+import Section from "@/components/ui/Section.astro";
+import { dataSources } from "@/lib/site";
+import { Icon } from "astro-icon/components";
+
+interface Props {
+	/** the About page lists role + licence; the landing page just credits */
+	detailed?: boolean;
+	id?: string;
+}
+
+const { detailed = false, id } = Astro.props;
+---
+
+<Section
+	id={id}
+	eyebrow="Where the data comes from"
+	title="Built entirely on open data — and it says so."
+	lede="Every layer in the app is public data produced by people who made it public on purpose. Crediting them is a licence obligation, not a courtesy."
+>
+	<div
+		class={
+			detailed
+				? "mt-14 flex flex-col gap-px"
+				: "mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
+		}
+	>
+		{
+			dataSources.map((d) =>
+				detailed ? (
+					<div class="reveal border-hairline/60 grid gap-3 border-t py-7 lg:grid-cols-[14rem_1fr_11rem] lg:gap-8">
+						<div class="flex flex-col gap-1">
+							<a
+								href={d.url}
+								target="_blank"
+								rel="noopener noreferrer"
+								class="text-ink hover:text-tide inline-flex items-center gap-1.5 text-base font-semibold transition"
+							>
+								{d.name}
+								<Icon
+									name="lucide:arrow-up-right"
+									class="size-3.5 opacity-60"
+									aria-hidden="true"
+								/>
+							</a>
+							<span class="text-ink-dim text-xs">{d.full}</span>
+						</div>
+						<p class="text-ink-dim text-sm leading-relaxed">{d.role}</p>
+						<p class="text-ink-dim text-xs lg:text-right">{d.licence}</p>
+					</div>
+				) : (
+					<a
+						href={d.url}
+						target="_blank"
+						rel="noopener noreferrer"
+						class="reveal border-hairline/70 bg-surface/40 rounded-card hover:border-hairline hover:bg-raised/50 flex flex-col gap-2 border p-5 transition"
+					>
+						<span class="text-ink inline-flex items-center gap-1.5 text-sm font-semibold">
+							{d.name}
+							<Icon
+								name="lucide:arrow-up-right"
+								class="size-3.5 opacity-50"
+								aria-hidden="true"
+							/>
+						</span>
+						<span class="text-ink-dim text-sm leading-relaxed">{d.role}</span>
+					</a>
+				),
+			)
+		}
+	</div>
+</Section>

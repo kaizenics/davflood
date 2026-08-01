@@ -16,8 +16,8 @@
     "@expo/metro-runtime": "~57.0.7",
     "@expo/vector-icons": "^15.1.1",
     "@gorhom/bottom-sheet": "^5.2.14",
-    "@my-better-t-app/api": "workspace:*",
-    "@my-better-t-app/env": "workspace:*",
+    "@naboflood/api": "workspace:*",
+    "@naboflood/env": "workspace:*",
     "@orpc/client": "catalog:",
     "@orpc/tanstack-query": "catalog:",
     "@tanstack/react-form": "catalog:",
@@ -53,7 +53,7 @@
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@my-better-t-app/config": "workspace:*",
+    "@naboflood/config": "workspace:*",
     "@types/node": "^26.1.2",
     "@types/react": "~19.2.17",
     "typescript": "~6.0.3"

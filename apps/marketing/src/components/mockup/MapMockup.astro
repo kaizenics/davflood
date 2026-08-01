@@ -1,0 +1,366 @@
+---
+/**
+ * A hand-authored fake app screen. No map library, no screenshots —
+ * this renders at build time as inline SVG and is swappable for real
+ * captures later without touching anything that consumes it.
+ *
+ * Hex colours (not oklch) are deliberate: this is the visual centrepiece
+ * and it must render even in an older WebView.
+ */
+
+interface Props {
+	variant?: "map" | "layers" | "rainfall";
+	barangay?: string;
+	tier?: "low" | "medium" | "high";
+	depth?: string;
+	class?: string;
+}
+
+const {
+	variant = "map",
+	barangay = "Brgy. New Pandan",
+	tier = "high",
+	depth = "1.6 m",
+	class: className = "",
+} = Astro.props;
+
+const C = {
+	bg: "#12161d",
+	land: "#191e26",
+	building: "#1e242d",
+	road: "#29303a",
+	roadMajor: "#38404b",
+	water: "#1d3a52",
+	hazLow: "#f2b73a",
+	hazMed: "#f5843a",
+	hazHigh: "#ec4a3c",
+	surface: "#1a1f27",
+	surfaceUp: "#232935",
+	hairline: "#39404c",
+	ink: "#f5f6f8",
+	inkDim: "#9aa3af",
+	tide: "#4dc4d6",
+};
+
+const tierColor = { low: C.hazLow, medium: C.hazMed, high: C.hazHigh }[tier];
+const tierLabel = { low: "LOW", medium: "MEDIUM", high: "HIGH" }[tier];
+
+/** the floodplain spine — hazard bands are strokes along this */
+const river =
+	"M -20 96 C 55 132, 72 205, 146 242 C 214 276, 246 344, 258 418 C 268 484, 300 548, 348 596";
+
+/** deterministic building scatter — seeded so builds are reproducible */
+let seed = 20260801;
+const rnd = () => {
+	seed = (seed * 1664525 + 1013904223) % 4294967296;
+	return seed / 4294967296;
+};
+const buildings = Array.from({ length: 46 }, () => ({
+	x: rnd() * 340 - 10,
+	y: rnd() * 620 + 10,
+	w: 7 + rnd() * 16,
+	h: 6 + rnd() * 13,
+}));
+
+const vRoads = [-6, 46, 98, 152, 206, 258, 312];
+const hRoads = [58, 122, 186, 250, 314, 378, 442, 506, 570, 634];
+const uid = variant;
+---
+
+<svg
+	class={className}
+	viewBox="0 0 320 660"
+	fill="none"
+	xmlns="http://www.w3.org/2000/svg"
+	role="img"
+	aria-label={`Illustration of the NaboFlood app: a dark 3D map of Panabo City with amber, orange and red flood hazard zones traced along a river, and an information card reading ${barangay}, ${tierLabel} hazard, about ${depth} deep.`}
+>
+	<defs>
+		<clipPath id={`screen-${uid}`}>
+			<rect width="320" height="660" rx="26"></rect>
+		</clipPath>
+		<filter id={`soft-${uid}`} x="-30%" y="-30%" width="160%" height="160%">
+			<feGaussianBlur stdDeviation="7"></feGaussianBlur>
+		</filter>
+		<linearGradient id={`vign-${uid}`} x1="0" y1="0" x2="0" y2="1">
+			<stop offset="0%" stop-color="#0b0e13" stop-opacity="0.85"></stop>
+			<stop offset="22%" stop-color="#0b0e13" stop-opacity="0"></stop>
+			<stop offset="62%" stop-color="#0b0e13" stop-opacity="0"></stop>
+			<stop offset="100%" stop-color="#0b0e13" stop-opacity="0.92"></stop>
+		</linearGradient>
+		<linearGradient id={`relief-${uid}`} x1="0" y1="0" x2="1" y2="1">
+			<stop offset="0%" stop-color="#2a3240" stop-opacity="0.55"></stop>
+			<stop offset="100%" stop-color="#0d1116" stop-opacity="0.2"></stop>
+		</linearGradient>
+	</defs>
+
+	<g clip-path={`url(#screen-${uid})`}>
+		<rect width="320" height="660" fill={C.bg}></rect>
+
+		<!-- terrain relief: higher ground to the north-east -->
+		<g opacity="0.5">
+			<ellipse cx="268" cy="120" rx="150" ry="130" fill={`url(#relief-${uid})`}></ellipse>
+			<ellipse cx="30" cy="520" rx="130" ry="120" fill={`url(#relief-${uid})`}></ellipse>
+		</g>
+
+		<!-- contour lines, faint -->
+		<g stroke="#39424f" stroke-width="0.6" opacity="0.35" fill="none">
+			<path d="M320 60 C 250 70, 226 122, 250 176 C 274 230, 320 236, 340 220"></path>
+			<path d="M320 26 C 232 40, 196 116, 228 190 C 258 258, 320 268, 344 250"></path>
+			<path d="M-8 470 C 46 452, 96 486, 104 536 C 112 588, 66 630, 6 640"></path>
+			<path d="M-8 436 C 68 414, 130 462, 140 532 C 148 600, 84 660, 6 668"></path>
+		</g>
+
+		<!-- the street grid, slightly rotated so it doesn't read as a chart -->
+		<g transform="rotate(-9 160 330)">
+			<g stroke={C.road} stroke-width="7" stroke-linecap="round">
+				{vRoads.map((x) => <path d={`M${x} -40 L${x + 14} 700`} />)}
+				{hRoads.map((y) => <path d={`M-40 ${y} L360 ${y - 10}`} />)}
+			</g>
+			<g stroke={C.roadMajor} stroke-width="10" stroke-linecap="round">
+				<path d="M98 -40 L112 700"></path>
+				<path d="M-40 314 L360 304"></path>
+			</g>
+			<g fill={C.building} opacity="0.85">
+				{
+					buildings.map((b) => (
+						<rect x={b.x} y={b.y} width={b.w} height={b.h} rx="1.5" />
+					))
+				}
+			</g>
+		</g>
+
+		<!-- river -->
+		<path d={river} stroke={C.water} stroke-width="11" stroke-linecap="round" fill="none"
+		></path>
+		<path
+			d={river}
+			stroke="#2e5f85"
+			stroke-width="3"
+			stroke-linecap="round"
+			opacity="0.6"
+			fill="none"></path>
+
+		<!-- ── HAZARD BANDS ──────────────────────────────────────────
+		     Widest = low, narrowest = high. Nested along the river,
+		     which is how a real floodplain actually grades.        -->
+		<g fill="none" stroke-linecap="round">
+			<path d={river} stroke={C.hazLow} stroke-width="148" opacity="0.17"></path>
+			<path d={river} stroke={C.hazMed} stroke-width="92" opacity="0.22"></path>
+			<path d={river} stroke={C.hazHigh} stroke-width="44" opacity="0.3"></path>
+		</g>
+		<!-- inland low-lying pockets, drawn as discrete polygons with
+		     visible edges so the hazard layer reads as vector data -->
+		<g>
+			<path
+				d="M36 196 C 66 180, 106 190, 112 218 C 118 248, 88 270, 56 264 C 26 258, 12 212, 36 196 Z"
+				fill={C.hazLow}
+				fill-opacity="0.2"
+				stroke={C.hazLow}
+				stroke-opacity="0.75"
+				stroke-width="1.2"></path>
+			<path
+				d="M58 214 C 76 206, 96 214, 96 230 C 96 246, 78 254, 62 248 C 46 242, 42 222, 58 214 Z"
+				fill={C.hazMed}
+				fill-opacity="0.26"
+				stroke={C.hazMed}
+				stroke-opacity="0.8"
+				stroke-width="1.2"></path>
+			<path
+				d="M196 494 C 232 484, 268 502, 266 530 C 264 558, 224 574, 194 562 C 166 550, 164 504, 196 494 Z"
+				fill={C.hazMed}
+				fill-opacity="0.22"
+				stroke={C.hazMed}
+				stroke-opacity="0.7"
+				stroke-width="1.2"></path>
+		</g>
+
+		<!-- vignette to sell the 3D pitch -->
+		<rect width="320" height="660" fill={`url(#vign-${uid})`}></rect>
+
+		<!-- ── STATUS BAR ────────────────────────────────────────── -->
+		<text
+			x="24"
+			y="26"
+			fill={C.ink}
+			font-family="system-ui, sans-serif"
+			font-size="11"
+			font-weight="600">9:41</text
+		>
+		<g fill={C.ink} opacity="0.9">
+			<rect x="258" y="17" width="3" height="7" rx="1"></rect>
+			<rect x="263" y="14" width="3" height="10" rx="1"></rect>
+			<rect x="268" y="11" width="3" height="13" rx="1"></rect>
+			<rect x="279" y="13" width="16" height="9" rx="2.5" fill="none" stroke={C.ink}
+				stroke-width="1.2" opacity="0.7"></rect>
+			<rect x="281" y="15" width="10" height="5" rx="1"></rect>
+		</g>
+
+		<!-- ── SEARCH BAR ────────────────────────────────────────── -->
+		<g>
+			<rect
+				x="16"
+				y="42"
+				width="288"
+				height="42"
+				rx="21"
+				fill={C.surface}
+				fill-opacity="0.92"
+				stroke={C.hairline}
+				stroke-width="1"></rect>
+			<circle cx="42" cy="63" r="5.5" fill="none" stroke={C.inkDim} stroke-width="1.6"
+			></circle>
+			<path d="M46 67 L50 71" stroke={C.inkDim} stroke-width="1.6" stroke-linecap="round"
+			></path>
+			<text
+				x="60"
+				y="67"
+				fill={C.inkDim}
+				font-family="system-ui, sans-serif"
+				font-size="12.5">Search barangay…</text
+			>
+			<circle cx="284" cy="63" r="11" fill={C.surfaceUp}></circle>
+			<path
+				d="M284 57 L284 69 M278 63 L290 63"
+				stroke={C.inkDim}
+				stroke-width="1.5"
+				stroke-linecap="round"
+				transform="rotate(45 284 63)"></path>
+		</g>
+
+		{
+			variant === "map" && (
+				<Fragment>
+					{/* selected location pin */}
+					<g>
+						<ellipse cx="212" cy="404" rx="18" ry="7" fill={tierColor} opacity="0.3" filter={`url(#soft-${uid})`} />
+						<path
+							d="M212 372 C 202 372, 194 380, 194 390 C 194 402, 212 420, 212 420 C 212 420, 230 402, 230 390 C 230 380, 222 372, 212 372 Z"
+							fill={tierColor}
+							stroke="#0b0e13"
+							stroke-width="1.5"
+						/>
+						<circle cx="212" cy="390" r="6" fill="#0b0e13" opacity="0.75" />
+					</g>
+
+					{/* info card */}
+					<g>
+						<rect x="16" y="452" width="288" height="152" rx="20" fill={C.surface} fill-opacity="0.97" stroke={C.hairline} stroke-width="1" />
+						<rect x="16" y="452" width="288" height="3" rx="1.5" fill={tierColor} />
+
+						<text x="34" y="483" fill={C.inkDim} font-family="system-ui, sans-serif" font-size="10" letter-spacing="1.4" font-weight="600">
+							SELECTED ZONE
+						</text>
+						<text x="34" y="506" fill={C.ink} font-family="system-ui, sans-serif" font-size="16" font-weight="650">
+							{barangay}
+						</text>
+
+						<rect x="34" y="520" width={tierLabel.length * 7.6 + 26} height="22" rx="11" fill={tierColor} fill-opacity="0.16" stroke={tierColor} stroke-opacity="0.55" stroke-width="1" />
+						<circle cx="47" cy="531" r="4" fill={tierColor} />
+						<text x="57" y="535" fill={tierColor} font-family="system-ui, sans-serif" font-size="10.5" font-weight="700" letter-spacing="0.7">
+							{tierLabel}
+						</text>
+
+						<text x="34" y="566" fill={C.inkDim} font-family="system-ui, sans-serif" font-size="11">
+							Expected depth
+						</text>
+						<text x="34" y="588" fill={C.ink} font-family="system-ui, sans-serif" font-size="19" font-weight="650">
+							{depth}
+						</text>
+						<text x="120" y="588" fill={C.inkDim} font-family="system-ui, sans-serif" font-size="11">
+							above head height
+						</text>
+
+						<line x1="212" y1="560" x2="212" y2="592" stroke={C.hairline} stroke-width="1" />
+						<text x="230" y="566" fill={C.inkDim} font-family="system-ui, sans-serif" font-size="11">
+							Scenario
+						</text>
+						<text x="230" y="588" fill={C.ink} font-family="system-ui, sans-serif" font-size="19" font-weight="650">
+							25-yr
+						</text>
+					</g>
+				</Fragment>
+			)
+		}
+
+		{
+			variant === "layers" && (
+				<Fragment>
+					<g>
+						<rect x="16" y="404" width="288" height="200" rx="20" fill={C.surface} fill-opacity="0.97" stroke={C.hairline} stroke-width="1" />
+						<rect x="142" y="416" width="36" height="4" rx="2" fill={C.hairline} />
+						<text x="34" y="450" fill={C.ink} font-family="system-ui, sans-serif" font-size="15" font-weight="650">
+							Flood scenario
+						</text>
+						<text x="34" y="470" fill={C.inkDim} font-family="system-ui, sans-serif" font-size="11">
+							Return period of the modelled storm
+						</text>
+
+						{[
+							{ label: "5-year", y: 486, on: false },
+							{ label: "25-year", y: 522, on: true },
+							{ label: "100-year", y: 558, on: false },
+						].map((row) => (
+							<Fragment>
+								<rect
+									x="34"
+									y={row.y}
+									width="252"
+									height="30"
+									rx="15"
+									fill={row.on ? C.tide : C.surfaceUp}
+									fill-opacity={row.on ? 0.16 : 1}
+									stroke={row.on ? C.tide : C.hairline}
+									stroke-opacity={row.on ? 0.7 : 1}
+									stroke-width="1"
+								/>
+								<circle cx="52" cy={row.y + 15} r="6" fill="none" stroke={row.on ? C.tide : C.inkDim} stroke-width="1.6" />
+								{row.on && <circle cx="52" cy={row.y + 15} r="3" fill={C.tide} />}
+								<text x="68" y={row.y + 19} fill={row.on ? C.ink : C.inkDim} font-family="system-ui, sans-serif" font-size="12.5" font-weight={row.on ? "650" : "500"}>
+									{row.label}
+								</text>
+							</Fragment>
+						))}
+					</g>
+				</Fragment>
+			)
+		}
+
+		{
+			variant === "rainfall" && (
+				<Fragment>
+					<g>
+						<rect x="16" y="396" width="288" height="208" rx="20" fill={C.surface} fill-opacity="0.97" stroke={C.hairline} stroke-width="1" />
+						<text x="34" y="428" fill={C.ink} font-family="system-ui, sans-serif" font-size="15" font-weight="650">
+							Rainfall
+						</text>
+						<text x="34" y="448" fill={C.inkDim} font-family="system-ui, sans-serif" font-size="11">
+							Panabo City · next 3 days
+						</text>
+						<text x="286" y="432" fill={C.tide} font-family="system-ui, sans-serif" font-size="22" font-weight="650" text-anchor="end">
+							12mm
+						</text>
+
+						{[
+							{ d: "Today", h: 40, x: 40 },
+							{ d: "Sat", h: 66, x: 100 },
+							{ d: "Sun", h: 94, x: 160 },
+							{ d: "Mon", h: 28, x: 220 },
+						].map((b) => (
+							<Fragment>
+								<rect x={b.x} y={576 - b.h} width="34" height={b.h} rx="6" fill={C.tide} fill-opacity="0.22" stroke={C.tide} stroke-opacity="0.5" stroke-width="1" />
+								<text x={b.x + 17} y="592" fill={C.inkDim} font-family="system-ui, sans-serif" font-size="10" text-anchor="middle">
+									{b.d}
+								</text>
+							</Fragment>
+						))}
+						<line x1="34" y1="578" x2="286" y2="578" stroke={C.hairline} stroke-width="1" />
+					</g>
+				</Fragment>
+			)
+		}
+
+		<!-- home indicator -->
+		<rect x="112" y="640" width="96" height="4" rx="2" fill={C.ink} opacity="0.35"></rect>
+	</g>
+</svg>

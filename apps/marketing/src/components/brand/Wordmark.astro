@@ -1,0 +1,39 @@
+---
+interface Props {
+	class?: string;
+}
+
+const { class: className = "" } = Astro.props;
+---
+
+<span class={`inline-flex items-center gap-2.5 ${className}`}>
+	<svg
+		class="size-7 shrink-0"
+		viewBox="0 0 32 32"
+		fill="none"
+		aria-hidden="true"
+	>
+		<!-- terrain silhouette with a waterline across it -->
+		<path
+			d="M2 23.5 L10.5 11 L15.5 18 L21 8.5 L30 23.5 Z"
+			fill="oklch(0.24 0.016 250)"
+			stroke="oklch(0.7 0.016 250)"
+			stroke-width="1.4"
+			stroke-linejoin="round"></path>
+		<path
+			d="M2 23.5 C5.5 21.6, 8 25.4, 11.5 23.5 C15 21.6, 17.5 25.4, 21 23.5 C24.5 21.6, 27 25.4, 30 23.5"
+			stroke="oklch(0.78 0.12 205)"
+			stroke-width="2"
+			stroke-linecap="round"
+			fill="none"></path>
+		<path
+			d="M2 28 C5.5 26.1, 8 29.9, 11.5 28 C15 26.1, 17.5 29.9, 21 28 C24.5 26.1, 27 29.9, 30 28"
+			stroke="oklch(0.55 0.11 210)"
+			stroke-width="1.6"
+			stroke-linecap="round"
+			fill="none"></path>
+	</svg>
+	<span class="text-ink text-lg font-semibold tracking-tight">
+		Nabo<span class="text-tide">Flood</span>
+	</span>
+</span>

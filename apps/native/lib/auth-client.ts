@@ -1,5 +1,5 @@
 import { expoClient } from "@better-auth/expo/client";
-import { env } from "@my-better-t-app/env/native";
+import { env } from "@naboflood/env/native";
 import { createAuthClient } from "better-auth/react";
 import Constants from "expo-constants";
 import * as SecureStore from "expo-secure-store";

@@ -1,0 +1,68 @@
+---
+import Button from "@/components/ui/Button.astro";
+import Section from "@/components/ui/Section.astro";
+import type { FaqItem } from "@/lib/site";
+import { Icon } from "astro-icon/components";
+
+interface Props {
+	items: FaqItem[];
+	title?: string;
+	lede?: string;
+	showMore?: boolean;
+	id?: string;
+	/** drop the section header — for pages whose PageHeader already says it */
+	bare?: boolean;
+}
+
+const {
+	items,
+	title = "Questions people actually ask.",
+	lede,
+	showMore = false,
+	id = "faq",
+	bare = false,
+} = Astro.props;
+---
+
+<Section
+	id={id}
+	eyebrow={bare ? undefined : "FAQ"}
+	title={bare ? undefined : title}
+	lede={bare ? undefined : lede}
+	size="default"
+	tight={bare}
+>
+	<div class="mt-12 flex flex-col">
+		{
+			items.map((item) => (
+				/* native <details> — an accessible accordion with zero JavaScript */
+				<details class="reveal border-hairline/60 group border-t last:border-b">
+					<summary class="hover:text-tide flex cursor-pointer list-none items-start justify-between gap-6 py-6 text-left [&::-webkit-details-marker]:hidden">
+						<span class="text-ink group-hover:text-tide text-base font-semibold transition sm:text-lg">
+							{item.q}
+						</span>
+						<Icon
+							name="lucide:plus"
+							class="text-ink-dim mt-1 size-5 shrink-0 transition-transform duration-300 group-open:rotate-45"
+							aria-hidden="true"
+						/>
+					</summary>
+					<p class="text-ink-dim max-w-3xl pr-10 pb-7 text-[0.95rem] leading-relaxed">
+						{item.a}
+					</p>
+				</details>
+			))
+		}
+	</div>
+
+	{
+		showMore && (
+			<div class="reveal mt-10">
+				<Button href="/faq" variant="outline">
+					Read every question
+					<Icon name="lucide:arrow-right" class="size-4" aria-hidden="true" />
+				</Button>
+			</div>
+		)
+	}
+</Section>

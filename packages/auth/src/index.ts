@@ -1,7 +1,7 @@
 import { expo } from "@better-auth/expo";
-import { createDb } from "@my-better-t-app/db";
-import * as schema from "@my-better-t-app/db/schema/auth";
-import { env } from "@my-better-t-app/env/server";
+import { createDb } from "@naboflood/db";
+import * as schema from "@naboflood/db/schema/auth";
+import { env } from "@naboflood/env/server";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 
@@ -14,7 +14,7 @@ export function createAuth() {
 
       schema: schema,
     }),
-    trustedOrigins: [env.CORS_ORIGIN, "my-better-t-app://", "exp://", "http://localhost:8081"],
+    trustedOrigins: [env.CORS_ORIGIN, "naboflood://", "exp://", "http://localhost:8081"],
     emailAndPassword: {
       enabled: true,
     },

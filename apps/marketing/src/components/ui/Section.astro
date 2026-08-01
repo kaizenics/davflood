@@ -1,0 +1,50 @@
+---
+import Container from "./Container.astro";
+
+interface Props {
+	id?: string;
+	eyebrow?: string;
+	title?: string;
+	lede?: string;
+	align?: "left" | "center";
+	size?: "narrow" | "default" | "wide";
+	class?: string;
+	/** tighten the vertical rhythm when two sections read as one block */
+	tight?: boolean;
+}
+
+const {
+	id,
+	eyebrow,
+	title,
+	lede,
+	align = "left",
+	size = "default",
+	class: className = "",
+	tight = false,
+} = Astro.props;
+
+const pad = tight ? "py-14 sm:py-16" : "py-20 sm:py-28";
+const alignment = align === "center" ? "text-center mx-auto items-center" : "";
+---
+
+<section id={id} class={`${pad} ${className}`}>
+	<Container size={size}>
+		{
+			(eyebrow || title || lede) && (
+				<header
+					class={`reveal flex max-w-2xl flex-col gap-4 ${alignment} ${align === "center" ? "mx-auto" : ""}`}
+				>
+					{eyebrow && (
+						<p class="text-tide text-xs font-semibold tracking-[0.18em] uppercase">
+							{eyebrow}
+						</p>
+					)}
+					{title && <h2 class="display-lg text-ink">{title}</h2>}
+					{lede && <p class="lede">{lede}</p>}
+				</header>
+			)
+		}
+		<slot />
+	</Container>
+</section>

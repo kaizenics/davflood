@@ -1,13 +1,13 @@
 {
   "expo": {
-    "scheme": "my-better-t-app",
+    "scheme": "naboflood",
     "userInterfaceStyle": "automatic",
     "orientation": "default",
     "web": {
       "bundler": "metro"
     },
-    "name": "my-better-t-app",
-    "slug": "my-better-t-app",
+    "name": "naboflood",
+    "slug": "naboflood",
     "plugins": ["expo-font"],
     "experiments": {
       "typedRoutes": true,

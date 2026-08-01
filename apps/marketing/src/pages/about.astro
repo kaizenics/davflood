@@ -1,0 +1,168 @@
+---
+import AttributionStrip from "@/components/sections/AttributionStrip.astro";
+import CtaSection from "@/components/sections/CtaSection.astro";
+import Card from "@/components/ui/Card.astro";
+import PageHeader from "@/components/ui/PageHeader.astro";
+import Section from "@/components/ui/Section.astro";
+import Base from "@/layouts/Base.astro";
+import { disclaimer, site } from "@/lib/site";
+import { Icon } from "astro-icon/components";
+
+const pipeline = [
+	{
+		n: "01",
+		t: "Hazard maps from UP NOAH",
+		b: "Flood hazard shapefiles for Panabo City at the 5, 25 and 100-year return periods, produced by the University of the Philippines' hazard mapping programme.",
+	},
+	{
+		n: "02",
+		t: "Elevation from Phil-LiDAR",
+		b: "A LiDAR-derived digital elevation model, converted into terrain tiles so the map can be tilted and read as real ground.",
+	},
+	{
+		n: "03",
+		t: "Cleaned and simplified",
+		b: "Reprojected, dissolved and classified into the three hazard bands, then packed into vector tiles small enough to cache on a phone.",
+	},
+	{
+		n: "04",
+		t: "Drawn on an open basemap",
+		b: "Rendered over OpenStreetMap data so roads, landmarks and barangay names stay recognisable underneath the hazard layers.",
+	},
+];
+
+const principles = [
+	{
+		icon: "lucide:hand-coins",
+		t: "Free, permanently",
+		b: "No subscription, no ads, no in-app purchase. The data is public and the hosting is static — there is genuinely nothing to charge for.",
+	},
+	{
+		icon: "lucide:user-x",
+		t: "No accounts, no tracking",
+		b: "There is nothing to sign up for and no analytics following you around. A flood map does not need to know who you are.",
+	},
+	{
+		icon: "lucide:wifi-off",
+		t: "Offline before online",
+		b: "The map is built to open when the network is down, because that is exactly when people need it.",
+	},
+	{
+		icon: "lucide:book-open",
+		t: "Honest about uncertainty",
+		b: "Every screen that shows modelled data says it is modelled. Overstating confidence in a safety tool is how people get hurt.",
+	},
+];
+---
+
+<Base
+	title="About the data"
+	description="Where NaboFlood's flood hazard data comes from, how it is processed, and what it can and cannot tell you."
+>
+	<PageHeader
+		eyebrow="About"
+		title="Public data, put where people can actually reach it."
+		lede={`The hazard maps behind NaboFlood have existed for years. They just lived in formats almost nobody outside a planning office ever opens. This is the same data, on a phone, in ${site.city}.`}
+	/>
+
+	<!-- ── the disclaimer, in full ─────────────────────────────── -->
+	<Section tight>
+		<div
+			class="rounded-card border-haz-med/35 bg-haz-med/6 flex flex-col gap-4 border p-6 sm:flex-row sm:gap-6 sm:p-8"
+		>
+			<span
+				class="bg-haz-med/12 border-haz-med/35 inline-flex size-11 shrink-0 items-center justify-center rounded-xl border"
+			>
+				<Icon name="lucide:triangle-alert" class="text-haz-med size-5" aria-hidden="true" />
+			</span>
+			<div class="flex flex-col gap-2">
+				<h2 class="text-ink text-lg font-semibold">{disclaimer.short}</h2>
+				<p class="text-ink-dim max-w-3xl text-[0.95rem] leading-relaxed">
+					{disclaimer.long}
+				</p>
+				<p class="text-ink-dim max-w-3xl text-[0.95rem] leading-relaxed">
+					NaboFlood is an independent project. It is not affiliated with, endorsed by, or
+					operated on behalf of the City Government of Panabo, PAGASA, the OCD, or the
+					University of the Philippines. It uses their published data under the terms
+					those bodies made it available.
+				</p>
+			</div>
+		</div>
+	</Section>
+
+	<!-- ── pipeline ────────────────────────────────────────────── -->
+	<Section
+		eyebrow="How it's made"
+		title="From a government shapefile to a map you can tilt."
+		lede="The data pipeline runs once and produces static files. No servers, no per-request cost, nothing that can go down in a storm."
+	>
+		<div class="mt-14 grid gap-4 sm:grid-cols-2">
+			{
+				pipeline.map((p) => (
+					<Card class="reveal flex flex-col gap-3">
+						<span class="text-tide text-sm font-semibold tracking-[0.2em]" data-numeric>
+							{p.n}
+						</span>
+						<h3 class="text-ink text-lg font-semibold">{p.t}</h3>
+						<p class="text-ink-dim text-[0.94rem] leading-relaxed">{p.b}</p>
+					</Card>
+				))
+			}
+		</div>
+	</Section>
+
+	<AttributionStrip detailed id="sources" />
+
+	<!-- ── principles ──────────────────────────────────────────── -->
+	<Section
+		eyebrow="Principles"
+		title="Four rules this project doesn't bend on."
+	>
+		<div class="mt-14 grid gap-4 sm:grid-cols-2">
+			{
+				principles.map((p) => (
+					<Card class="reveal flex flex-col gap-3">
+						<span class="border-hairline/70 bg-raised/60 inline-flex size-11 items-center justify-center rounded-xl border">
+							<Icon name={p.icon} class="text-tide size-5" aria-hidden="true" />
+						</span>
+						<h3 class="text-ink text-lg font-semibold">{p.t}</h3>
+						<p class="text-ink-dim text-[0.94rem] leading-relaxed">{p.b}</p>
+					</Card>
+				))
+			}
+		</div>
+	</Section>
+
+	<!-- ── coverage ────────────────────────────────────────────── -->
+	<Section
+		eyebrow="Coverage"
+		title="Panabo City first. The pipeline travels."
+		lede="Every step above is reusable, because the same national hazard dataset covers the rest of the country. Once Panabo is genuinely right, adding a city is mostly a matter of processing time."
+		size="narrow"
+	>
+		<div class="mt-10 flex flex-wrap gap-2.5">
+			{
+				[
+					{ name: "Panabo City", state: "now" },
+					{ name: "Tagum", state: "next" },
+					{ name: "Carmen", state: "next" },
+					{ name: "Davao City", state: "next" },
+				].map((c) => (
+					<span
+						class:list={[
+							"rounded-pill border px-4 py-2 text-sm font-medium",
+							c.state === "now"
+								? "border-tide/50 bg-tide/10 text-tide"
+								: "border-hairline/70 text-ink-dim",
+						]}
+					>
+						{c.name}
+						{c.state === "next" && <span class="opacity-60"> · planned</span>}
+					</span>
+				))
+			}
+		</div>
+	</Section>
+
+	<CtaSection />
+</Base>

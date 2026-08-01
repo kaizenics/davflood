@@ -1,0 +1,27 @@
+---
+import ContourBackdrop from "@/components/decor/ContourBackdrop.astro";
+import GlowOrb from "@/components/decor/GlowOrb.astro";
+import Badge from "@/components/ui/Badge.astro";
+import Container from "@/components/ui/Container.astro";
+
+interface Props {
+	eyebrow?: string;
+	title: string;
+	lede?: string;
+}
+
+const { eyebrow, title, lede } = Astro.props;
+---
+
+<section class="relative overflow-hidden pt-16 pb-14 sm:pt-24 sm:pb-16">
+	<ContourBackdrop class="text-tide" opacity={0.3} />
+	<GlowOrb class="-top-52 -right-24" size="36rem" />
+
+	<Container size="wide" class="relative">
+		<div class="flex max-w-3xl flex-col items-start gap-6">
+			{eyebrow && <Badge dot>{eyebrow}</Badge>}
+			<h1 class="display-lg">{title}</h1>
+			{lede && <p class="lede max-w-2xl">{lede}</p>}
+		</div>
+	</Container>
+</section>

@@ -1,5 +1,5 @@
-import type { AppRouterClient } from "@my-better-t-app/api/routers/index";
-import { env } from "@my-better-t-app/env/native";
+import type { AppRouterClient } from "@naboflood/api/routers/index";
+import { env } from "@naboflood/env/native";
 import { createORPCClient } from "@orpc/client";
 import { RPCLink } from "@orpc/client/fetch";
 import { createTanstackQueryUtils } from "@orpc/tanstack-query";
