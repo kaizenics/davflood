@@ -14,8 +14,15 @@ import { SOURCE_TERRAIN, buildBaseStyle } from "@naboflood/hazard/style";
 // maplibre-gl v6 ships named exports only — there is no default export
 import * as maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
-import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
+import {
+  forwardRef,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from "react";
 
+import { colors } from "@/lib/colors";
 import { loadScenario } from "@/lib/hazard-source";
 
 /**
@@ -68,19 +75,27 @@ export const FloodMap = forwardRef<FloodMapHandle, Props>(function FloodMap(
 ) {
   const container = useRef<HTMLDivElement | null>(null);
   const map = useRef<maplibregl.Map | null>(null);
+  const [failure, setFailure] = useState<string | null>(null);
+  const [loaded, setLoaded] = useState(false);
 
   // The map is created once, but props can change before `load` fires. These
   // refs let the load handler read CURRENT values instead of the ones its
   // closure captured on first render — otherwise a scenario picked during
   // loading would be silently discarded.
+  //
+  // Assigned in an effect rather than during render: mutating refs while
+  // rendering is unsupported, and this app runs with the React Compiler on.
   const onSelectRef = useRef(onSelect);
-  onSelectRef.current = onSelect;
   const scenarioRef = useRef(scenario);
-  scenarioRef.current = scenario;
   const selectedRef = useRef(selectedZoneId);
-  selectedRef.current = selectedZoneId;
   const terrainRef = useRef(terrain);
-  terrainRef.current = terrain;
+
+  useEffect(() => {
+    onSelectRef.current = onSelect;
+    scenarioRef.current = scenario;
+    selectedRef.current = selectedZoneId;
+    terrainRef.current = terrain;
+  });
 
   useImperativeHandle(ref, () => ({
     flyTo(center, zoom = 14) {
@@ -119,17 +134,35 @@ export const FloodMap = forwardRef<FloodMapHandle, Props>(function FloodMap(
       attributionControl: false,
     });
 
+    // Without this the map fails silently: a WebGL failure, a bad style or a
+    // dead tile endpoint all produce a black rectangle and nothing else.
+    m.on("error", (e) => {
+      const message = e.error?.message ?? String(e.error ?? "unknown error");
+      console.error("[FloodMap]", message, e.error);
+      setFailure((prev) => prev ?? message);
+    });
+
     m.on("load", () => {
-      m.addSource(SOURCE_HAZARD, {
-        type: "geojson",
-        data: loadScenario(scenarioRef.current),
-      });
-      for (const layer of hazardLayers()) {
-        m.addLayer(layer as maplibregl.LayerSpecification, HAZARD_BEFORE_ID);
+      try {
+        m.addSource(SOURCE_HAZARD, {
+          type: "geojson",
+          data: loadScenario(scenarioRef.current),
+        });
+        for (const layer of hazardLayers()) {
+          m.addLayer(layer as maplibregl.LayerSpecification, HAZARD_BEFORE_ID);
+        }
+        // re-apply anything that changed while the style was still loading
+        applySelection(m, selectedRef.current);
+        applyTerrain(m, terrainRef.current);
+        // the container is sized by flexbox, which can settle after the map
+        // is constructed; without this the canvas can keep a stale size
+        m.resize();
+        setLoaded(true);
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        console.error("[FloodMap] failed to add hazard layers:", err);
+        setFailure((prev) => prev ?? message);
       }
-      // re-apply anything that changed while the style was still loading
-      applySelection(m, selectedRef.current);
-      applyTerrain(m, terrainRef.current);
     });
 
     // Registered once, outside `load`, so a style reload cannot double-bind
@@ -172,9 +205,50 @@ export const FloodMap = forwardRef<FloodMapHandle, Props>(function FloodMap(
   }, [terrain]);
 
   return (
-    <div
-      ref={container}
-      style={{ position: "absolute", inset: 0, backgroundColor: "#060a0e" }}
-    />
+    <div style={{ position: "absolute", inset: 0, backgroundColor: colors.abyss }}>
+      <div
+        ref={container}
+        style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}
+      />
+
+      {/* A blank map is the worst possible failure mode: it looks like "no
+          flooding here". Say what went wrong instead. */}
+      {(failure || !loaded) && (
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 8,
+            padding: 24,
+            textAlign: "center",
+            pointerEvents: "none",
+            color: failure ? colors.hazHigh : colors.inkDim,
+            font: "600 13px system-ui, sans-serif",
+          }}
+        >
+          {failure ? (
+            <>
+              <span>The map could not load.</span>
+              <span
+                style={{
+                  color: colors.inkDim,
+                  font: "400 11px ui-monospace, monospace",
+                  maxWidth: 320,
+                  wordBreak: "break-word",
+                }}
+              >
+                {failure}
+              </span>
+            </>
+          ) : (
+            <span>Loading the map…</span>
+          )}
+        </div>
+      )}
+    </div>
   );
 });
