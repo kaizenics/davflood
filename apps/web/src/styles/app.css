@@ -1,0 +1,81 @@
+@import "tailwindcss";
+
+/* ------------------------------------------------------------------
+   NaboFlood app tokens.
+
+   These are the exact sRGB conversions of the marketing site's oklch
+   tokens, duplicated from `@naboflood/hazard/tokens`. CSS cannot
+   import from a TS module, so if you change one, change both —
+   `packages/hazard/src/tokens.ts` is the authority.
+
+   Hazard colours are SEMANTIC: flood severity and nothing else. Never
+   a button, never a hover state, never decoration. `tide` is the brand
+   accent precisely so a call-to-action can never be misread as a
+   hazard warning.
+   ------------------------------------------------------------------ */
+
+@theme {
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  --color-abyss: #060a0e;
+  --color-deep: #0f141a;
+  --color-raised: #1a2027;
+  --color-hairline: #2e343a;
+
+  --color-ink: #f3f5f8;
+  --color-ink-dim: #979fa8;
+
+  --color-tide: #3bcddc;
+  --color-tide-deep: #008295;
+
+  --color-haz-low: #f3c443;
+  --color-haz-med: #fa8927;
+  --color-haz-high: #f1453f;
+
+  --radius-card: 0.875rem;
+  --radius-pill: 999px;
+}
+
+/* The map is dark and full-bleed; a light theme would fight it. */
+:root {
+  color-scheme: dark;
+}
+
+@layer base {
+  * {
+    border-color: var(--color-hairline);
+  }
+
+  html,
+  body {
+    height: 100%;
+  }
+
+  body {
+    background-color: var(--color-abyss);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    overscroll-behavior: none;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-tide);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  ::selection {
+    background: var(--color-tide);
+    color: var(--color-abyss);
+  }
+
+  [data-numeric] {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* maplibre draws its own attribution control; ours lives in the legend */
+.maplibregl-ctrl-attrib {
+  display: none;
+}

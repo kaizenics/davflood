@@ -6,12 +6,19 @@
     "target": "ESNext",
     "module": "ESNext",
     "moduleResolution": "Bundler",
+    "verbatimModuleSyntax": true,
+    "noUncheckedIndexedAccess": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
     "skipLibCheck": true,
-    "types": ["vite/client"],
+    "resolveJsonModule": true,
+    "noEmit": true,
+    "types": ["vite/client", "node"],
     "rootDirs": ["."],
     "paths": {
-      "@/*": ["./src/*"],
-      "@naboflood/ui/*": ["../../packages/ui/src/*"]
+      "@/*": ["./src/*"]
     }
-  }
+  },
+  "include": ["src/**/*.ts", "src/**/*.tsx", "vite.config.ts"],
+  "exclude": ["node_modules", "dist", ".output", ".nitro", ".tanstack"]
 }
