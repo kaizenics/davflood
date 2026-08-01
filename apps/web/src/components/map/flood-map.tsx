@@ -98,9 +98,15 @@ export const FloodMap = forwardRef<FloodMapHandle, Props>(function FloodMap(
 
     const m = new maplibregl.Map({
       container: container.current,
-      // the shared package pins style-spec to the version the native SDK used;
+      // Built WITHOUT terrain, then terrain is applied once the style parses.
+      // Baking `terrain` into the initial style makes the first render depend
+      // on DEM tiles arriving, so a slow or stalled elevation request blocks
+      // the entire map. The DEM source is still declared — only the `terrain`
+      // key is deferred.
+      //
+      // The shared package pins style-spec to the version the native SDK used;
       // maplibre-gl tracks a newer one. Both validate the style identically.
-      style: buildBaseStyle({ terrain: true }) as maplibregl.StyleSpecification,
+      style: buildBaseStyle({ terrain: false }) as maplibregl.StyleSpecification,
       center: [...CAMERA.center],
       zoom: CAMERA.zoom,
       pitch: CAMERA.pitch,
@@ -124,7 +130,17 @@ export const FloodMap = forwardRef<FloodMapHandle, Props>(function FloodMap(
       setFailure((prev) => prev ?? message);
     });
 
-    m.on("load", () => {
+    /**
+     * `style.load`, NOT `load`.
+     *
+     * `load` waits for the style AND the first complete render, which includes
+     * terrain and DEM tiles. If those are slow — or stall without erroring —
+     * `load` never fires and the map hangs with no diagnostic. `style.load`
+     * fires as soon as the style is parsed, which is the only precondition
+     * addSource/addLayer actually have.
+     */
+    const initLayers = () => {
+      if (m.getSource(SOURCE_HAZARD)) return; // style reloads re-fire this
       try {
         m.addSource(SOURCE_HAZARD, { type: "geojson", data: dataRef.current });
         for (const layer of hazardLayers()) {
@@ -140,7 +156,11 @@ export const FloodMap = forwardRef<FloodMapHandle, Props>(function FloodMap(
         console.error("[FloodMap] failed to add hazard layers:", err);
         setFailure((prev) => prev ?? message);
       }
-    });
+    };
+
+    m.on("style.load", initLayers);
+    // if the style was already parsed before this handler attached, catch up
+    if (m.isStyleLoaded()) initLayers();
 
     // Registered once, outside `load`, so a style reload cannot double-bind
     // it — which means it can fire before the hazard layers exist. Querying a
@@ -161,8 +181,20 @@ export const FloodMap = forwardRef<FloodMapHandle, Props>(function FloodMap(
       m.getCanvas().style.cursor = hit ? "pointer" : "";
     });
 
+    // Never hang silently. If the style has not parsed in 15s and nothing has
+    // errored, say so rather than showing "Loading the map…" forever.
+    const watchdog = setTimeout(() => {
+      if (m.getSource(SOURCE_HAZARD)) return;
+      const detail = m.isStyleLoaded()
+        ? "the style parsed but the hazard layers never attached"
+        : "the basemap style did not finish loading — check the network tab for tiles.openfreemap.org";
+      console.error("[FloodMap] timed out:", detail);
+      setFailure((prev) => prev ?? `Timed out — ${detail}`);
+    }, 15000);
+
     map.current = m;
     return () => {
+      clearTimeout(watchdog);
       m.remove();
       map.current = null;
     };
