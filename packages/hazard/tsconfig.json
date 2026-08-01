@@ -2,9 +2,7 @@
   "extends": "@naboflood/config/tsconfig.base.json",
   "compilerOptions": {
     "noEmit": true,
-    // the data generator runs under Node's native type stripping, which needs
-    // explicit `.ts` specifiers; every bundler here resolves them fine too
-    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
     "types": ["node"]
   },
   "include": ["src/**/*.ts", "scripts/**/*.ts"],

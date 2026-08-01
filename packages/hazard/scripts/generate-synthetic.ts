@@ -21,11 +21,11 @@ import { writeFileSync, mkdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { barangays } from "../src/barangays.ts";
-import { PANABO_DATA_BBOX } from "../src/geo.ts";
-import type { HazardCollection, HazardFeature } from "../src/schema.ts";
-import type { ScenarioYears } from "../src/scenarios.ts";
-import type { HazardId } from "../src/tiers.ts";
+import { barangays } from "../src/barangays";
+import { PANABO_DATA_BBOX } from "../src/geo";
+import type { HazardCollection, HazardFeature } from "../src/schema";
+import type { ScenarioYears } from "../src/scenarios";
+import type { HazardId } from "../src/tiers";
 
 const OUT_DIR = join(dirname(fileURLToPath(import.meta.url)), "..", "src", "data");
 
