@@ -3,3 +3,34 @@
 @import "heroui-native/styles";
 
 @source './node_modules/heroui-native/lib';
+
+/* ------------------------------------------------------------------
+   NaboFlood tokens, mirroring apps/marketing/src/styles/global.css.
+
+   These are the exact sRGB conversions of the marketing oklch tokens,
+   duplicated from `@naboflood/hazard/tokens`. CSS cannot import from a
+   TS module, so if you change one, change both —
+   `packages/hazard/src/tokens.ts` is the authority.
+
+   Hazard colours are SEMANTIC: flood severity and nothing else. They
+   are identical in light and dark because severity does not change
+   with a theme preference. `tide` is the brand accent precisely so a
+   button can never be mistaken for a hazard warning.
+   ------------------------------------------------------------------ */
+
+@theme {
+	--color-abyss: #060a0e;
+	--color-deep: #0f141a;
+	--color-raised: #1a2027;
+	--color-hairline: #2e343a;
+
+	--color-ink: #f3f5f8;
+	--color-ink-dim: #979fa8;
+
+	--color-tide: #3bcddc;
+	--color-tide-deep: #008295;
+
+	--color-haz-low: #f3c443;
+	--color-haz-med: #fa8927;
+	--color-haz-high: #f1453f;
+}
