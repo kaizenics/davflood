@@ -53,6 +53,48 @@ function applyTerrain(m: maplibregl.Map, enabled: boolean) {
   m.setTerrain(enabled ? { source: SOURCE_TERRAIN, exaggeration: 1.4 } : null);
 }
 
+/**
+ * Reports what the map is actually doing.
+ *
+ * A blank canvas and a correctly-rendering map look identical from outside,
+ * because the style's background colour is the same near-black as the page.
+ * This distinguishes "canvas has no size", "camera is somewhere empty" and
+ * "layers exist but paint nothing" — which are otherwise indistinguishable.
+ */
+function reportDiagnostics(
+  m: maplibregl.Map,
+  el: HTMLDivElement | null,
+  set: (v: string) => void,
+) {
+  // one frame later, so the first paint has happened
+  setTimeout(() => {
+    try {
+      const canvas = m.getCanvas();
+      const box = el?.getBoundingClientRect();
+      const c = m.getCenter();
+      const painted = m.queryRenderedFeatures({
+        layers: HAZARD_FILL_LAYER_IDS.filter((id) => m.getLayer(id)),
+      }).length;
+      const basemap = m.queryRenderedFeatures().length;
+
+      const report = [
+        `container ${Math.round(box?.width ?? 0)}x${Math.round(box?.height ?? 0)}`,
+        `canvas ${canvas.clientWidth}x${canvas.clientHeight} (buf ${canvas.width}x${canvas.height})`,
+        `center ${c.lng.toFixed(3)},${c.lat.toFixed(3)} z${m.getZoom().toFixed(1)} p${Math.round(m.getPitch())}`,
+        `layers ${m.getStyle().layers.length}`,
+        `hazard features painted ${painted}`,
+        `all features painted ${basemap}`,
+        `style loaded ${m.isStyleLoaded()}`,
+      ].join(" · ");
+
+      console.info("[FloodMap]", report);
+      set(report);
+    } catch (err) {
+      console.error("[FloodMap] diagnostics failed", err);
+    }
+  }, 1500);
+}
+
 export const FloodMap = forwardRef<FloodMapHandle, Props>(function FloodMap(
   { scenario, selectedZoneId, onSelect, data, terrain = true },
   ref,
@@ -61,6 +103,7 @@ export const FloodMap = forwardRef<FloodMapHandle, Props>(function FloodMap(
   const map = useRef<maplibregl.Map | null>(null);
   const [failure, setFailure] = useState<string | null>(null);
   const [loaded, setLoaded] = useState(false);
+  const [diag, setDiag] = useState<string | null>(null);
 
   // The map is created once, but props can change before `load` fires. These
   // refs let the load handler read CURRENT values rather than the ones its
@@ -151,6 +194,9 @@ export const FloodMap = forwardRef<FloodMapHandle, Props>(function FloodMap(
         applyTerrain(m, terrainRef.current);
         m.resize();
         setLoaded(true);
+        if (import.meta.env.DEV) {
+          reportDiagnostics(m, container.current, setDiag);
+        }
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
         console.error("[FloodMap] failed to add hazard layers:", err);
@@ -242,6 +288,13 @@ export const FloodMap = forwardRef<FloodMapHandle, Props>(function FloodMap(
             </span>
           )}
         </div>
+      )}
+
+      {/* temporary: tells us whether the canvas is painting at all */}
+      {diag && (
+        <p className="border-hairline bg-abyss/90 text-ink-dim pointer-events-none absolute bottom-2 left-2 max-w-[36rem] rounded border px-2 py-1 font-mono text-[10px] leading-relaxed">
+          {diag}
+        </p>
       )}
     </div>
   );
