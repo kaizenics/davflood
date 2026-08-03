@@ -10,6 +10,11 @@ export default defineConfig({
   resolve: {
     tsconfigPaths: true,
   },
+  // MapLibre creates its worker with { type: "module" }, so Vite has to emit
+  // an ES module worker rather than the default IIFE.
+  worker: {
+    format: "es",
+  },
   plugins: [
     tailwindcss(),
     /**
