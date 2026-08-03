@@ -1,7 +1,7 @@
 import type { StyleSpecification } from "@maplibre/maplibre-gl-style-spec";
 
 import { CAMERA } from "./geo";
-import { colors } from "./tokens";
+import { colorsFor } from "./tokens";
 
 /**
  * The basemap, hand-authored rather than fetched from a remote style URL.
@@ -28,13 +28,57 @@ export const OPENFREEMAP_TILEJSON = "https://tiles.openfreemap.org/planet";
 export const TERRARIUM_TILES =
 	"https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png";
 
+/**
+ * Esri World Imagery. Free to use with attribution and no key, and it carries
+ * sub-metre detail over Panabo — which matters, because being able to pick out
+ * your own roof is what makes an aerial view worth having.
+ *
+ * Attribution is mandatory: "Esri, Maxar, Earthstar Geographics, and the GIS
+ * User Community". See `attributionFor()`.
+ *
+ * Deliberately not EOX s2cloudless: it works and covers Panabo, but it is
+ * CC BY-NC-SA (non-commercial, share-alike) and only 10 m — enough to see land
+ * cover, not enough to see a house.
+ */
+export const ESRI_IMAGERY =
+	"https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}";
+
+/**
+ * Vertical exaggeration for 3D terrain.
+ *
+ * Tuned to the measured landscape, not picked by feel. Decoding the terrarium
+ * tiles over Panabo gives:
+ *
+ *   Panabo centre   3 m .. 136 m   (133 m of relief across ~10 km)
+ *   Panabo south  -49 m .. 174 m
+ *   inland west    18 m .. 340 m   (322 m — the hills behind the city)
+ *   Davao Gulf   -195 m .. 297 m   (terrarium includes bathymetry)
+ *
+ * 133 m over 10 km is a 1.3% grade. At 1:1 it is invisible; the earlier 1.4x
+ * was still far too timid. 2.6x makes the drop from the inland hills to the
+ * coastal plain legible without turning a floodplain into the Alps — and that
+ * drop is the entire point, because low ground is where water goes.
+ *
+ * Note the negative values: terrarium carries seabed depth, so the gulf sinks
+ * away rather than sitting flat at sea level. That is the data, not a bug.
+ */
+export const TERRAIN_EXAGGERATION = 2.6;
+
+/** Hillshade is the relief cue that survives even when the map is flat on. */
+export const HILLSHADE_EXAGGERATION = 0.55;
+
 export const SOURCE_BASEMAP = "openfreemap";
 export const SOURCE_TERRAIN = "terrain-dem";
+export const SOURCE_SATELLITE = "satellite";
 /** Hazard layers are inserted before this id so labels stay on top. */
 export const FIRST_LABEL_LAYER = "place-town";
 
+export type BasemapKind = "dark" | "light" | "satellite";
+
 export type BuildStyleOptions = {
-	/** 3D terrain is the least mature part of MapLibre Native — easy to disable */
+	/** dark vector cartography, or aerial imagery */
+	basemap?: BasemapKind;
+	/** 3D terrain is the heaviest part of the render — easy to disable */
 	terrain?: boolean;
 	terrainExaggeration?: number;
 	/** hillshade reads well even when terrain meshing is off */
@@ -43,14 +87,22 @@ export type BuildStyleOptions = {
 
 export function buildBaseStyle(options: BuildStyleOptions = {}): StyleSpecification {
 	const {
+		basemap = "dark",
 		terrain = true,
-		terrainExaggeration = 1.4,
-		hillshade = true,
+		terrainExaggeration = TERRAIN_EXAGGERATION,
+		// hillshade over aerial imagery just muddies it — the imagery already
+		// carries its own shading
+		hillshade = basemap !== "satellite",
 	} = options;
+
+	const satellite = basemap === "satellite";
+	const light = basemap === "light";
+	// satellite keeps the dark chrome for labels/background behind the imagery
+	const colors = colorsFor(basemap === "light" ? "light" : "dark");
 
 	const style: StyleSpecification = {
 		version: 8,
-		name: "NaboFlood Dark",
+		name: `NaboFlood ${basemap}`,
 		glyphs: "https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf",
 		sources: {
 			[SOURCE_BASEMAP]: {
@@ -65,6 +117,14 @@ export function buildBaseStyle(options: BuildStyleOptions = {}): StyleSpecificat
 				minzoom: 0,
 				maxzoom: 14,
 				attribution: "Terrain: AWS Open Data",
+			},
+			[SOURCE_SATELLITE]: {
+				type: "raster",
+				tiles: [ESRI_IMAGERY],
+				tileSize: 256,
+				minzoom: 0,
+				maxzoom: 19,
+				attribution: "Esri, Maxar, Earthstar Geographics",
 			},
 		},
 		layers: [
@@ -117,7 +177,28 @@ export function buildBaseStyle(options: BuildStyleOptions = {}): StyleSpecificat
 				},
 			},
 
-			/* ---- roads, thinnest class first ---- */
+			/* ---- roads ----
+			   A casing first: a wider, darker line underneath every road so the
+			   network reads as a network. Fill contrast alone cannot do this —
+			   white roads on light land are only ~1.2:1, and pushing the land
+			   dark enough to fix that would stop it being a light basemap. Every
+			   real light style (Positron, Google) solves it with a casing. */
+			{
+				id: "road-casing",
+				type: "line",
+				source: SOURCE_BASEMAP,
+				"source-layer": "transportation",
+				filter: [
+					"in",
+					["get", "class"],
+					["literal", ["motorway", "trunk", "primary", "secondary", "tertiary"]],
+				],
+				paint: {
+					"line-color": colors.roadCasing,
+					"line-width": ["interpolate", ["linear"], ["zoom"], 8, 2.2, 18, 18],
+					"line-opacity": light ? 1 : 0.7,
+				},
+			},
 			{
 				id: "road-minor",
 				type: "line",
@@ -216,7 +297,7 @@ export function buildBaseStyle(options: BuildStyleOptions = {}): StyleSpecificat
 			},
 		],
 		sky: {
-			"sky-color": "#0a1622",
+			"sky-color": basemap === "light" ? "#cfe3f2" : "#0a1622",
 			"horizon-color": colors.tideDeep,
 			"fog-color": colors.abyss,
 			"sky-horizon-blend": 0.6,
@@ -229,6 +310,38 @@ export function buildBaseStyle(options: BuildStyleOptions = {}): StyleSpecificat
 		bearing: CAMERA.bearing,
 	};
 
+	/**
+	 * Satellite mode replaces the vector cartography with imagery, but keeps
+	 * the place and water labels — without names, aerial imagery of an
+	 * unfamiliar area is very hard to orient in.
+	 */
+	if (satellite) {
+		// dim grey labels vanish over bright imagery — go full white with a
+		// heavier dark halo so names stay readable over anything underneath
+		const labels = style.layers
+			.filter((l) => l.type === "symbol")
+			.map((l) => ({
+				...l,
+				paint: {
+					...("paint" in l ? l.paint : {}),
+					"text-color": colors.ink,
+					"text-halo-color": "#000000",
+					"text-halo-width": 1.8,
+				},
+			})) as typeof style.layers;
+
+		style.layers = [
+			style.layers[0]!, // background, so there is never a white flash
+			{
+				id: "satellite",
+				type: "raster",
+				source: SOURCE_SATELLITE,
+				paint: { "raster-opacity": 1 },
+			},
+			...labels,
+		];
+	}
+
 	if (hillshade) {
 		// directly above `background`, so relief sits under every feature and
 		// label rather than washing them out
@@ -236,11 +349,31 @@ export function buildBaseStyle(options: BuildStyleOptions = {}): StyleSpecificat
 			id: "hillshade",
 			type: "hillshade",
 			source: SOURCE_TERRAIN,
-			paint: {
-				"hillshade-shadow-color": "#000000",
-				"hillshade-highlight-color": colors.tideDeep,
-				"hillshade-exaggeration": 0.35,
-			},
+			/**
+			 * Hillshade has to be inverted per theme.
+			 *
+			 * On dark cartography, relief reads as a lit highlight against a
+			 * black shadow. Reusing that on a light basemap paints black
+			 * shadows and a dark-teal "highlight" over near-white land, which
+			 * comes out as a grey-blue murk — the map ends up looking like a
+			 * snowfield rather than a tropical coastal plain.
+			 *
+			 * Light gets a white highlight, a soft blue-grey shadow, and about
+			 * half the strength, because a pale basemap shows shading far more
+			 * readily than a dark one.
+			 */
+			paint: light
+				? {
+						"hillshade-shadow-color": "#7c8b99",
+						"hillshade-highlight-color": "#ffffff",
+						"hillshade-accent-color": "#9aabb8",
+						"hillshade-exaggeration": HILLSHADE_EXAGGERATION * 0.5,
+					}
+				: {
+						"hillshade-shadow-color": "#000000",
+						"hillshade-highlight-color": colors.tideDeep,
+						"hillshade-exaggeration": HILLSHADE_EXAGGERATION,
+					},
 		});
 	}
 
