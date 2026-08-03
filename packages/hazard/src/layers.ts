@@ -1,8 +1,9 @@
 import type { LayerSpecification } from "@maplibre/maplibre-gl-style-spec";
 
 import { FIRST_LABEL_LAYER } from "./style";
-import { hazardColor, hazardOrder } from "./tiers";
-import { colors } from "./tokens";
+import { hazardColorFor, hazardOrder } from "./tiers";
+import { colorsFor } from "./tokens";
+import type { Theme } from "./tokens";
 
 export const SOURCE_HAZARD = "hazard";
 
@@ -27,6 +28,8 @@ export type HazardLayerOptions = {
 	selectedZoneId?: string | null;
 	/** overall opacity, so the basemap stays readable underneath */
 	fillOpacity?: number;
+	/** picks the hazard ramp — must match what the legend shows */
+	theme?: Theme;
 };
 
 /**
@@ -44,7 +47,11 @@ export function hazardLayers(
 		sourceId = SOURCE_HAZARD,
 		selectedZoneId = null,
 		fillOpacity = 0.45,
+		theme = "dark",
 	} = options;
+
+	const hazardColor = hazardColorFor(theme);
+	const colors = colorsFor(theme);
 
 	const fills: LayerSpecification[] = hazardOrder.map((id) => ({
 		id: `hazard-fill-${id}`,

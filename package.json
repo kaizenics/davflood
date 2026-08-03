@@ -10,20 +10,10 @@
     "dev": "turbo run dev",
     "build": "turbo run build",
     "check-types": "turbo run check-types",
-    "dev:native": "turbo run dev -F native",
     "dev:web": "turbo run dev -F web",
-    "dev:server": "turbo run dev -F server",
     "dev:marketing": "turbo run dev -F marketing",
-    "db:push": "turbo run db:push -F @naboflood/db",
-    "db:studio": "turbo run db:studio -F @naboflood/db",
-    "db:generate": "turbo run db:generate -F @naboflood/db",
-    "db:migrate": "turbo run db:migrate -F @naboflood/db",
-    "db:local": "turbo run db:local -F @naboflood/db"
-  },
-  "dependencies": {
-    "@naboflood/env": "workspace:*",
-    "dotenv": "catalog:",
-    "zod": "catalog:"
+    "generate:data": "turbo run generate:data -F @naboflood/hazard",
+    "validate:style": "turbo run validate:style -F @naboflood/hazard"
   },
   "devDependencies": {
     "@naboflood/config": "workspace:*",

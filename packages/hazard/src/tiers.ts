@@ -1,4 +1,5 @@
-import { colors } from "./tokens";
+import { colors, colorsFor } from "./tokens";
+import type { Theme } from "./tokens";
 
 /**
  * The UP NOAH flood hazard classification.
@@ -89,6 +90,17 @@ export const hazardColor: Record<HazardId, string> = {
 	medium: colors.hazMed,
 	high: colors.hazHigh,
 };
+
+/**
+ * ONE ramp per theme, used for map fills AND for the legend and info panel.
+ *
+ * They must be the same value: a legend swatch that does not match the colour
+ * actually drawn on the map is worse than no legend at all.
+ */
+export function hazardColorFor(theme: Theme): Record<HazardId, string> {
+	const c = colorsFor(theme);
+	return { low: c.hazLow, medium: c.hazMed, high: c.hazHigh };
+}
 
 /** Ascending severity — useful for sorting and for layer draw order. */
 export const hazardOrder: HazardId[] = ["low", "medium", "high"];

@@ -1,51 +1,165 @@
-import { useQuery } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
+import { disclaimer } from "@naboflood/hazard/copy";
+import type { LngLat } from "@naboflood/hazard/geo";
+import type { HazardProperties } from "@naboflood/hazard/schema";
+import { DEFAULT_SCENARIO, scenarioByYears } from "@naboflood/hazard/scenarios";
+import type { ScenarioYears } from "@naboflood/hazard/scenarios";
+import { Link, createFileRoute } from "@tanstack/react-router";
+import { Construction, MousePointerClick } from "lucide-react";
+import type { ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
-import { orpc } from "@/utils/orpc";
+import { FloodMap, type FloodMapHandle } from "@/components/map/flood-map";
+import { HazardLegend } from "@/components/map/hazard-legend";
+import { MapControls } from "@/components/map/map-controls";
+import { MapLayers } from "@/components/map/map-layers";
+import { RainfallPanel } from "@/components/map/rainfall-panel";
+import { ScenarioToggle } from "@/components/map/scenario-toggle";
+import { ZonePanel } from "@/components/map/zone-panel";
+import { DATA_IS_PLACEHOLDER, loadScenario } from "@/lib/hazard-source";
+import { useTheme } from "@/lib/theme";
+
+type Search = { lng?: number; lat?: number };
 
 export const Route = createFileRoute("/")({
-  component: HomeComponent,
+  component: MapScreen,
+  validateSearch: (search: Record<string, unknown>): Search => ({
+    lng: typeof search.lng === "number" ? search.lng : undefined,
+    lat: typeof search.lat === "number" ? search.lat : undefined,
+  }),
 });
 
-const TITLE_TEXT = `
- ██████╗ ███████╗████████╗████████╗███████╗██████╗
- ██╔══██╗██╔════╝╚══██╔══╝╚══██╔══╝██╔════╝██╔══██╗
- ██████╔╝█████╗     ██║      ██║   █████╗  ██████╔╝
- ██╔══██╗██╔══╝     ██║      ██║   ██╔══╝  ██╔══██╗
- ██████╔╝███████╗   ██║      ██║   ███████╗██║  ██║
- ╚═════╝ ╚══════╝   ╚═╝      ╚═╝   ╚══════╝╚═╝  ╚═╝
+function MapScreen() {
+  const { lng, lat } = Route.useSearch();
+  const mapRef = useRef<FloodMapHandle>(null);
 
- ████████╗    ███████╗████████╗ █████╗  ██████╗██╗  ██╗
- ╚══██╔══╝    ██╔════╝╚══██╔══╝██╔══██╗██╔════╝██║ ██╔╝
-    ██║       ███████╗   ██║   ███████║██║     █████╔╝
-    ██║       ╚════██║   ██║   ██╔══██║██║     ██╔═██╗
-    ██║       ███████║   ██║   ██║  ██║╚██████╗██║  ██╗
-    ╚═╝       ╚══════╝   ╚═╝   ╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝
- `;
+  const [scenario, setScenario] = useState<ScenarioYears>(DEFAULT_SCENARIO);
+  const [selected, setSelected] = useState<HazardProperties | null>(null);
+  const [terrain, setTerrain] = useState(true);
+  const [view, setView] = useState<"map" | "satellite">("map");
+  const { theme } = useTheme();
+  // satellite overrides the theme; otherwise the basemap follows it
+  const basemap = view === "satellite" ? "satellite" : theme;
+  const [showHazard, setShowHazard] = useState(true);
 
-function HomeComponent() {
-  const healthCheck = useQuery(orpc.healthCheck.queryOptions());
+  // maplibre needs a DOM and a WebGL context, neither of which exists during
+  // prerendering — so the map only mounts on the client
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
+  const data = useMemo(() => loadScenario(scenario), [scenario]);
+  const activeScenario = scenarioByYears[scenario];
+
+  useEffect(() => {
+    if (typeof lng === "number" && typeof lat === "number") {
+      mapRef.current?.flyTo([lng, lat] as LngLat, 14);
+    }
+  }, [lng, lat]);
+
+  // a zone selected under one scenario may not exist under another
+  useEffect(() => setSelected(null), [scenario]);
 
   return (
-    <div className="container mx-auto max-w-3xl px-4 py-2">
-      <pre className="overflow-x-auto font-mono text-sm">{TITLE_TEXT}</pre>
-      <div className="grid gap-6">
-        <section className="rounded-lg border p-4">
-          <h2 className="mb-2 font-medium">API Status</h2>
-          <div className="flex items-center gap-2">
-            <div
-              className={`h-2 w-2 rounded-full ${healthCheck.data ? "bg-green-500" : "bg-red-500"}`}
+    <div className="absolute inset-0 flex flex-col lg:flex-row">
+      {/* ── sidebar ──────────────────────────────────────────
+          One surface, divided by hairlines. Not a stack of
+          separately-bordered cards. */}
+      <aside className="border-hairline order-2 flex w-full min-w-0 shrink-0 flex-col border-t lg:order-1 lg:h-full lg:w-[21rem] lg:border-t-0 lg:border-r xl:w-[23rem]">
+        {/* scroll area — the footer below is pinned, so long content
+            can never collide with it */}
+        <div className="min-h-0 flex-1 overflow-y-auto">
+          {DATA_IS_PLACEHOLDER && (
+            <p className="text-haz-med bg-haz-med/10 border-haz-med/25 flex items-center gap-2 border-b px-5 py-2.5 text-[11px] font-semibold">
+              <Construction className="size-3.5 shrink-0" aria-hidden="true" />
+              Placeholder data — not real hazard information
+            </p>
+          )}
+
+          <Section label="Scenario">
+            <ScenarioToggle value={scenario} onChange={setScenario} />
+            <p className="text-ink-dim mt-2.5 text-[12.5px] leading-relaxed">
+              {activeScenario.blurb}
+            </p>
+          </Section>
+
+          <Section label="Rainfall">
+            <RainfallPanel />
+          </Section>
+
+          <Section label="Layers">
+            <MapLayers
+              basemap={view}
+              onBasemapChange={setView}
+              showHazard={showHazard}
+              onShowHazardChange={setShowHazard}
             />
-            <span className="text-sm text-muted-foreground">
-              {healthCheck.isLoading
-                ? "Checking..."
-                : healthCheck.data
-                  ? "Connected"
-                  : "Disconnected"}
-            </span>
-          </div>
-        </section>
+          </Section>
+
+          <Section label="Hazard levels">
+            <HazardLegend basemap={basemap} dimmed={!showHazard} />
+          </Section>
+
+          {selected ? (
+            <ZonePanel zone={selected} onClose={() => setSelected(null)} />
+          ) : (
+            <Section label="Selected zone">
+              <p className="text-ink-dim flex items-start gap-2.5 text-[12.5px] leading-relaxed">
+                <MousePointerClick
+                  className="mt-0.5 size-4 shrink-0 opacity-60"
+                  aria-hidden="true"
+                />
+                Click a coloured zone on the map to see its expected depth and
+                what to do.
+              </p>
+            </Section>
+          )}
+        </div>
+
+        <Link
+          to="/about"
+          className="border-hairline text-ink-dim hover:text-ink hover:bg-raised/40 shrink-0 border-t px-5 py-3 text-[11px] leading-relaxed transition"
+        >
+          <span className="text-ink font-semibold">{disclaimer.short}</span>{" "}
+          Where the data comes from →
+        </Link>
+      </aside>
+
+      {/* ── map ──────────────────────────────────────────── */}
+      <div className="relative order-1 min-h-[20rem] flex-1 lg:order-2 lg:h-full">
+        {mounted ? (
+          <FloodMap
+            ref={mapRef}
+            scenario={scenario}
+            data={data}
+            selectedZoneId={selected?.zone_id ?? null}
+            onSelect={setSelected}
+            terrain={terrain}
+            basemap={basemap}
+            showHazard={showHazard}
+          />
+        ) : (
+          <div className="bg-abyss absolute inset-0" />
+        )}
+
+        <div className="absolute top-4 right-4">
+          <MapControls
+            onLocate={(center) => mapRef.current?.flyTo(center, 15)}
+            onReset={() => mapRef.current?.resetCamera()}
+            terrain={terrain}
+            onToggleTerrain={() => setTerrain((v) => !v)}
+          />
+        </div>
       </div>
     </div>
+  );
+}
+
+function Section({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <section className="border-hairline/60 border-b px-5 py-4">
+      <h2 className="text-ink-dim mb-2.5 text-[10px] font-semibold tracking-[0.13em] uppercase">
+        {label}
+      </h2>
+      {children}
+    </section>
   );
 }

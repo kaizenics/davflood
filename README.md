@@ -1,110 +1,67 @@
-# naboflood
+# NaboFlood
 
-This project was created with [Better-T-Stack](https://github.com/AmanVarshney01/create-better-t-stack), a modern TypeScript stack that combines React, TanStack Router, Hono, ORPC, and more.
+A free flood hazard map for Panabo City, Davao del Norte. It shows how deep water is expected
+to get in each barangay during a storm of a given severity — for an ordinary flood, a bad one,
+and the worst one in the model.
 
-## Features
+> **NaboFlood is a hazard map, not a flood sensor.** It shows modelled risk, not water on the
+> ground right now. For live warnings, follow PAGASA and your barangay's DRRM office.
 
-- **TypeScript** - For type safety and improved developer experience
-- **TanStack Router** - File-based routing with full type safety
-- **React Native** - Build mobile apps using React
-- **Expo** - Tools for React Native development
-- **TailwindCSS** - Utility-first CSS for rapid UI development
-- **Shared UI package** - shadcn/ui primitives live in `packages/ui`
-- **Hono** - Lightweight, performant server framework
-- **oRPC** - End-to-end type-safe APIs with OpenAPI integration
-- **Node.js** - Runtime environment
-- **Drizzle** - TypeScript-first ORM
-- **SQLite/Turso** - Database engine
-- **Authentication** - Better-Auth
-- **Turborepo** - Optimized monorepo build system
+## Workspaces
 
-## Getting Started
+```
+apps/
+  web         the app — TanStack Start (SPA + prerender), MapLibre GL
+  marketing   the public site — Astro, near-zero JS
+packages/
+  hazard      domain: hazard tiers, geography, barangays, map style, data
+  config      shared tsconfig base
+```
 
-First, install the dependencies:
+`@naboflood/hazard` is the single source of truth for anything both surfaces need: the UP NOAH
+hazard classification, the design tokens, the map style and the attribution text. Safety and
+licence copy lives there so the app and the site cannot drift apart.
+
+## Getting started
 
 ```bash
 pnpm install
+pnpm dev            # everything
+pnpm dev:web        # the app   -> http://localhost:3001
+pnpm dev:marketing  # the site  -> http://localhost:4321
 ```
 
-## Database Setup
+## Data
 
-This project uses SQLite with Drizzle ORM.
-
-1. Start the local SQLite database (optional):
+The hazard polygons currently shipped are **synthetic placeholders**, generated so the app is
+fully functional while the real UP NOAH dataset is obtained. They are not a description of real
+flood risk, and the app says so in three places.
 
 ```bash
-pnpm run db:local
+pnpm generate:data     # regenerate the placeholder dataset (deterministic)
+pnpm validate:style    # validate the map style against the MapLibre spec
 ```
 
-2. Update your `.env` file in the `apps/server` directory with the appropriate connection details if needed.
+Swapping in real data means producing GeoJSON that satisfies `HazardProperties` in
+`packages/hazard/src/schema.ts`, then flipping `DATA_IS_PLACEHOLDER`. No component changes.
 
-3. Apply the schema to your database:
+## Deployment
+
+`apps/web` builds to static files — there is no server. Every route's data is either bundled
+(hazard polygons) or fetched client-side from a keyless public API (rainfall), so nothing is
+computed per request and hosting stays free.
 
 ```bash
-pnpm run db:push
+pnpm build          # -> apps/web/dist/client
 ```
 
-Then, run the development server:
+`dist/client/index.html` is both the `/` document and the SPA fallback; `/about`, `/learn` and
+`/barangays` are prerendered to real HTML. Point any static host at `dist/client`.
 
-```bash
-pnpm run dev
-```
+## Attribution
 
-Open [http://localhost:3001](http://localhost:3001) in your browser to see the web application.
-Use the Expo Go app to run the mobile application.
-The API is running at [http://localhost:3000](http://localhost:3000).
+Hazard data © UP NOAH. Elevation from Phil-LiDAR / AWS Terrain Tiles. Map data ©
+OpenStreetMap contributors (ODbL), served by OpenFreeMap. Rainfall from Open-Meteo (CC BY 4.0).
 
-## UI Customization
-
-React web apps in this stack share shadcn/ui primitives through `packages/ui`.
-
-- Change design tokens and global styles in `packages/ui/src/styles/globals.css`
-- Update shared primitives in `packages/ui/src/components/*`
-- Adjust shadcn aliases or style config in `packages/ui/components.json` and `apps/web/components.json`
-
-### Add more shared components
-
-Run this from the project root to add more primitives to the shared UI package:
-
-```bash
-npx shadcn@latest add accordion dialog popover sheet table -c packages/ui
-```
-
-Import shared components like this:
-
-```tsx
-import { Button } from "@naboflood/ui/components/button";
-```
-
-### Add app-specific blocks
-
-If you want to add app-specific blocks instead of shared primitives, run the shadcn CLI from `apps/web`.
-
-## Project Structure
-
-```
-naboflood/
-├── apps/
-│   ├── web/         # Frontend application (React + TanStack Router)
-│   ├── native/      # Mobile application (React Native, Expo)
-│   └── server/      # Backend API (Hono, ORPC)
-├── packages/
-│   ├── ui/          # Shared shadcn/ui components and styles
-│   ├── api/         # API layer / business logic
-│   ├── auth/        # Authentication configuration & logic
-│   └── db/          # Database schema & queries
-```
-
-## Available Scripts
-
-- `pnpm run dev`: Start all applications in development mode
-- `pnpm run build`: Build all applications
-- `pnpm run dev:web`: Start only the web application
-- `pnpm run dev:server`: Start only the server
-- `pnpm run check-types`: Check TypeScript types across all apps
-- `pnpm run dev:native`: Start the React Native/Expo development server
-- `pnpm run db:push`: Push schema changes to database
-- `pnpm run db:generate`: Generate database client/types
-- `pnpm run db:migrate`: Run database migrations
-- `pnpm run db:studio`: Open database studio UI
-- `pnpm run db:local`: Start the local SQLite database
+NaboFlood is an independent project and is not affiliated with the City Government of Panabo,
+PAGASA, the OCD, or the University of the Philippines.

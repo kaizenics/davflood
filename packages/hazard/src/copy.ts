@@ -65,11 +65,30 @@ export const dataSources: DataSource[] = [
 		licence: "Open, various source licences",
 		url: "https://registry.opendata.aws/terrain-tiles/",
 	},
+	{
+		name: "Esri World Imagery",
+		full: "Esri, Maxar, Earthstar Geographics and the GIS User Community",
+		role: "Aerial imagery for the satellite basemap.",
+		licence: "Free to use, attribution required",
+		url: "https://www.arcgis.com/home/item.html?id=10df2279f9684e4a9f6a7f08febac2a9",
+	},
 ];
 
 /** Single-line credit required on any screen showing the map. */
 export const mapAttribution =
 	"© OpenStreetMap contributors · OpenFreeMap · Hazard data © UP NOAH";
+
+/**
+ * Attribution depends on which basemap is showing. Esri's imagery licence
+ * requires its credit whenever the imagery is on screen, so this is not
+ * cosmetic — swap the basemap, swap the credit.
+ */
+export function attributionFor(basemap: "dark" | "light" | "satellite"): string {
+	if (basemap === "satellite") {
+		return "Imagery © Esri, Maxar, Earthstar Geographics · Labels © OpenStreetMap contributors · Hazard data © UP NOAH";
+	}
+	return mapAttribution;
+}
 
 export const onboarding = [
 	{
