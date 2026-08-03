@@ -43,20 +43,31 @@ function check(label: string, style: unknown) {
 
 console.log("validating map styles");
 
-// terrain on/off both ship, so both have to be valid
-check("base style, terrain + hillshade", buildBaseStyle());
-check("base style, terrain off", buildBaseStyle({ terrain: false }));
-check("base style, hillshade off", buildBaseStyle({ hillshade: false }));
+// every combination that ships has to be valid
+check("dark, terrain + hillshade", buildBaseStyle());
+check("dark, terrain off", buildBaseStyle({ terrain: false }));
+check("dark, hillshade off", buildBaseStyle({ hillshade: false }));
+check("light", buildBaseStyle({ basemap: "light" }));
+check("light, terrain off", buildBaseStyle({ basemap: "light", terrain: false }));
+check("satellite", buildBaseStyle({ basemap: "satellite" }));
+check(
+	"satellite, terrain off",
+	buildBaseStyle({ basemap: "satellite", terrain: false }),
+);
 
 // the style as it actually exists at runtime, with the hazard source and
 // layers added on top — this is what the app really renders
-const withHazard = buildBaseStyle();
-withHazard.sources[SOURCE_HAZARD] = {
-	type: "geojson",
-	data: hazard25 as unknown as HazardCollection,
-};
-withHazard.layers.push(...hazardLayers());
-check("base style + hazard source and layers", withHazard);
+for (const basemap of ["dark", "light", "satellite"] as const) {
+	const withHazard = buildBaseStyle({ basemap });
+	withHazard.sources[SOURCE_HAZARD] = {
+		type: "geojson",
+		data: hazard25 as unknown as HazardCollection,
+	};
+	withHazard.layers.push(
+		...hazardLayers({ fillOpacity: basemap === "satellite" ? 0.55 : 0.45 }),
+	);
+	check(`${basemap} + hazard source and layers`, withHazard);
+}
 
 if (failed) {
 	console.error("\nstyle validation FAILED");
