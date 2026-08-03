@@ -1,4 +1,10 @@
-import { barangays, searchBarangays } from "@naboflood/hazard/barangays";
+import {
+  BARANGAYS_MAPPED,
+  BARANGAYS_OFFICIAL,
+  BARANGAYS_SURVEYED,
+  barangays,
+  searchBarangays,
+} from "@davflood/hazard/barangays";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Building2, ChevronRight, Leaf, Search, X } from "lucide-react";
 import { useMemo, useState } from "react";
@@ -17,7 +23,7 @@ function BarangaysScreen() {
       <header className="mx-auto w-full max-w-3xl shrink-0 px-6 pt-10 pb-4 sm:px-8">
         <h1 className="text-ink text-3xl font-bold tracking-tight sm:text-4xl">Find your barangay</h1>
         <p className="text-ink-dim mt-3 text-base">
-          All {barangays.length} barangays of Panabo City. Pick one to jump the
+          {barangays.length} barangays across Davao City. Pick one to jump the
           map there.
         </p>
 
@@ -91,8 +97,12 @@ function BarangaysScreen() {
         )}
 
         <p className="text-ink-dim mt-4 text-[10px] leading-relaxed">
-          Barangay positions are approximate until surveyed boundary data is
-          loaded.
+          {BARANGAYS_SURVEYED} of these {BARANGAYS_MAPPED} barangays sit on a
+          surveyed OpenStreetMap boundary; the rest are a single mapped point,
+          so their position is approximate. Davao City officially has{" "}
+          {BARANGAYS_OFFICIAL}. The hazard map is clipped to the city outline
+          rather than built per barangay, so it covers the whole city either
+          way.
         </p>
       </div>
     </div>
