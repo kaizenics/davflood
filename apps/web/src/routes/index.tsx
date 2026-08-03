@@ -3,18 +3,20 @@ import type { LngLat } from "@naboflood/hazard/geo";
 import type { HazardProperties } from "@naboflood/hazard/schema";
 import { DEFAULT_SCENARIO, scenarioByYears } from "@naboflood/hazard/scenarios";
 import type { ScenarioYears } from "@naboflood/hazard/scenarios";
-import { colors } from "@naboflood/hazard/tokens";
 import { Link, createFileRoute } from "@tanstack/react-router";
-import { Construction, Info, MousePointerClick } from "lucide-react";
+import { Construction, MousePointerClick } from "lucide-react";
+import type { ReactNode } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { FloodMap, type FloodMapHandle } from "@/components/map/flood-map";
 import { HazardLegend } from "@/components/map/hazard-legend";
 import { MapControls } from "@/components/map/map-controls";
+import { MapLayers } from "@/components/map/map-layers";
 import { RainfallPanel } from "@/components/map/rainfall-panel";
 import { ScenarioToggle } from "@/components/map/scenario-toggle";
 import { ZonePanel } from "@/components/map/zone-panel";
 import { DATA_IS_PLACEHOLDER, loadScenario } from "@/lib/hazard-source";
+import { useTheme } from "@/lib/theme";
 
 type Search = { lng?: number; lat?: number };
 
@@ -33,6 +35,11 @@ function MapScreen() {
   const [scenario, setScenario] = useState<ScenarioYears>(DEFAULT_SCENARIO);
   const [selected, setSelected] = useState<HazardProperties | null>(null);
   const [terrain, setTerrain] = useState(true);
+  const [view, setView] = useState<"map" | "satellite">("map");
+  const { theme } = useTheme();
+  // satellite overrides the theme; otherwise the basemap follows it
+  const basemap = view === "satellite" ? "satellite" : theme;
+  const [showHazard, setShowHazard] = useState(true);
 
   // maplibre needs a DOM and a WebGL context, neither of which exists during
   // prerendering — so the map only mounts on the client
@@ -53,64 +60,71 @@ function MapScreen() {
 
   return (
     <div className="absolute inset-0 flex flex-col lg:flex-row">
-      {/* ── sidebar ─────────────────────────────────────────── */}
-      <aside className="border-hairline order-2 flex w-full shrink-0 flex-col gap-5 overflow-y-auto border-t p-5 lg:order-1 lg:w-[22rem] lg:border-t-0 lg:border-r xl:w-[24rem]">
-        {DATA_IS_PLACEHOLDER && (
-          <p
-            className="rounded-card flex items-start gap-2 border p-3 text-[11px] leading-relaxed font-semibold"
-            style={{
-              color: colors.hazMed,
-              borderColor: `${colors.hazMed}55`,
-              backgroundColor: `${colors.hazMed}14`,
-            }}
-          >
-            <Construction className="mt-px size-3.5 shrink-0" aria-hidden="true" />
-            Placeholder data — not real hazard information.
-          </p>
-        )}
+      {/* ── sidebar ──────────────────────────────────────────
+          One surface, divided by hairlines. Not a stack of
+          separately-bordered cards. */}
+      <aside className="border-hairline order-2 flex w-full min-w-0 shrink-0 flex-col border-t lg:order-1 lg:h-full lg:w-[21rem] lg:border-t-0 lg:border-r xl:w-[23rem]">
+        {/* scroll area — the footer below is pinned, so long content
+            can never collide with it */}
+        <div className="min-h-0 flex-1 overflow-y-auto">
+          {DATA_IS_PLACEHOLDER && (
+            <p className="text-haz-med bg-haz-med/10 border-haz-med/25 flex items-center gap-2 border-b px-5 py-2.5 text-[11px] font-semibold">
+              <Construction className="size-3.5 shrink-0" aria-hidden="true" />
+              Placeholder data — not real hazard information
+            </p>
+          )}
 
-        <section>
-          <SidebarHeading>Flood scenario</SidebarHeading>
-          <ScenarioToggle value={scenario} onChange={setScenario} />
-          <p className="text-ink-dim mt-2.5 text-xs leading-relaxed">
-            {activeScenario.blurb}
-          </p>
-        </section>
+          <Section label="Scenario">
+            <ScenarioToggle value={scenario} onChange={setScenario} />
+            <p className="text-ink-dim mt-2.5 text-[12.5px] leading-relaxed">
+              {activeScenario.blurb}
+            </p>
+          </Section>
 
-        <section>
-          <SidebarHeading>Rainfall</SidebarHeading>
-          <RainfallPanel />
-        </section>
+          <Section label="Rainfall">
+            <RainfallPanel />
+          </Section>
 
-        <section>
-          <SidebarHeading>Hazard level</SidebarHeading>
-          <HazardLegend />
-        </section>
+          <Section label="Layers">
+            <MapLayers
+              basemap={view}
+              onBasemapChange={setView}
+              showHazard={showHazard}
+              onShowHazardChange={setShowHazard}
+            />
+          </Section>
 
-        <section className="min-h-0">
-          <SidebarHeading>Selected zone</SidebarHeading>
+          <Section label="Hazard levels">
+            <HazardLegend basemap={basemap} dimmed={!showHazard} />
+          </Section>
+
           {selected ? (
             <ZonePanel zone={selected} onClose={() => setSelected(null)} />
           ) : (
-            <p className="border-hairline text-ink-dim rounded-card flex items-center gap-2.5 border border-dashed p-4 text-xs leading-relaxed">
-              <MousePointerClick className="size-4 shrink-0" aria-hidden="true" />
-              Click any coloured zone on the map to see its expected depth and
-              what to do.
-            </p>
+            <Section label="Selected zone">
+              <p className="text-ink-dim flex items-start gap-2.5 text-[12.5px] leading-relaxed">
+                <MousePointerClick
+                  className="mt-0.5 size-4 shrink-0 opacity-60"
+                  aria-hidden="true"
+                />
+                Click a coloured zone on the map to see its expected depth and
+                what to do.
+              </p>
+            </Section>
           )}
-        </section>
+        </div>
 
         <Link
           to="/about"
-          className="border-hairline text-ink-dim hover:text-ink rounded-card mt-auto flex items-start gap-2 border p-3 text-[11px] leading-relaxed transition"
+          className="border-hairline text-ink-dim hover:text-ink hover:bg-raised/40 shrink-0 border-t px-5 py-3 text-[11px] leading-relaxed transition"
         >
-          <Info className="mt-px size-3.5 shrink-0" aria-hidden="true" />
-          {disclaimer.short} Read where the data comes from.
+          <span className="text-ink font-semibold">{disclaimer.short}</span>{" "}
+          Where the data comes from →
         </Link>
       </aside>
 
-      {/* ── map ─────────────────────────────────────────────── */}
-      <div className="relative order-1 min-h-[22rem] flex-1 lg:order-2">
+      {/* ── map ──────────────────────────────────────────── */}
+      <div className="relative order-1 min-h-[20rem] flex-1 lg:order-2 lg:h-full">
         {mounted ? (
           <FloodMap
             ref={mapRef}
@@ -119,6 +133,8 @@ function MapScreen() {
             selectedZoneId={selected?.zone_id ?? null}
             onSelect={setSelected}
             terrain={terrain}
+            basemap={basemap}
+            showHazard={showHazard}
           />
         ) : (
           <div className="bg-abyss absolute inset-0" />
@@ -137,10 +153,13 @@ function MapScreen() {
   );
 }
 
-function SidebarHeading({ children }: { children: React.ReactNode }) {
+function Section({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <h2 className="text-ink-dim mb-2 text-[10px] font-bold tracking-[0.14em] uppercase">
+    <section className="border-hairline/60 border-b px-5 py-4">
+      <h2 className="text-ink-dim mb-2.5 text-[10px] font-semibold tracking-[0.13em] uppercase">
+        {label}
+      </h2>
       {children}
-    </h2>
+    </section>
   );
 }

@@ -10,11 +10,18 @@ import {
 import { asHazardProperties } from "@naboflood/hazard/schema";
 import type { HazardProperties } from "@naboflood/hazard/schema";
 import type { ScenarioYears } from "@naboflood/hazard/scenarios";
-import { SOURCE_TERRAIN, buildBaseStyle } from "@naboflood/hazard/style";
+import {
+  SOURCE_TERRAIN,
+  TERRAIN_EXAGGERATION,
+  buildBaseStyle,
+} from "@naboflood/hazard/style";
+import type { BasemapKind } from "@naboflood/hazard/style";
 import { colors } from "@naboflood/hazard/tokens";
 // maplibre-gl v6 ships named exports only — there is no default export
 import * as maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
+// must come before the first `new maplibregl.Map()` — see the file for why
+import "@/lib/maplibre-worker";
 import {
   forwardRef,
   useEffect,
@@ -35,6 +42,9 @@ type Props = {
   data: GeoJSON.FeatureCollection;
   /** terrain is the heaviest part of the render — cheap to switch off */
   terrain?: boolean;
+  basemap?: BasemapKind;
+  /** hide the hazard overlay to read what is underneath it */
+  showHazard?: boolean;
 };
 
 /**
@@ -50,60 +60,52 @@ function applySelection(m: maplibregl.Map, zoneId: string | null) {
 
 function applyTerrain(m: maplibregl.Map, enabled: boolean) {
   if (!m.getSource(SOURCE_TERRAIN)) return;
-  m.setTerrain(enabled ? { source: SOURCE_TERRAIN, exaggeration: 1.4 } : null);
+  m.setTerrain(
+    enabled
+      ? { source: SOURCE_TERRAIN, exaggeration: TERRAIN_EXAGGERATION }
+      : null,
+  );
+}
+
+/** All hazard layers, including the outline and selection rings. */
+const ALL_HAZARD_LAYERS = Object.values(LAYER_IDS);
+
+function applyHazardVisibility(m: maplibregl.Map, visible: boolean) {
+  for (const id of ALL_HAZARD_LAYERS) {
+    if (m.getLayer(id)) {
+      m.setLayoutProperty(id, "visibility", visible ? "visible" : "none");
+    }
+  }
 }
 
 /**
- * Reports what the map is actually doing.
- *
- * A blank canvas and a correctly-rendering map look identical from outside,
- * because the style's background colour is the same near-black as the page.
- * This distinguishes "canvas has no size", "camera is somewhere empty" and
- * "layers exist but paint nothing" — which are otherwise indistinguishable.
+ * Aerial imagery is bright and busy, so a 45% fill that reads well over dark
+ * cartography disappears over it. Push the fills harder when the basemap is
+ * satellite.
  */
-function reportDiagnostics(
-  m: maplibregl.Map,
-  el: HTMLDivElement | null,
-  set: (v: string) => void,
-) {
-  // one frame later, so the first paint has happened
-  setTimeout(() => {
-    try {
-      const canvas = m.getCanvas();
-      const box = el?.getBoundingClientRect();
-      const c = m.getCenter();
-      const painted = m.queryRenderedFeatures({
-        layers: HAZARD_FILL_LAYER_IDS.filter((id) => m.getLayer(id)),
-      }).length;
-      const basemap = m.queryRenderedFeatures().length;
-
-      const report = [
-        `container ${Math.round(box?.width ?? 0)}x${Math.round(box?.height ?? 0)}`,
-        `canvas ${canvas.clientWidth}x${canvas.clientHeight} (buf ${canvas.width}x${canvas.height})`,
-        `center ${c.lng.toFixed(3)},${c.lat.toFixed(3)} z${m.getZoom().toFixed(1)} p${Math.round(m.getPitch())}`,
-        `layers ${m.getStyle().layers.length}`,
-        `hazard features painted ${painted}`,
-        `all features painted ${basemap}`,
-        `style loaded ${m.isStyleLoaded()}`,
-      ].join(" · ");
-
-      console.info("[FloodMap]", report);
-      set(report);
-    } catch (err) {
-      console.error("[FloodMap] diagnostics failed", err);
-    }
-  }, 1500);
+function fillOpacityFor(basemap: BasemapKind): number {
+  // imagery is bright and busy; light cartography is bright but flat
+  if (basemap === "satellite") return 0.55;
+  if (basemap === "light") return 0.5;
+  return 0.45;
 }
 
 export const FloodMap = forwardRef<FloodMapHandle, Props>(function FloodMap(
-  { scenario, selectedZoneId, onSelect, data, terrain = true },
+  {
+    scenario,
+    selectedZoneId,
+    onSelect,
+    data,
+    terrain = true,
+    basemap = "dark",
+    showHazard = true,
+  },
   ref,
 ) {
   const container = useRef<HTMLDivElement | null>(null);
   const map = useRef<maplibregl.Map | null>(null);
   const [failure, setFailure] = useState<string | null>(null);
   const [loaded, setLoaded] = useState(false);
-  const [diag, setDiag] = useState<string | null>(null);
 
   // The map is created once, but props can change before `load` fires. These
   // refs let the load handler read CURRENT values rather than the ones its
@@ -113,12 +115,16 @@ export const FloodMap = forwardRef<FloodMapHandle, Props>(function FloodMap(
   const dataRef = useRef(data);
   const selectedRef = useRef(selectedZoneId);
   const terrainRef = useRef(terrain);
+  const basemapRef = useRef(basemap);
+  const showHazardRef = useRef(showHazard);
 
   useEffect(() => {
     onSelectRef.current = onSelect;
     dataRef.current = data;
     selectedRef.current = selectedZoneId;
     terrainRef.current = terrain;
+    basemapRef.current = basemap;
+    showHazardRef.current = showHazard;
   });
 
   useImperativeHandle(ref, () => ({
@@ -149,7 +155,10 @@ export const FloodMap = forwardRef<FloodMapHandle, Props>(function FloodMap(
       //
       // The shared package pins style-spec to the version the native SDK used;
       // maplibre-gl tracks a newer one. Both validate the style identically.
-      style: buildBaseStyle({ terrain: false }) as maplibregl.StyleSpecification,
+      style: buildBaseStyle({
+        basemap,
+        terrain: false,
+      }) as maplibregl.StyleSpecification,
       center: [...CAMERA.center],
       zoom: CAMERA.zoom,
       pitch: CAMERA.pitch,
@@ -186,17 +195,25 @@ export const FloodMap = forwardRef<FloodMapHandle, Props>(function FloodMap(
       if (m.getSource(SOURCE_HAZARD)) return; // style reloads re-fire this
       try {
         m.addSource(SOURCE_HAZARD, { type: "geojson", data: dataRef.current });
-        for (const layer of hazardLayers()) {
-          m.addLayer(layer as maplibregl.LayerSpecification, HAZARD_BEFORE_ID);
+        const layers = hazardLayers({
+          fillOpacity: fillOpacityFor(basemapRef.current),
+          // the ramp must match the legend; satellite keeps the dark ramp,
+          // which is what reads over imagery
+          theme: basemapRef.current === "light" ? "light" : "dark",
+        });
+        for (const layer of layers) {
+          // in satellite mode the labels are the only thing above the imagery,
+          // and `place-town` may not exist in every basemap
+          const before = m.getLayer(HAZARD_BEFORE_ID) ? HAZARD_BEFORE_ID : undefined;
+          m.addLayer(layer as maplibregl.LayerSpecification, before);
         }
-        // re-apply anything that changed while the style was still loading
+        // re-apply everything that changed while the style was still loading —
+        // this also runs after a basemap swap, which resets the whole style
         applySelection(m, selectedRef.current);
         applyTerrain(m, terrainRef.current);
+        applyHazardVisibility(m, showHazardRef.current);
         m.resize();
         setLoaded(true);
-        if (import.meta.env.DEV) {
-          reportDiagnostics(m, container.current, setDiag);
-        }
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
         console.error("[FloodMap] failed to add hazard layers:", err);
@@ -265,6 +282,27 @@ export const FloodMap = forwardRef<FloodMapHandle, Props>(function FloodMap(
     if (map.current) applyTerrain(map.current, terrain);
   }, [terrain]);
 
+  useEffect(() => {
+    if (map.current) applyHazardVisibility(map.current, showHazard);
+  }, [showHazard]);
+
+  /**
+   * Swapping the basemap replaces the whole style, which drops the hazard
+   * source and layers with it. `style.load` fires again afterwards and
+   * `initLayers` puts them back — including selection, terrain and visibility.
+   * Skipped on first render because the constructor already built this style.
+   */
+  const firstBasemap = useRef(true);
+  useEffect(() => {
+    if (firstBasemap.current) {
+      firstBasemap.current = false;
+      return;
+    }
+    map.current?.setStyle(
+      buildBaseStyle({ basemap, terrain: false }) as maplibregl.StyleSpecification,
+    );
+  }, [basemap]);
+
   return (
     <div className="absolute inset-0" style={{ backgroundColor: colors.abyss }}>
       <div ref={container} className="absolute inset-0 h-full w-full" />
@@ -290,12 +328,6 @@ export const FloodMap = forwardRef<FloodMapHandle, Props>(function FloodMap(
         </div>
       )}
 
-      {/* temporary: tells us whether the canvas is painting at all */}
-      {diag && (
-        <p className="border-hairline bg-abyss/90 text-ink-dim pointer-events-none absolute bottom-2 left-2 max-w-[36rem] rounded border px-2 py-1 font-mono text-[10px] leading-relaxed">
-          {diag}
-        </p>
-      )}
     </div>
   );
 });
