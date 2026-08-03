@@ -1,12 +1,12 @@
 import { disclaimer } from "@naboflood/hazard/copy";
 import type { LngLat } from "@naboflood/hazard/geo";
-import type { HazardProperties } from "@naboflood/hazard/schema";
+import type { HazardCollection, HazardProperties } from "@naboflood/hazard/schema";
 import { DEFAULT_SCENARIO, scenarioByYears } from "@naboflood/hazard/scenarios";
 import type { ScenarioYears } from "@naboflood/hazard/scenarios";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { Construction, MousePointerClick } from "lucide-react";
 import type { ReactNode } from "react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { FloodMap, type FloodMapHandle } from "@/components/map/flood-map";
 import { HazardLegend } from "@/components/map/hazard-legend";
@@ -15,7 +15,7 @@ import { MapLayers } from "@/components/map/map-layers";
 import { RainfallPanel } from "@/components/map/rainfall-panel";
 import { ScenarioToggle } from "@/components/map/scenario-toggle";
 import { ZonePanel } from "@/components/map/zone-panel";
-import { DATA_IS_PLACEHOLDER, loadScenario } from "@/lib/hazard-source";
+import { DATA_IS_PLACEHOLDER, EMPTY, loadScenario } from "@/lib/hazard-source";
 import { useTheme } from "@/lib/theme";
 
 type Search = { lng?: number; lat?: number };
@@ -46,7 +46,26 @@ function MapScreen() {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
-  const data = useMemo(() => loadScenario(scenario), [scenario]);
+  // hazard data is fetched per scenario rather than bundled — see
+  // lib/hazard-source.ts for why
+  const [data, setData] = useState<HazardCollection>(EMPTY);
+  const [dataError, setDataError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let live = true;
+    setDataError(null);
+    loadScenario(scenario)
+      .then((fc) => {
+        if (live) setData(fc);
+      })
+      .catch((err: unknown) => {
+        if (live) setDataError(err instanceof Error ? err.message : String(err));
+      });
+    return () => {
+      live = false;
+    };
+  }, [scenario]);
+
   const activeScenario = scenarioByYears[scenario];
 
   useEffect(() => {
@@ -93,6 +112,12 @@ function MapScreen() {
               onShowHazardChange={setShowHazard}
             />
           </Section>
+
+          {dataError && (
+            <p className="text-haz-high bg-haz-high/10 border-haz-high/25 border-b px-5 py-2.5 text-[11px] font-semibold">
+              Hazard data failed to load — {dataError}
+            </p>
+          )}
 
           <Section label="Hazard levels">
             <HazardLegend basemap={basemap} dimmed={!showHazard} />
