@@ -33,17 +33,31 @@ pnpm dev:marketing  # the site  -> http://localhost:4321
 
 ## Data
 
-The hazard polygons currently shipped are **synthetic placeholders**, generated so the app is
-fully functional while the real UP NOAH dataset is obtained. They are not a description of real
-flood risk, and the app says so in three places.
+The hazard polygons are the **real UP NOAH flood hazard model** for Davao del Norte, clipped to
+Panabo City — the 5, 25 and 100-year return periods, under ODC-ODbL.
+
+Source: [Project NOAH hazard maps](https://huggingface.co/datasets/bettergovph/project-noah-hazard-maps),
+per-province ESRI shapefiles. Already WGS84, with a single `Var` attribute (1 = low, 2 = medium,
+3 = high) matching the tiers in `packages/hazard/src/tiers.ts`.
 
 ```bash
-pnpm generate:data     # regenerate the placeholder dataset (deterministic)
-pnpm validate:style    # validate the map style against the MapLibre spec
+# rebuild from the shapefiles — download and unzip Flood/{5yr,25yr,100yr}/DavaoDelNorte.zip
+pnpm --filter @naboflood/hazard exec tsx scripts/build-noah-data.ts <dir>
+
+pnpm validate:style    # validate every map style variant against the MapLibre spec
 ```
 
-Swapping in real data means producing GeoJSON that satisfies `HazardProperties` in
-`packages/hazard/src/schema.ts`, then flipping `DATA_IS_PLACEHOLDER`. No component changes.
+`build-noah-data.ts` carries its own shapefile reader, so no GDAL is needed. It simplifies to
+~22 m and drops fragments under 0.25 ha — the raw export is raster-derived and otherwise runs to
+40,000 sliver polygons and 32 MB.
+
+`generate-synthetic.ts` still exists as a schema reference and fallback, but refuses to run
+without `--force`: it would overwrite real hazard information with invented shapes.
+
+**It is still a model.** Real data means the polygons come from the national hazard assessment —
+not that they describe water on the ground right now. Barangay attribution on a tapped zone is
+nearest-centroid against the unsurveyed coordinates in `barangays.ts`, so it can be wrong near
+boundaries; the geometry and depth bands are not.
 
 ## Deployment
 

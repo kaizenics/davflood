@@ -19,7 +19,8 @@
   "scripts": {
     "check-types": "tsc --noEmit",
     "generate:data": "tsx scripts/generate-synthetic.ts",
-    "validate:style": "tsx scripts/validate-style.ts"
+    "validate:style": "tsx scripts/validate-style.ts",
+    "build:noah": "tsx scripts/build-noah-data.ts"
   },
   "dependencies": {
     "@maplibre/maplibre-gl-style-spec": "24.8.5",
