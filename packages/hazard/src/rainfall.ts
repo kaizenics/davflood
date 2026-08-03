@@ -1,4 +1,4 @@
-import { PANABO_CENTER } from "./geo";
+import { DAVAO_CENTER } from "./geo";
 
 /**
  * Open-Meteo rainfall. Free, no API key, no attribution beyond CC BY.
@@ -44,7 +44,7 @@ export type Rainfall = {
 };
 
 export function rainfallUrl(
-	[lng, lat]: readonly [number, number] = PANABO_CENTER,
+	[lng, lat]: readonly [number, number] = DAVAO_CENTER,
 ): string {
 	const params = new URLSearchParams({
 		latitude: lat.toFixed(4),

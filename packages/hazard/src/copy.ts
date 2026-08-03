@@ -7,11 +7,11 @@
 
 export const disclaimer = {
 	short: "This is a hazard map, not a flood sensor.",
-	long: "NaboFlood shows modelled flood hazard — how deep water is expected to get in a given area during a storm of a given severity. It does not show water on the ground right now. For live warnings, follow PAGASA and your barangay's disaster risk reduction office.",
+	long: "DavFlood shows modelled flood hazard — how deep water is expected to get in a given area during a storm of a given severity. It does not show water on the ground right now. For live warnings, follow PAGASA and your barangay's disaster risk reduction office.",
 	/** compact form for the persistent on-map pill */
 	pill: "Modelled hazard · not live conditions",
 	independence:
-		"NaboFlood is an independent project. It is not affiliated with, endorsed by, or operated on behalf of the City Government of Panabo, PAGASA, the OCD, or the University of the Philippines. It uses their published data under the terms those bodies made it available.",
+		"DavFlood is an independent project. It is not affiliated with, endorsed by, or operated on behalf of the City Government of Davao, PAGASA, the OCD, or the University of the Philippines. It uses their published data under the terms those bodies made it available.",
 } as const;
 
 export type DataSource = {
@@ -93,7 +93,7 @@ export function attributionFor(basemap: "dark" | "light" | "satellite"): string 
 export const onboarding = [
 	{
 		title: "Know the water before it comes.",
-		body: "NaboFlood shows how deep flooding is expected to get in every barangay of Panabo City — so you can decide what to do before the rain starts, not during it.",
+		body: "DavFlood shows how deep flooding is expected to get in every barangay of Davao City — so you can decide what to do before the rain starts, not during it.",
 	},
 	{
 		title: "Three levels. One meaning.",

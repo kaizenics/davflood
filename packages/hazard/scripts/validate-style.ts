@@ -5,7 +5,7 @@
  * a blank canvas and logs at most a warning, which is exactly the failure mode
  * that is hardest to debug. This makes that failure a build-time error instead.
  *
- * Run:  pnpm --filter @naboflood/hazard validate:style
+ * Run:  pnpm --filter @davflood/hazard validate:style
  */
 
 import { readFileSync } from "node:fs";
@@ -21,7 +21,7 @@ import type { HazardCollection } from "../src/schema";
 // read rather than import, so this stays free of JSON import-attribute quirks
 const hazard25 = JSON.parse(
 	readFileSync(
-		join(dirname(fileURLToPath(import.meta.url)), "..", "src", "data", "panabo-25.json"),
+		join(dirname(fileURLToPath(import.meta.url)), "..", "src", "data", "davao-25.json"),
 		"utf8",
 	),
 ) as HazardCollection;
@@ -67,6 +67,14 @@ for (const basemap of ["dark", "light", "satellite"] as const) {
 		...hazardLayers({ fillOpacity: basemap === "satellite" ? 0.55 : 0.45 }),
 	);
 	check(`${basemap} + hazard source and layers`, withHazard);
+
+	const extruded = buildBaseStyle({ basemap });
+	extruded.sources[SOURCE_HAZARD] = {
+		type: "geojson",
+		data: hazard25 as unknown as HazardCollection,
+	};
+	extruded.layers.push(...hazardLayers({ extrude: true }));
+	check(`${basemap} + extruded hazard layers`, extruded);
 }
 
 if (failed) {

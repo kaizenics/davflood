@@ -30,13 +30,13 @@ export const TERRARIUM_TILES =
 
 /**
  * Esri World Imagery. Free to use with attribution and no key, and it carries
- * sub-metre detail over Panabo — which matters, because being able to pick out
+ * sub-metre detail over Davao — which matters, because being able to pick out
  * your own roof is what makes an aerial view worth having.
  *
  * Attribution is mandatory: "Esri, Maxar, Earthstar Geographics, and the GIS
  * User Community". See `attributionFor()`.
  *
- * Deliberately not EOX s2cloudless: it works and covers Panabo, but it is
+ * Deliberately not EOX s2cloudless: it works and covers Davao, but it is
  * CC BY-NC-SA (non-commercial, share-alike) and only 10 m — enough to see land
  * cover, not enough to see a house.
  */
@@ -47,22 +47,20 @@ export const ESRI_IMAGERY =
  * Vertical exaggeration for 3D terrain.
  *
  * Tuned to the measured landscape, not picked by feel. Decoding the terrarium
- * tiles over Panabo gives:
+ * tiles over Davao City gives:
  *
- *   Panabo centre   3 m .. 136 m   (133 m of relief across ~10 km)
- *   Panabo south  -49 m .. 174 m
- *   inland west    18 m .. 340 m   (322 m — the hills behind the city)
- *   Davao Gulf   -195 m .. 297 m   (terrarium includes bathymetry)
+ *   city centre     -42 m .. 623 m   (665 m of relief)
+ *   NW uplands       62 m .. 1298 m  (1236 m — the Marilog/Baguio highlands)
+ *   far west       -155 m .. 876 m   (toward the Mt Apo foothills)
+ *   gulf coast       -8 m .. 338 m   (terrarium includes bathymetry)
  *
- * 133 m over 10 km is a 1.3% grade. At 1:1 it is invisible; the earlier 1.4x
- * was still far too timid. 2.6x makes the drop from the inland hills to the
- * coastal plain legible without turning a floodplain into the Alps — and that
- * drop is the entire point, because low ground is where water goes.
- *
- * Note the negative values: terrarium carries seabed depth, so the gulf sinks
- * away rather than sitting flat at sea level. That is the data, not a bug.
+ * Davao is an order of magnitude more mountainous than a coastal town: this
+ * is real 6-12% grade, dramatic at 1:1. The exaggeration is therefore a light
+ * 1.3x — just enough to read relief on the coastal plain where people actually
+ * live, without turning 1300 m highlands into spikes. A previous 2.6x was
+ * tuned for a landscape with 133 m of relief and is far too much here.
  */
-export const TERRAIN_EXAGGERATION = 2.6;
+export const TERRAIN_EXAGGERATION = 1.3;
 
 /** Hillshade is the relief cue that survives even when the map is flat on. */
 export const HILLSHADE_EXAGGERATION = 0.55;
@@ -102,7 +100,7 @@ export function buildBaseStyle(options: BuildStyleOptions = {}): StyleSpecificat
 
 	const style: StyleSpecification = {
 		version: 8,
-		name: `NaboFlood ${basemap}`,
+		name: `DavFlood ${basemap}`,
 		glyphs: "https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf",
 		sources: {
 			[SOURCE_BASEMAP]: {
@@ -244,12 +242,46 @@ export function buildBaseStyle(options: BuildStyleOptions = {}): StyleSpecificat
 				type: "fill-extrusion",
 				source: SOURCE_BASEMAP,
 				"source-layer": "building",
-				minzoom: 14,
+				// OpenMapTiles serves buildings from z13 (generalised); starting
+				// here instead of 14 means the city already reads as a city when
+				// the camera drops toward street level
+				minzoom: 13,
 				paint: {
-					"fill-extrusion-color": colors.building,
+					/**
+					 * Height-tinted: taller buildings shade lighter, as if catching
+					 * light the low roofs don't. This is what stops a town of
+					 * mostly-unmapped-height buildings looking like a tray of
+					 * identical boxes — the few real towers become landmarks you
+					 * can navigate by. The ramp shades are cartography, inline
+					 * like the sky colours, not UI tokens.
+					 */
+					"fill-extrusion-color": [
+						"interpolate",
+						["linear"],
+						["coalesce", ["get", "render_height"], 4],
+						4,
+						colors.building,
+						20,
+						light ? "#dde3e9" : "#232b35",
+						60,
+						light ? "#eef2f5" : "#3a4552",
+					],
 					"fill-extrusion-height": ["coalesce", ["get", "render_height"], 4],
 					"fill-extrusion-base": ["coalesce", ["get", "render_min_height"], 0],
-					"fill-extrusion-opacity": 0.85,
+					// fade in across a zoom level rather than popping into
+					// existence at the threshold
+					"fill-extrusion-opacity": [
+						"interpolate",
+						["linear"],
+						["zoom"],
+						13,
+						0,
+						14.2,
+						0.85,
+					],
+					// walls darken toward the ground — the same cue that sells
+					// the hazard volumes
+					"fill-extrusion-vertical-gradient": true,
 				},
 			},
 
