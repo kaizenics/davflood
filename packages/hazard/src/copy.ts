@@ -26,8 +26,8 @@ export const dataSources: DataSource[] = [
 	{
 		name: "UP NOAH",
 		full: "Nationwide Operational Assessment of Hazards",
-		role: "Flood hazard maps for the 5, 25 and 100-year return periods.",
-		licence: "Open data, attribution required",
+		role: "The flood hazard model itself — the 5, 25 and 100-year return periods shown on the map.",
+		licence: "ODC-ODbL, attribution and share-alike required",
 		url: "https://noah.up.edu.ph/",
 	},
 	{
