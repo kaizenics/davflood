@@ -10,6 +10,18 @@ import { PANABO_CENTER } from "./geo";
 
 const ENDPOINT = "https://api.open-meteo.com/v1/forecast";
 
+export type RainfallHour = {
+	/** local ISO timestamp, e.g. "2026-08-03T14:00" */
+	time: string;
+	/** hour of day, 0–23 */
+	hour: number;
+	/** precipitation in that hour, mm */
+	precipitation: number;
+	/** chance of precipitation in that hour, 0–100 */
+	probability: number;
+	weatherCode: number;
+};
+
 export type RainfallDay = {
 	/** ISO date, e.g. "2026-08-02" */
 	date: string;
@@ -18,6 +30,8 @@ export type RainfallDay = {
 	/** max chance of precipitation, 0–100 */
 	probability: number;
 	weatherCode: number;
+	/** the 24 hours making up this day, in order */
+	hours: RainfallHour[];
 };
 
 export type Rainfall = {
@@ -37,6 +51,7 @@ export function rainfallUrl(
 		longitude: lng.toFixed(4),
 		current: "precipitation,weather_code,is_day",
 		daily: "precipitation_sum,precipitation_probability_max,weather_code",
+		hourly: "precipitation,precipitation_probability,weather_code",
 		timezone: "Asia/Manila",
 		forecast_days: "4",
 	});
@@ -55,12 +70,40 @@ type RawResponse = {
 		precipitation_probability_max?: (number | null)[];
 		weather_code?: (number | null)[];
 	};
+	hourly?: {
+		time?: string[];
+		precipitation?: (number | null)[];
+		precipitation_probability?: (number | null)[];
+		weather_code?: (number | null)[];
+	};
 };
 
 export function parseRainfall(raw: unknown): Rainfall {
 	const r = (raw ?? {}) as RawResponse;
 	const d = r.daily ?? {};
 	const times = d.time ?? [];
+
+	// Open-Meteo returns a flat 96-hour series; bucket it by date so each day
+	// carries its own 24 hours rather than making every consumer re-slice it.
+	const h = r.hourly ?? {};
+	const hourTimes = h.time ?? [];
+	const byDate = new Map<string, RainfallHour[]>();
+
+	for (let i = 0; i < hourTimes.length; i++) {
+		const stamp = hourTimes[i];
+		if (!stamp) continue;
+		const [date, clock] = stamp.split("T");
+		if (!date) continue;
+		const bucket = byDate.get(date) ?? [];
+		bucket.push({
+			time: stamp,
+			hour: Number(clock?.slice(0, 2) ?? 0),
+			precipitation: h.precipitation?.[i] ?? 0,
+			probability: h.precipitation_probability?.[i] ?? 0,
+			weatherCode: h.weather_code?.[i] ?? 0,
+		});
+		byDate.set(date, bucket);
+	}
 
 	return {
 		current: {
@@ -73,8 +116,38 @@ export function parseRainfall(raw: unknown): Rainfall {
 			precipitation: d.precipitation_sum?.[i] ?? 0,
 			probability: d.precipitation_probability_max?.[i] ?? 0,
 			weatherCode: d.weather_code?.[i] ?? 0,
+			hours: byDate.get(date) ?? [],
 		})),
 	};
+}
+
+/** Summary figures for a day's hourly series, used by the detail dialog. */
+export function summariseDay(day: RainfallDay) {
+	const hours = day.hours;
+	const total = hours.reduce((s, x) => s + x.precipitation, 0);
+	const peak = hours.reduce<RainfallHour | null>(
+		(best, x) => (!best || x.precipitation > best.precipitation ? x : best),
+		null,
+	);
+	const maxChance = hours.reduce((m, x) => Math.max(m, x.probability), 0);
+	const wetHours = hours.filter((x) => x.precipitation >= 0.1).length;
+
+	// heaviest continuous 3-hour stretch — more useful than a single peak hour,
+	// because that is the window that actually fills drains
+	let windowStart: RainfallHour | null = null;
+	let windowTotal = 0;
+	for (let i = 0; i + 2 < hours.length; i++) {
+		const sum =
+			hours[i]!.precipitation +
+			hours[i + 1]!.precipitation +
+			hours[i + 2]!.precipitation;
+		if (sum > windowTotal) {
+			windowTotal = sum;
+			windowStart = hours[i]!;
+		}
+	}
+
+	return { total, peak, maxChance, wetHours, windowStart, windowTotal };
 }
 
 export async function fetchRainfall(
