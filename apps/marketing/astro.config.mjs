@@ -6,7 +6,7 @@ import icon from "astro-icon";
 
 // https://astro.build/config
 export default defineConfig({
-	site: "https://naboflood.app",
+	site: "https://davflood.app",
 	output: "static",
 	prefetch: {
 		prefetchAll: true,

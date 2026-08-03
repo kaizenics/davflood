@@ -1,4 +1,4 @@
-import { dataSources, disclaimer, mapAttribution } from "@naboflood/hazard/copy";
+import { dataSources, disclaimer, mapAttribution } from "@davflood/hazard/copy";
 import { createFileRoute } from "@tanstack/react-router";
 import { ArrowUpRight, Construction } from "lucide-react";
 
@@ -26,7 +26,7 @@ function AboutScreen() {
             <p className="text-ink-dim mt-2 text-[14px] leading-relaxed">
               The hazard zones shown are synthetic — generated to build and test
               the app while the real UP NOAH dataset is obtained. They are not a
-              description of real flood risk in Panabo City and must not be used
+              description of real flood risk in Davao City and must not be used
               to make decisions.
             </p>
           </aside>
@@ -89,7 +89,7 @@ function AboutScreen() {
         <footer className="text-ink-dim mt-14 flex flex-col gap-2 text-[12px] leading-relaxed">
           <p>{mapAttribution}</p>
           <p>
-            NaboFlood is free, has no accounts, shows no ads and collects no
+            DavFlood is free, has no accounts, shows no ads and collects no
             analytics. A flood map does not need to know who you are.
           </p>
         </footer>

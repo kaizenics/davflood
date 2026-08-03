@@ -1,5 +1,5 @@
-import { scenarios } from "@naboflood/hazard/scenarios";
-import type { ScenarioYears } from "@naboflood/hazard/scenarios";
+import { scenarios } from "@davflood/hazard/scenarios";
+import type { ScenarioYears } from "@davflood/hazard/scenarios";
 
 type Props = {
   value: ScenarioYears;

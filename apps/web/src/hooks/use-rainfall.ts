@@ -1,5 +1,5 @@
-import { fetchRainfall } from "@naboflood/hazard/rainfall";
-import type { Rainfall } from "@naboflood/hazard/rainfall";
+import { fetchRainfall } from "@davflood/hazard/rainfall";
+import type { Rainfall } from "@davflood/hazard/rainfall";
 import { useQuery } from "@tanstack/react-query";
 
 /**
@@ -11,7 +11,7 @@ import { useQuery } from "@tanstack/react-query";
  */
 export function useRainfall() {
   return useQuery<Rainfall>({
-    queryKey: ["rainfall", "panabo"],
+    queryKey: ["rainfall", "davao"],
     queryFn: ({ signal }) => fetchRainfall(undefined, signal),
     staleTime: 30 * 60 * 1000,
     gcTime: 24 * 60 * 60 * 1000,

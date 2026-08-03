@@ -1,5 +1,5 @@
 /// <reference types="vite/client" />
-import { disclaimer } from "@naboflood/hazard/copy";
+import { disclaimer } from "@davflood/hazard/copy";
 import { HeadContent, Scripts, createRootRoute } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 
@@ -15,7 +15,7 @@ export const Route = createRootRoute({
         name: "viewport",
         content: "width=device-width, initial-scale=1, viewport-fit=cover",
       },
-      { title: "NaboFlood — flood hazard map for Panabo City" },
+      { title: "DavFlood — flood hazard map for Davao City" },
       { name: "description", content: disclaimer.short },
       { name: "theme-color", content: "#060a0e" },
       { name: "color-scheme", content: "dark" },

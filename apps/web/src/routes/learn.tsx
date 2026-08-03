@@ -1,6 +1,6 @@
-import { disclaimer } from "@naboflood/hazard/copy";
-import { chanceOver, scenarios } from "@naboflood/hazard/scenarios";
-import { hazardTiers } from "@naboflood/hazard/tiers";
+import { disclaimer } from "@davflood/hazard/copy";
+import { chanceOver, scenarios } from "@davflood/hazard/scenarios";
+import { hazardTiers } from "@davflood/hazard/tiers";
 import { createFileRoute } from "@tanstack/react-router";
 import { TriangleAlert } from "lucide-react";
 

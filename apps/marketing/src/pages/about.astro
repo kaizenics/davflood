@@ -12,7 +12,7 @@ const pipeline = [
 	{
 		n: "01",
 		t: "Hazard maps from UP NOAH",
-		b: "Flood hazard shapefiles for Panabo City at the 5, 25 and 100-year return periods, produced by the University of the Philippines' hazard mapping programme.",
+		b: "Flood hazard shapefiles for Davao City at the 5, 25 and 100-year return periods, produced by the University of the Philippines' hazard mapping programme.",
 	},
 	{
 		n: "02",
@@ -57,12 +57,12 @@ const principles = [
 
 <Base
 	title="About the data"
-	description="Where NaboFlood's flood hazard data comes from, how it is processed, and what it can and cannot tell you."
+	description="Where DavFlood's flood hazard data comes from, how it is processed, and what it can and cannot tell you."
 >
 	<PageHeader
 		eyebrow="About"
 		title="Public data, put where people can actually reach it."
-		lede={`The hazard maps behind NaboFlood have existed for years. They just lived in formats almost nobody outside a planning office ever opens. This is the same data, on a phone, in ${site.city}.`}
+		lede={`The hazard maps behind DavFlood have existed for years. They just lived in formats almost nobody outside a planning office ever opens. This is the same data, on a phone, in ${site.city}.`}
 	/>
 
 	<!-- ── the disclaimer, in full ─────────────────────────────── -->
@@ -81,8 +81,8 @@ const principles = [
 					{disclaimer.long}
 				</p>
 				<p class="text-ink-dim max-w-3xl text-[0.95rem] leading-relaxed">
-					NaboFlood is an independent project. It is not affiliated with, endorsed by, or
-					operated on behalf of the City Government of Panabo, PAGASA, the OCD, or the
+					DavFlood is an independent project. It is not affiliated with, endorsed by, or
+					operated on behalf of the City Government of Davao, PAGASA, the OCD, or the
 					University of the Philippines. It uses their published data under the terms
 					those bodies made it available.
 				</p>
@@ -136,14 +136,14 @@ const principles = [
 	<!-- ── coverage ────────────────────────────────────────────── -->
 	<Section
 		eyebrow="Coverage"
-		title="Panabo City first. The pipeline travels."
-		lede="Every step above is reusable, because the same national hazard dataset covers the rest of the country. Once Panabo is genuinely right, adding a city is mostly a matter of processing time."
+		title="Davao City first. The pipeline travels."
+		lede="Every step above is reusable, because the same national hazard dataset covers the rest of the country. Once Davao is genuinely right, adding a city is mostly a matter of processing time."
 		size="narrow"
 	>
 		<div class="mt-10 flex flex-wrap gap-2.5">
 			{
 				[
-					{ name: "Panabo City", state: "now" },
+					{ name: "Davao City", state: "now" },
 					{ name: "Tagum", state: "next" },
 					{ name: "Carmen", state: "next" },
 					{ name: "Davao City", state: "next" },

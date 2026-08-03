@@ -1,5 +1,5 @@
-import { describeWeather, rainBand } from "@naboflood/hazard/rainfall";
-import type { RainfallDay } from "@naboflood/hazard/rainfall";
+import { describeWeather, rainBand } from "@davflood/hazard/rainfall";
+import type { RainfallDay } from "@davflood/hazard/rainfall";
 import {
   ChevronDown,
   Cloud,
@@ -207,7 +207,7 @@ export function RainfallPanel() {
 /**
  * One decimal below 10 mm, whole millimetres above.
  *
- * Panabo's typical forecast sits in the 0–3 mm range, where rounding to whole
+ * Davao's typical forecast sits in the 0–3 mm range, where rounding to whole
  * numbers collapses 2.1 and 2.2 into the same "2" while the bars beside them
  * clearly differ. Above 10 mm the decimal is noise.
  */

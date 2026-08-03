@@ -3,10 +3,10 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 /* ------------------------------------------------------------------
-   NaboFlood tokens.
+   DavFlood tokens.
 
    LIGHT is the base; `.dark` overrides below. Both palettes are
-   duplicated from `@naboflood/hazard/tokens` — CSS cannot import from
+   duplicated from `@davflood/hazard/tokens` — CSS cannot import from
    a TS module, so if you change one, change both. That file is the
    authority and records how the values were derived.
 

@@ -5,7 +5,7 @@ import type * as React from "react";
 import { cn } from "@/lib/utils";
 
 /**
- * shadcn/ui Dialog, restyled onto NaboFlood's tokens.
+ * shadcn/ui Dialog, restyled onto DavFlood's tokens.
  *
  * The stock component paints itself with shadcn's neutral `background` /
  * `border` / `muted-foreground` scale. This app has its own dark-first palette

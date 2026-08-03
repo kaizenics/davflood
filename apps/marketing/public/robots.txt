@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://naboflood.app/sitemap-index.xml
+Sitemap: https://davflood.app/sitemap-index.xml

@@ -83,7 +83,7 @@ function Wordmark() {
         />
       </svg>
       <span className="text-ink text-base font-semibold tracking-tight">
-        Nabo<span className="text-tide">Flood</span>
+         Dav<span className="text-tide">Flood</span>
       </span>
     </>
   );

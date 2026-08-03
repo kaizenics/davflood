@@ -1,9 +1,9 @@
-import type { Theme } from "@naboflood/hazard/tokens";
+import type { Theme } from "@davflood/hazard/tokens";
 import { useCallback, useEffect, useState } from "react";
 
 export type { Theme };
 
-export const THEME_KEY = "naboflood.theme";
+export const THEME_KEY = "davflood.theme";
 
 /**
  * Runs before first paint, inlined into <head>.

@@ -1,10 +1,10 @@
-# NaboFlood
+# DavFlood
 
-A free flood hazard map for Panabo City, Davao del Norte. It shows how deep water is expected
+A free flood hazard map for Davao City, Davao del Norte. It shows how deep water is expected
 to get in each barangay during a storm of a given severity — for an ordinary flood, a bad one,
 and the worst one in the model.
 
-> **NaboFlood is a hazard map, not a flood sensor.** It shows modelled risk, not water on the
+> **DavFlood is a hazard map, not a flood sensor.** It shows modelled risk, not water on the
 > ground right now. For live warnings, follow PAGASA and your barangay's DRRM office.
 
 ## Workspaces
@@ -18,7 +18,7 @@ packages/
   config      shared tsconfig base
 ```
 
-`@naboflood/hazard` is the single source of truth for anything both surfaces need: the UP NOAH
+`@davflood/hazard` is the single source of truth for anything both surfaces need: the UP NOAH
 hazard classification, the design tokens, the map style and the attribution text. Safety and
 licence copy lives there so the app and the site cannot drift apart.
 
@@ -34,7 +34,7 @@ pnpm dev:marketing  # the site  -> http://localhost:4321
 ## Data
 
 The hazard polygons are the **real UP NOAH flood hazard model** for Davao del Norte, clipped to
-Panabo City — the 5, 25 and 100-year return periods, under ODC-ODbL.
+Davao City — the 5, 25 and 100-year return periods, under ODC-ODbL.
 
 Source: [Project NOAH hazard maps](https://huggingface.co/datasets/bettergovph/project-noah-hazard-maps),
 per-province ESRI shapefiles. Already WGS84, with a single `Var` attribute (1 = low, 2 = medium,
@@ -42,7 +42,7 @@ per-province ESRI shapefiles. Already WGS84, with a single `Var` attribute (1 = 
 
 ```bash
 # rebuild from the shapefiles — download and unzip Flood/{5yr,25yr,100yr}/DavaoDelNorte.zip
-pnpm --filter @naboflood/hazard exec tsx scripts/build-noah-data.ts <dir>
+pnpm --filter @davflood/hazard exec tsx scripts/build-noah-data.ts <dir>
 
 pnpm validate:style    # validate every map style variant against the MapLibre spec
 ```
@@ -77,5 +77,5 @@ pnpm build          # -> apps/web/dist/client
 Hazard data © UP NOAH. Elevation from Phil-LiDAR / AWS Terrain Tiles. Map data ©
 OpenStreetMap contributors (ODbL), served by OpenFreeMap. Rainfall from Open-Meteo (CC BY 4.0).
 
-NaboFlood is an independent project and is not affiliated with the City Government of Panabo,
+DavFlood is an independent project and is not affiliated with the City Government of Davao,
 PAGASA, the OCD, or the University of the Philippines.

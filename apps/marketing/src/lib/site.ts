@@ -3,27 +3,27 @@
  * Components read from here and never hardcode copy — so retitling a
  * section, or translating the whole site into Bisaya, is one file.
  *
- * Safety- and licence-critical content lives in `@naboflood/hazard` and is
+ * Safety- and licence-critical content lives in `@davflood/hazard` and is
  * re-exported below, so the mobile app and this site physically cannot
  * disagree about what "medium hazard" means or who the data belongs to.
  * Everything defined *in this file* is web chrome only.
  */
 
-export { disclaimer } from "@naboflood/hazard/copy";
-export { dataSources } from "@naboflood/hazard/copy";
-export type { DataSource } from "@naboflood/hazard/copy";
-export { hazardTiers } from "@naboflood/hazard/tiers";
-export type { HazardTier, HazardId } from "@naboflood/hazard/tiers";
-export { scenarios } from "@naboflood/hazard/scenarios";
-export type { Scenario } from "@naboflood/hazard/scenarios";
+export { disclaimer } from "@davflood/hazard/copy";
+export { dataSources } from "@davflood/hazard/copy";
+export type { DataSource } from "@davflood/hazard/copy";
+export { hazardTiers } from "@davflood/hazard/tiers";
+export type { HazardTier, HazardId } from "@davflood/hazard/tiers";
+export { scenarios } from "@davflood/hazard/scenarios";
+export type { Scenario } from "@davflood/hazard/scenarios";
 
 export const site = {
-	name: "NaboFlood",
+	name: "DavFlood",
 	tagline: "Know the water before it comes.",
 	description:
-		"Free 3D flood hazard maps for every barangay in Panabo City, built on UP NOAH and Phil-LiDAR data. Works offline.",
+		"Free 3D flood hazard maps for every barangay in Davao City, built on UP NOAH and Phil-LiDAR data. Works offline.",
 	locale: "en-PH",
-	city: "Panabo City",
+	city: "Davao City",
 	province: "Davao del Norte",
 } as const;
 
@@ -46,12 +46,12 @@ export const nav = [
 
 /* ------------------------------------------------------------------ */
 /* `disclaimer`, `hazardTiers` and `scenarios` are re-exported at the
-   top of this file from @naboflood/hazard — they are shared with the
+   top of this file from @davflood/hazard — they are shared with the
    mobile app and must not be redefined here.                          */
 /* ------------------------------------------------------------------ */
 
 export const stats = [
-	{ value: "40", label: "barangays covered", sub: "all of Panabo City" },
+	{ value: "40", label: "barangays covered", sub: "all of Davao City" },
 	{ value: "3", label: "flood scenarios", sub: "5, 25 and 100-year" },
 	{ value: "₱0", label: "forever", sub: "no account, no ads" },
 ] as const;
@@ -99,7 +99,7 @@ export const steps = [
 	{
 		n: "01",
 		title: "Open the map",
-		body: "No sign-up, no email, no permissions you have to think about. It opens straight onto Panabo.",
+		body: "No sign-up, no email, no permissions you have to think about. It opens straight onto Davao.",
 	},
 	{
 		n: "02",
@@ -113,7 +113,7 @@ export const steps = [
 	},
 ] as const;
 
-/* `dataSources` is re-exported from @naboflood/hazard — attribution is a
+/* `dataSources` is re-exported from @davflood/hazard — attribution is a
    licence obligation and must be identical in the app and on the site. */
 
 /* ------------------------------------------------------------------ */
@@ -123,7 +123,7 @@ export type FaqItem = { q: string; a: string; onLanding?: boolean };
 export const faqs: FaqItem[] = [
 	{
 		q: "Does this show flooding happening right now?",
-		a: "No — and this is the most important thing to understand about it. NaboFlood shows modelled hazard: how deep water is expected to get in an area during a storm of a given severity. It is a map of risk, not a live sensor network. For real-time warnings, follow PAGASA and your local DRRM office.",
+		a: "No — and this is the most important thing to understand about it. DavFlood shows modelled hazard: how deep water is expected to get in an area during a storm of a given severity. It is a map of risk, not a live sensor network. For real-time warnings, follow PAGASA and your local DRRM office.",
 		onLanding: true,
 	},
 	{
@@ -148,7 +148,7 @@ export const faqs: FaqItem[] = [
 	},
 	{
 		q: "Is this an official government app?",
-		a: "No. NaboFlood is an independent project built on publicly available government and academic data. It is not affiliated with the City Government of Panabo, PAGASA, or the OCD. Always defer to official advisories.",
+		a: "No. DavFlood is an independent project built on publicly available government and academic data. It is not affiliated with the City Government of Davao, PAGASA, or the OCD. Always defer to official advisories.",
 		onLanding: true,
 	},
 	{
@@ -156,12 +156,12 @@ export const faqs: FaqItem[] = [
 		a: "Treat it as a neighbourhood-level guide, not a survey of your lot. Hazard models are built from elevation data at a fixed resolution, and local details — a raised foundation, a new subdivision, a clogged canal — are not in the model. If your street floods and the map says it shouldn't, believe your street.",
 	},
 	{
-		q: "Why Panabo City first?",
+		q: "Why Davao City first?",
 		a: "It's home, the flood hazard data covers it well, and it is small enough to get right. The data pipeline is reusable, so once it works properly here, adding a city is mostly a matter of processing.",
 	},
 	{
 		q: "Will you add other cities?",
-		a: "That's the plan — Tagum, Carmen and Davao City are the obvious next steps, since the same NOAH hazard layers cover them. Getting Panabo genuinely right comes first.",
+		a: "That's the plan — Tagum, Carmen and Davao City are the obvious next steps, since the same NOAH hazard layers cover them. Getting Davao genuinely right comes first.",
 	},
 	{
 		q: "How often is the data updated?",

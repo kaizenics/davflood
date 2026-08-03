@@ -1,7 +1,7 @@
-import { formatDepth } from "@naboflood/hazard/schema";
-import type { HazardProperties } from "@naboflood/hazard/schema";
-import { scenarioByYears } from "@naboflood/hazard/scenarios";
-import { hazardById } from "@naboflood/hazard/tiers";
+import { formatDepth } from "@davflood/hazard/schema";
+import type { HazardProperties } from "@davflood/hazard/schema";
+import { scenarioByYears } from "@davflood/hazard/scenarios";
+import { hazardById } from "@davflood/hazard/tiers";
 import { X } from "lucide-react";
 
 import { hazardBorder, hazardText } from "@/lib/hazard-classes";

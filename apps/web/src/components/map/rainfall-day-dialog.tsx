@@ -1,7 +1,7 @@
-import { describeWeather, rainBand, summariseDay } from "@naboflood/hazard/rainfall";
-import type { RainfallDay } from "@naboflood/hazard/rainfall";
-import { colorsFor } from "@naboflood/hazard/tokens";
-import type { Palette } from "@naboflood/hazard/tokens";
+import { describeWeather, rainBand, summariseDay } from "@davflood/hazard/rainfall";
+import type { RainfallDay } from "@davflood/hazard/rainfall";
+import { colorsFor } from "@davflood/hazard/tokens";
+import type { Palette } from "@davflood/hazard/tokens";
 import { CloudRain, Droplets, Timer, TrendingUp } from "lucide-react";
 import type { ReactNode } from "react";
 
