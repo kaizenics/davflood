@@ -1,11 +1,11 @@
-import type { HazardCollection } from "@naboflood/hazard/schema";
-import type { ScenarioYears } from "@naboflood/hazard/scenarios";
+import type { HazardCollection } from "@davflood/hazard/schema";
+import type { ScenarioYears } from "@davflood/hazard/scenarios";
 
 // `?url` makes Vite emit each file as a static asset and hand back its URL,
 // instead of inlining ~9 MB of JSON into the JS bundle.
-import url5 from "@naboflood/hazard/data/panabo-5.json?url";
-import url25 from "@naboflood/hazard/data/panabo-25.json?url";
-import url100 from "@naboflood/hazard/data/panabo-100.json?url";
+import url5 from "@davflood/hazard/data/davao-5.json?url";
+import url25 from "@davflood/hazard/data/davao-25.json?url";
+import url100 from "@davflood/hazard/data/davao-100.json?url";
 
 /**
  * THE LOADING SEAM.
@@ -57,7 +57,7 @@ export async function loadScenario(
 
 /**
  * This is the real UP NOAH flood hazard model for Davao del Norte, clipped to
- * Panabo City — not placeholder geometry.
+ * Davao City — not placeholder geometry.
  *
  * It is still a MODEL. "Not placeholder" means the polygons come from the
  * national hazard assessment, not that they describe water on the ground now.

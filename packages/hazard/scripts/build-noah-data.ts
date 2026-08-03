@@ -3,9 +3,12 @@
  *
  * Source: bettergovph/project-noah-hazard-maps on Hugging Face — the Project
  * NOAH hazard maps republished as per-province ESRI shapefiles, ODC-ODbL.
- * We take Davao del Norte and clip it to Panabo City.
  *
- *   Flood/{5yr,25yr,100yr}/DavaoDelNorte.zip
+ *   Flood/{5yr,25yr,100yr}/{DavaoDelSur,DavaoDelNorte}.zip
+ *
+ * Both provinces are needed and then clipped to the city outline. Davao City
+ * is administratively in Davao del Sur, but its northern districts run into
+ * Davao del Norte's sheet, so one province alone truncates the city.
  *
  * The shapefiles are already GCS_WGS_1984, so no reprojection is needed. Each
  * file holds exactly three records — the province dissolved into one polygon
@@ -17,15 +20,15 @@
  * rebuild a data file. The format is stable and documented, and this only has
  * to handle polygons.
  *
- * Run:  pnpm --filter @naboflood/hazard build:noah -- <dir-with-extracted-shapefiles>
+ * Run:  pnpm --filter @davflood/hazard build:noah -- <dir-with-extracted-shapefiles>
  */
 
-import { readFileSync, writeFileSync, mkdirSync, readdirSync } from "node:fs";
+import { readFileSync, writeFileSync, mkdirSync, readdirSync, statSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { barangays } from "../src/barangays";
-import { PANABO_BBOX } from "../src/geo";
+import boundary from "../src/data/davao-boundary.json" with { type: "json" };
 import type { HazardCollection, HazardFeature } from "../src/schema";
 import type { ScenarioYears } from "../src/scenarios";
 import { hazardTiers } from "../src/tiers";
@@ -33,16 +36,73 @@ import type { HazardId } from "../src/tiers";
 
 const OUT_DIR = join(dirname(fileURLToPath(import.meta.url)), "..", "src", "data");
 
+type Ring = [number, number][];
+
+/**
+ * Davao City's real outline, from OpenStreetMap via build-admin-data.ts.
+ *
+ * Clipping to a bounding box is not good enough here. Davao City's bbox also
+ * contains Panabo City to the north-east, so a rectangular clip shipped
+ * Panabo's flood polygons inside a map captioned "Davao City" — hazard data
+ * attributed to the wrong local government. The outline is the only honest
+ * boundary.
+ */
+const CITY: Ring = (boundary.geometry.coordinates[0] as [number, number][]) ?? [];
+
 /** A little slack so polygons are not sheared exactly at the camera bound. */
 const PAD = 0.02;
 const [W, S, E, N] = [
-	PANABO_BBOX[0] - PAD,
-	PANABO_BBOX[1] - PAD,
-	PANABO_BBOX[2] + PAD,
-	PANABO_BBOX[3] + PAD,
+	Math.min(...CITY.map((p) => p[0])) - PAD,
+	Math.min(...CITY.map((p) => p[1])) - PAD,
+	Math.max(...CITY.map((p) => p[0])) + PAD,
+	Math.max(...CITY.map((p) => p[1])) + PAD,
 ];
 
-type Ring = [number, number][];
+/** Ray-casting point-in-polygon. */
+function inCity([x, y]: [number, number]): boolean {
+	let inside = false;
+	for (let i = 0, j = CITY.length - 1; i < CITY.length; j = i++) {
+		const [xi, yi] = CITY[i]!;
+		const [xj, yj] = CITY[j]!;
+		if (yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) {
+			inside = !inside;
+		}
+	}
+	return inside;
+}
+
+/**
+ * Whether a hazard ring belongs to Davao City.
+ *
+ * NOAH's rings are fine-grained — hundreds of thousands per province — so each
+ * one is small relative to the city and sampling a dozen vertices settles it.
+ *
+ * The test is deliberately "mostly inside", not "touches". Rings are kept or
+ * dropped whole, never cut, so accepting anything that merely grazes the
+ * border pulled entire Panabo-side polygons back in and pushed the 100-year
+ * layer 12 km past the city's northern tip. Requiring the majority of the ring
+ * to be in Davao attributes each polygon to the city that actually contains
+ * it. The centroid alone would be cheaper but misreads rings lying in a
+ * concavity of the outline, so it only breaks ties.
+ */
+function ringInCity(ring: Ring): boolean {
+	const step = Math.max(1, Math.floor(ring.length / 12));
+	let sampled = 0;
+	let inside = 0;
+	for (let i = 0; i < ring.length; i += step) {
+		sampled++;
+		if (inCity(ring[i]!)) inside++;
+	}
+	if (sampled > 0 && inside * 2 >= sampled) return true;
+
+	let sx = 0;
+	let sy = 0;
+	for (const [x, y] of ring) {
+		sx += x;
+		sy += y;
+	}
+	return inCity([sx / ring.length, sy / ring.length]);
+}
 
 /* ---------------- shapefile (.shp) ---------------- */
 
@@ -87,9 +147,11 @@ function readShapefile(path: string): { rings: Ring[]; recordOf: number[] } {
 					if (y > maxY) maxY = y;
 				}
 
-				// keep only rings that touch Panabo — the province file covers a
-				// far larger area than the app ever shows
-				if (maxX >= W && minX <= E && maxY >= S && minY <= N && ring.length >= 4) {
+				// Keep only rings inside Davao City. The province files cover a far
+				// larger area, and the city's bbox overlaps Panabo City, so the
+				// bbox is only a cheap reject before the real outline test.
+				const near = maxX >= W && minX <= E && maxY >= S && minY <= N;
+				if (near && ring.length >= 4 && ringInCity(ring)) {
 					rings.push(ring);
 					recordOf.push(record);
 				}
@@ -222,7 +284,7 @@ if (!SRC) {
 const TOLERANCE = 0.0002; // ~22 m
 const MIN_AREA_M2 = 2500;
 
-/** Metres per degree at Panabo's latitude — good enough for an area filter. */
+/** Metres per degree at Davao's latitude — good enough for an area filter. */
 const M_PER_DEG_LAT = 110574;
 const M_PER_DEG_LON = 111320 * Math.cos((7.3 * Math.PI) / 180);
 
@@ -242,15 +304,42 @@ mkdirSync(OUT_DIR, { recursive: true });
 
 for (const years of [5, 25, 100] as const satisfies readonly ScenarioYears[]) {
 	const dir = join(SRC, `${years}yr`);
-	const shp = readdirSync(dir).find((f) => f.toLowerCase().endsWith(".shp"));
-	if (!shp) {
-		console.error(`no .shp in ${dir}`);
+
+	/**
+	 * Davao City straddles what NOAH still files under two provinces — the
+	 * city is administratively in Davao del Sur, but its northern districts
+	 * (Paquibato, Marilog) run up against Davao del Norte. Merging both and
+	 * clipping to the city bbox is the only way to get the WHOLE city; taking
+	 * one province alone silently truncates the north.
+	 */
+	const shapefiles: string[] = [];
+	for (const entry of readdirSync(dir)) {
+		const sub = join(dir, entry);
+		if (!statSync(sub).isDirectory()) continue;
+		for (const f of readdirSync(sub)) {
+			if (f.toLowerCase().endsWith(".shp")) shapefiles.push(join(sub, f));
+		}
+	}
+	if (shapefiles.length === 0) {
+		console.error(`no .shp under ${dir}`);
 		process.exit(1);
 	}
-	const base = join(dir, shp.replace(/\.shp$/i, ""));
 
-	const { rings, recordOf } = readShapefile(`${base}.shp`);
-	const vars = readVarColumn(`${base}.dbf`);
+	const rings: Ring[] = [];
+	const recordOf: number[] = [];
+	const vars: number[] = [];
+	for (const shpPath of shapefiles) {
+		const base = shpPath.replace(/\.shp$/i, "");
+		const part = readShapefile(shpPath);
+		const partVars = readVarColumn(`${base}.dbf`);
+		// offset record indices so the merged files do not collide
+		const offset = vars.length;
+		for (let i = 0; i < part.rings.length; i++) {
+			rings.push(part.rings[i]!);
+			recordOf.push(part.recordOf[i]! + offset);
+		}
+		vars.push(...partVars);
+	}
 
 	const features: HazardFeature[] = [];
 	let current: { hazard: HazardId; rings: Ring[] } | null = null;
@@ -300,7 +389,7 @@ for (const years of [5, 25, 100] as const satisfies readonly ScenarioYears[]) {
 	flush();
 
 	const fc: HazardCollection = { type: "FeatureCollection", features };
-	const path = join(OUT_DIR, `panabo-${years}.json`);
+	const path = join(OUT_DIR, `davao-${years}.json`);
 	const json = JSON.stringify(fc);
 	writeFileSync(path, `${json}\n`, "utf8");
 
@@ -309,7 +398,7 @@ for (const years of [5, 25, 100] as const satisfies readonly ScenarioYears[]) {
 		return a;
 	}, {});
 	console.log(
-		`panabo-${years}.json  ${features.length} features ` +
+		`davao-${years}.json  ${shapefiles.length} src  ${features.length} features ` +
 			`(low ${byClass["low"] ?? 0} / med ${byClass["medium"] ?? 0} / high ${byClass["high"] ?? 0})  ` +
 			`${(json.length / 1024).toFixed(0)} KB`,
 	);
