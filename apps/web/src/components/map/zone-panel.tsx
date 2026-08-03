@@ -2,7 +2,9 @@ import { formatDepth } from "@naboflood/hazard/schema";
 import type { HazardProperties } from "@naboflood/hazard/schema";
 import { scenarioByYears } from "@naboflood/hazard/scenarios";
 import { hazardById } from "@naboflood/hazard/tiers";
-import { ShieldAlert, X } from "lucide-react";
+import { X } from "lucide-react";
+
+import { hazardBorder, hazardText } from "@/lib/hazard-classes";
 
 type Props = {
   zone: HazardProperties | null;
@@ -10,11 +12,11 @@ type Props = {
 };
 
 /**
- * The tap-a-zone card.
+ * The tapped zone — the reason the map exists, so it is the one block in the
+ * sidebar allowed to carry weight: a colour rule down the edge and a depth
+ * figure large enough to read at a glance.
  *
- * Order is deliberate: WHERE, then HOW DEEP, then WHAT THAT MEANS, then WHAT
- * TO DO. Someone reading this in a hurry should reach the actionable part
- * without scrolling.
+ * Order is deliberate: WHERE, HOW DEEP, WHAT IT MEANS, WHAT TO DO.
  */
 export function ZonePanel({ zone, onClose }: Props) {
   if (!zone) return null;
@@ -23,74 +25,58 @@ export function ZonePanel({ zone, onClose }: Props) {
   const scenario = scenarioByYears[zone.scenario];
 
   return (
-    <aside
+    <section
       aria-label={`Selected zone: Barangay ${zone.barangay}`}
-      className="border-hairline rounded-card w-full overflow-hidden border"
+      className={`border-hairline/60 border-b border-l-[3px] px-5 py-4 ${hazardBorder[zone.hazard]}`}
     >
-      <div className="h-1 w-full" style={{ backgroundColor: tier.color }} />
-      <div className="p-4">
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <p className="text-ink-dim text-[10px] font-bold tracking-widest uppercase">
-              Selected zone
-            </p>
-            <h2 className="text-ink mt-0.5 text-lg font-bold">
-              Brgy. {zone.barangay}
-            </h2>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Close zone details"
-            className="text-ink-dim hover:text-ink -mt-1 -mr-1 rounded-lg p-1.5 transition"
-          >
-            <X className="size-4" />
-          </button>
-        </div>
-
-        <div className="mt-3 flex flex-wrap items-center gap-2.5">
-          <span
-            className="rounded-pill inline-flex items-center gap-1.5 border px-2.5 py-1 text-[11px] font-bold"
-            style={{
-              color: tier.color,
-              borderColor: `${tier.color}88`,
-              backgroundColor: `${tier.color}1f`,
-            }}
-          >
-            <span
-              className="size-2 rounded-full"
-              style={{ backgroundColor: tier.color }}
-              aria-hidden="true"
-            />
-            {tier.label.toUpperCase()}
-          </span>
-          <span className="text-ink text-sm font-bold" data-numeric>
-            {formatDepth(zone)}
-          </span>
-        </div>
-
-        <p className="text-ink-dim mt-1.5 text-[11px]">
-          {tier.name} · {scenario.label} scenario
-        </p>
-
-        <p className="text-ink-dim mt-3 text-[13px] leading-relaxed">
-          {tier.human}
-        </p>
-
-        <div className="border-hairline bg-raised/50 rounded-card mt-4 border p-3">
-          <p className="mb-1.5 flex items-center gap-2 text-[11px] font-bold tracking-wider uppercase">
-            <ShieldAlert className="size-3.5" style={{ color: tier.color }} />
-            <span className="text-ink">What to do</span>
-          </p>
-          <p className="text-ink-dim text-[13px] leading-relaxed">{tier.action}</p>
-        </div>
-
-        <p className="text-ink-dim mt-3 text-[10px] leading-relaxed">
-          Modelled hazard for a {scenario.label} storm — roughly a{" "}
-          {scenario.annualChance} chance in any given year. Not a reading of
-          water on the ground right now.
-        </p>
+      <div className="flex items-start justify-between gap-3">
+        <h2 className="text-ink-dim text-[10px] font-semibold tracking-[0.13em] uppercase">
+          Selected zone
+        </h2>
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Clear selection"
+          className="text-ink-dim hover:text-ink -mt-1 -mr-1 rounded p-1 transition"
+        >
+          <X className="size-3.5" />
+        </button>
       </div>
-    </aside>
+
+      <p className="text-ink mt-1.5 text-[17px] leading-tight font-semibold">
+        Brgy. {zone.barangay}
+      </p>
+
+      {/* the number people actually came for */}
+      <div className="mt-3 flex items-baseline gap-2.5">
+        <span
+          className={`text-[26px] leading-none font-semibold tracking-tight ${hazardText[zone.hazard]}`}
+          data-numeric
+        >
+          {formatDepth(zone)}
+        </span>
+        <span
+          className={`text-[11px] font-bold tracking-wide uppercase ${hazardText[zone.hazard]}`}
+        >
+          {tier.label}
+        </span>
+      </div>
+
+      <p className="text-ink-dim mt-1.5 text-[11px]">
+        {tier.name} · {scenario.label} scenario · {scenario.annualChance} chance
+        a year
+      </p>
+
+      <p className="text-ink-dim mt-3.5 text-[12.5px] leading-relaxed">
+        {tier.human}
+      </p>
+
+      <div className="border-hairline/60 mt-3.5 border-t pt-3">
+        <p className="text-ink mb-1 text-[10px] font-semibold tracking-[0.13em] uppercase">
+          What to do
+        </p>
+        <p className="text-ink text-[12.5px] leading-relaxed">{tier.action}</p>
+      </div>
+    </section>
   );
 }
