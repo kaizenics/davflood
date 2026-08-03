@@ -1,22 +1,51 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* ------------------------------------------------------------------
-   NaboFlood app tokens.
+   NaboFlood tokens.
 
-   These are the exact sRGB conversions of the marketing site's oklch
-   tokens, duplicated from `@naboflood/hazard/tokens`. CSS cannot
-   import from a TS module, so if you change one, change both —
-   `packages/hazard/src/tokens.ts` is the authority.
+   LIGHT is the base; `.dark` overrides below. Both palettes are
+   duplicated from `@naboflood/hazard/tokens` — CSS cannot import from
+   a TS module, so if you change one, change both. That file is the
+   authority and records how the values were derived.
 
-   Hazard colours are SEMANTIC: flood severity and nothing else. Never
-   a button, never a hover state, never decoration. `tide` is the brand
-   accent precisely so a call-to-action can never be misread as a
-   hazard warning.
+   The light hazard ramp is NOT an inversion of the dark one. Amber at
+   #f3c443 scores 11.9:1 on the dark canvas and 1.65:1 on white, so a
+   naive flip would make the LOWEST hazard level the hardest to read.
+   Both ramps were computed in oklch and verified: ≥4.5:1 on their own
+   canvas, pairwise separation >0.10 in oklab, lightness descending
+   low → high so they read in the same direction.
+
+   Hazard colours are SEMANTIC — flood severity and nothing else.
+   `tide` is the brand accent precisely so a button can never be
+   mistaken for a hazard warning.
    ------------------------------------------------------------------ */
 
 @theme {
   --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
 
+  /* light (default) */
+  --color-abyss: #f9fafb;
+  --color-deep: #ffffff;
+  --color-raised: #f0f3f6;
+  --color-hairline: #d5dade;
+
+  --color-ink: #192028;
+  --color-ink-dim: #5c646d;
+
+  --color-tide: #007188;
+  --color-tide-deep: #005469;
+
+  --color-haz-low: #805e00;
+  --color-haz-med: #a22b00;
+  --color-haz-high: #a00025;
+
+  --radius-card: 0.875rem;
+  --radius-pill: 999px;
+}
+
+.dark {
   --color-abyss: #060a0e;
   --color-deep: #0f141a;
   --color-raised: #1a2027;
@@ -31,13 +60,12 @@
   --color-haz-low: #f3c443;
   --color-haz-med: #fa8927;
   --color-haz-high: #f1453f;
-
-  --radius-card: 0.875rem;
-  --radius-pill: 999px;
 }
 
-/* The map is dark and full-bleed; a light theme would fight it. */
 :root {
+  color-scheme: light;
+}
+.dark {
   color-scheme: dark;
 }
 

@@ -4,6 +4,7 @@ import { HeadContent, Scripts, createRootRoute } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 
 import { AppHeader } from "@/components/app-header";
+import { THEME_INIT_SCRIPT } from "@/lib/theme";
 import appCss from "@/styles/app.css?url";
 
 export const Route = createRootRoute({
@@ -30,9 +31,11 @@ export const Route = createRootRoute({
 
 function RootDocument({ children }: { children: ReactNode }) {
   return (
-    <html lang="en-PH" className="dark">
+    // no `className="dark"` here — THEME_INIT_SCRIPT sets it before paint
+    <html lang="en-PH">
       <head>
         <HeadContent />
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
       </head>
       <body className="bg-abyss text-ink">
         <div className="flex h-dvh flex-col">

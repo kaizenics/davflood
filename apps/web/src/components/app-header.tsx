@@ -1,4 +1,7 @@
 import { Link } from "@tanstack/react-router";
+import { Moon, Sun } from "lucide-react";
+
+import { useTheme } from "@/lib/theme";
 
 const NAV = [
   { to: "/", label: "Map", exact: true },
@@ -8,6 +11,8 @@ const NAV = [
 ] as const;
 
 export function AppHeader() {
+  const { theme, toggle } = useTheme();
+
   return (
     <header className="border-hairline bg-abyss/90 sticky top-0 z-30 shrink-0 border-b backdrop-blur-xl">
       <div className="mx-auto flex h-14 max-w-[110rem] items-center gap-6 px-4 sm:px-6">
@@ -36,10 +41,24 @@ export function AppHeader() {
           href="https://noah.up.edu.ph/"
           target="_blank"
           rel="noopener noreferrer"
-          className="text-ink-dim hover:text-tide hidden text-xs whitespace-nowrap transition md:block"
+          className="text-ink-dim hover:text-tide hidden text-xs whitespace-nowrap transition lg:block"
         >
           Data © UP NOAH
         </a>
+
+        <button
+          type="button"
+          onClick={toggle}
+          aria-label={theme === "dark" ? "Switch to light theme" : "Switch to dark theme"}
+          title={theme === "dark" ? "Switch to light theme" : "Switch to dark theme"}
+          className="border-hairline text-ink-dim hover:text-ink hover:border-tide flex size-8 shrink-0 items-center justify-center rounded-full border transition"
+        >
+          {theme === "dark" ? (
+            <Sun className="size-4" aria-hidden="true" />
+          ) : (
+            <Moon className="size-4" aria-hidden="true" />
+          )}
+        </button>
       </div>
     </header>
   );
