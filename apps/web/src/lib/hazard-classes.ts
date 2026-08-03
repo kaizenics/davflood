@@ -1,4 +1,4 @@
-import type { HazardId } from "@naboflood/hazard/tiers";
+import type { HazardId } from "@davflood/hazard/tiers";
 
 /**
  * Literal Tailwind classes per hazard tier.
@@ -9,7 +9,7 @@ import type { HazardId } from "@naboflood/hazard/tiers";
  *     the theme automatically — no `theme` prop threaded through every
  *     component that happens to show a hazard colour.
  *
- * Raw hex from `@naboflood/hazard/tokens` is still used for MapLibre paint,
+ * Raw hex from `@davflood/hazard/tokens` is still used for MapLibre paint,
  * which cannot read CSS variables.
  */
 export const hazardText: Record<HazardId, string> = {

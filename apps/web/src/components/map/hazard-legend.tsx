@@ -1,8 +1,8 @@
-import { attributionFor } from "@naboflood/hazard/copy";
-import { hazardTiers } from "@naboflood/hazard/tiers";
+import { attributionFor } from "@davflood/hazard/copy";
+import { hazardTiers } from "@davflood/hazard/tiers";
 
 import { hazardBg } from "@/lib/hazard-classes";
-import type { BasemapKind } from "@naboflood/hazard/style";
+import type { BasemapKind } from "@davflood/hazard/style";
 
 type Props = {
   basemap?: BasemapKind;

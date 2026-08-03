@@ -1,22 +1,22 @@
-import { CAMERA, PANABO_BBOX } from "@naboflood/hazard/geo";
-import type { LngLat } from "@naboflood/hazard/geo";
+import { CAMERA, DAVAO_BBOX } from "@davflood/hazard/geo";
+import type { LngLat } from "@davflood/hazard/geo";
 import {
   HAZARD_BEFORE_ID,
   HAZARD_FILL_LAYER_IDS,
   LAYER_IDS,
   SOURCE_HAZARD,
   hazardLayers,
-} from "@naboflood/hazard/layers";
-import { asHazardProperties } from "@naboflood/hazard/schema";
-import type { HazardProperties } from "@naboflood/hazard/schema";
-import type { ScenarioYears } from "@naboflood/hazard/scenarios";
+} from "@davflood/hazard/layers";
+import { asHazardProperties } from "@davflood/hazard/schema";
+import type { HazardProperties } from "@davflood/hazard/schema";
+import type { ScenarioYears } from "@davflood/hazard/scenarios";
 import {
   SOURCE_TERRAIN,
   TERRAIN_EXAGGERATION,
   buildBaseStyle,
-} from "@naboflood/hazard/style";
-import type { BasemapKind } from "@naboflood/hazard/style";
-import { colors } from "@naboflood/hazard/tokens";
+} from "@davflood/hazard/style";
+import type { BasemapKind } from "@davflood/hazard/style";
+import { colors } from "@davflood/hazard/tokens";
 // maplibre-gl v6 ships named exports only — there is no default export
 import * as maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
@@ -33,6 +33,8 @@ import {
 export type FloodMapHandle = {
   flyTo: (center: LngLat, zoom?: number) => void;
   resetCamera: () => void;
+  /** animate=false for slider drags, true for preset jumps */
+  setPitch: (pitch: number, animate?: boolean) => void;
 };
 
 type Props = {
@@ -45,6 +47,10 @@ type Props = {
   basemap?: BasemapKind;
   /** hide the hazard overlay to read what is underneath it */
   showHazard?: boolean;
+  /** draw zones as depth-extruded volumes instead of flat fills */
+  extrude?: boolean;
+  /** fires on every camera pitch change, including drag gestures */
+  onPitchChange?: (pitch: number) => void;
 };
 
 /**
@@ -79,6 +85,36 @@ function applyHazardVisibility(m: maplibregl.Map, visible: boolean) {
 }
 
 /**
+ * (Re)creates the hazard layers on top of the current style.
+ *
+ * Used both on style.load and when the flat/extruded mode flips — the two
+ * modes are different layer TYPES (fill vs fill-extrusion), and maplibre
+ * cannot morph a layer's type in place, so the honest operation is
+ * remove-and-re-add. The source, and therefore the loaded data, is untouched.
+ */
+function rebuildHazardLayers(
+  m: maplibregl.Map,
+  opts: { basemap: BasemapKind; extrude: boolean },
+) {
+  for (const id of ALL_HAZARD_LAYERS) {
+    if (m.getLayer(id)) m.removeLayer(id);
+  }
+  const layers = hazardLayers({
+    fillOpacity: fillOpacityFor(opts.basemap),
+    // the ramp must match the legend; satellite keeps the dark ramp, which is
+    // what reads over imagery
+    theme: opts.basemap === "light" ? "light" : "dark",
+    extrude: opts.extrude,
+  });
+  // labels stay on top when they exist; `place-town` may be absent in
+  // satellite mode
+  const before = m.getLayer(HAZARD_BEFORE_ID) ? HAZARD_BEFORE_ID : undefined;
+  for (const layer of layers) {
+    m.addLayer(layer as maplibregl.LayerSpecification, before);
+  }
+}
+
+/**
  * Aerial imagery is bright and busy, so a 45% fill that reads well over dark
  * cartography disappears over it. Push the fills harder when the basemap is
  * satellite.
@@ -99,6 +135,8 @@ export const FloodMap = forwardRef<FloodMapHandle, Props>(function FloodMap(
     terrain = true,
     basemap = "dark",
     showHazard = true,
+    extrude = false,
+    onPitchChange,
   },
   ref,
 ) {
@@ -117,6 +155,8 @@ export const FloodMap = forwardRef<FloodMapHandle, Props>(function FloodMap(
   const terrainRef = useRef(terrain);
   const basemapRef = useRef(basemap);
   const showHazardRef = useRef(showHazard);
+  const extrudeRef = useRef(extrude);
+  const onPitchChangeRef = useRef(onPitchChange);
 
   useEffect(() => {
     onSelectRef.current = onSelect;
@@ -125,6 +165,8 @@ export const FloodMap = forwardRef<FloodMapHandle, Props>(function FloodMap(
     terrainRef.current = terrain;
     basemapRef.current = basemap;
     showHazardRef.current = showHazard;
+    extrudeRef.current = extrude;
+    onPitchChangeRef.current = onPitchChange;
   });
 
   useImperativeHandle(ref, () => ({
@@ -139,6 +181,13 @@ export const FloodMap = forwardRef<FloodMapHandle, Props>(function FloodMap(
         bearing: CAMERA.bearing,
         duration: 900,
       });
+    },
+    setPitch(pitch, animate = false) {
+      const m = map.current;
+      if (!m) return;
+      // jumpTo while the slider is being dragged — easing would lag the thumb
+      if (animate) m.easeTo({ pitch, duration: 500 });
+      else m.jumpTo({ pitch });
     },
   }));
 
@@ -167,8 +216,8 @@ export const FloodMap = forwardRef<FloodMapHandle, Props>(function FloodMap(
       minZoom: CAMERA.minZoom,
       maxZoom: CAMERA.maxZoom,
       maxBounds: [
-        [PANABO_BBOX[0], PANABO_BBOX[1]],
-        [PANABO_BBOX[2], PANABO_BBOX[3]],
+        [DAVAO_BBOX[0], DAVAO_BBOX[1]],
+        [DAVAO_BBOX[2], DAVAO_BBOX[3]],
       ],
       attributionControl: false,
     });
@@ -195,18 +244,10 @@ export const FloodMap = forwardRef<FloodMapHandle, Props>(function FloodMap(
       if (m.getSource(SOURCE_HAZARD)) return; // style reloads re-fire this
       try {
         m.addSource(SOURCE_HAZARD, { type: "geojson", data: dataRef.current });
-        const layers = hazardLayers({
-          fillOpacity: fillOpacityFor(basemapRef.current),
-          // the ramp must match the legend; satellite keeps the dark ramp,
-          // which is what reads over imagery
-          theme: basemapRef.current === "light" ? "light" : "dark",
+        rebuildHazardLayers(m, {
+          basemap: basemapRef.current,
+          extrude: extrudeRef.current,
         });
-        for (const layer of layers) {
-          // in satellite mode the labels are the only thing above the imagery,
-          // and `place-town` may not exist in every basemap
-          const before = m.getLayer(HAZARD_BEFORE_ID) ? HAZARD_BEFORE_ID : undefined;
-          m.addLayer(layer as maplibregl.LayerSpecification, before);
-        }
         // re-apply everything that changed while the style was still loading —
         // this also runs after a basemap swap, which resets the whole style
         applySelection(m, selectedRef.current);
@@ -235,6 +276,10 @@ export const FloodMap = forwardRef<FloodMapHandle, Props>(function FloodMap(
       // fills draw low -> high, so the last hit is the most severe zone
       const top = hits[hits.length - 1];
       onSelectRef.current(top ? (asHazardProperties(top.properties) ?? null) : null);
+    });
+
+    m.on("pitch", () => {
+      onPitchChangeRef.current?.(m.getPitch());
     });
 
     m.on("mousemove", (e) => {
@@ -285,6 +330,18 @@ export const FloodMap = forwardRef<FloodMapHandle, Props>(function FloodMap(
   useEffect(() => {
     if (map.current) applyHazardVisibility(map.current, showHazard);
   }, [showHazard]);
+
+  /* flat <-> extruded: different layer types, so remove and re-add. A basemap
+     swap does not come through here — setStyle refires style.load, and
+     initLayers rebuilds with the current refs. */
+  useEffect(() => {
+    const m = map.current;
+    if (!m || !m.getSource(SOURCE_HAZARD)) return;
+    rebuildHazardLayers(m, { basemap, extrude });
+    applySelection(m, selectedZoneId);
+    applyHazardVisibility(m, showHazard);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [extrude]);
 
   /**
    * Swapping the basemap replaces the whole style, which drops the hazard

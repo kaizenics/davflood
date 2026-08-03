@@ -1,5 +1,5 @@
-import type { LngLat } from "@naboflood/hazard/geo";
-import { inBBox } from "@naboflood/hazard/geo";
+import type { LngLat } from "@davflood/hazard/geo";
+import { inBBox } from "@davflood/hazard/geo";
 import { Loader2, LocateFixed, Mountain, RotateCcw } from "lucide-react";
 import { useState } from "react";
 
@@ -35,7 +35,7 @@ export function MapControls({
         setLocating(false);
         const point: LngLat = [pos.coords.longitude, pos.coords.latitude];
         if (!inBBox(point)) {
-          setNotice("You appear to be outside Panabo City.");
+          setNotice("You appear to be outside Davao City.");
           return;
         }
         setNotice(null);

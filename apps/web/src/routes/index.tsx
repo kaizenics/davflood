@@ -1,8 +1,9 @@
-import { disclaimer } from "@naboflood/hazard/copy";
-import type { LngLat } from "@naboflood/hazard/geo";
-import type { HazardCollection, HazardProperties } from "@naboflood/hazard/schema";
-import { DEFAULT_SCENARIO, scenarioByYears } from "@naboflood/hazard/scenarios";
-import type { ScenarioYears } from "@naboflood/hazard/scenarios";
+import { disclaimer } from "@davflood/hazard/copy";
+import { CAMERA } from "@davflood/hazard/geo";
+import type { LngLat } from "@davflood/hazard/geo";
+import type { HazardCollection, HazardProperties } from "@davflood/hazard/schema";
+import { DEFAULT_SCENARIO, scenarioByYears } from "@davflood/hazard/scenarios";
+import type { ScenarioYears } from "@davflood/hazard/scenarios";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { Construction, MousePointerClick } from "lucide-react";
 import type { ReactNode } from "react";
@@ -12,6 +13,7 @@ import { FloodMap, type FloodMapHandle } from "@/components/map/flood-map";
 import { HazardLegend } from "@/components/map/hazard-legend";
 import { MapControls } from "@/components/map/map-controls";
 import { MapLayers } from "@/components/map/map-layers";
+import { PitchControl } from "@/components/map/pitch-control";
 import { RainfallPanel } from "@/components/map/rainfall-panel";
 import { ScenarioToggle } from "@/components/map/scenario-toggle";
 import { ZonePanel } from "@/components/map/zone-panel";
@@ -40,6 +42,11 @@ function MapScreen() {
   // satellite overrides the theme; otherwise the basemap follows it
   const basemap = view === "satellite" ? "satellite" : theme;
   const [showHazard, setShowHazard] = useState(true);
+  // depth extrusion on by default — it is the app's "3D" and degrades to a
+  // flat-looking top face when the camera is not pitched
+  const [extrude, setExtrude] = useState(true);
+  // mirrors the camera; updated by slider, presets AND drag gestures alike
+  const [pitch, setPitch] = useState<number>(CAMERA.pitch);
 
   // maplibre needs a DOM and a WebGL context, neither of which exists during
   // prerendering — so the map only mounts on the client
@@ -104,12 +111,24 @@ function MapScreen() {
             <RainfallPanel />
           </Section>
 
+          <Section label="View angle">
+            <PitchControl
+              pitch={pitch}
+              onPitchChange={(p, animate) => {
+                setPitch(p);
+                mapRef.current?.setPitch(p, animate);
+              }}
+            />
+          </Section>
+
           <Section label="Layers">
             <MapLayers
               basemap={view}
               onBasemapChange={setView}
               showHazard={showHazard}
               onShowHazardChange={setShowHazard}
+              extrude={extrude}
+              onExtrudeChange={setExtrude}
             />
           </Section>
 
@@ -160,6 +179,8 @@ function MapScreen() {
             terrain={terrain}
             basemap={basemap}
             showHazard={showHazard}
+            extrude={extrude}
+            onPitchChange={setPitch}
           />
         ) : (
           <div className="bg-abyss absolute inset-0" />

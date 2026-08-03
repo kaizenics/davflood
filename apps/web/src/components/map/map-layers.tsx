@@ -1,4 +1,4 @@
-import { Eye, EyeOff, Layers, Satellite } from "lucide-react";
+import { Box, Eye, EyeOff, Layers, Satellite } from "lucide-react";
 
 type Props = {
   /** "map" follows the theme; "satellite" overrides it */
@@ -6,6 +6,8 @@ type Props = {
   onBasemapChange: (b: "map" | "satellite") => void;
   showHazard: boolean;
   onShowHazardChange: (v: boolean) => void;
+  extrude: boolean;
+  onExtrudeChange: (v: boolean) => void;
 };
 
 /** "Map" resolves to the active theme, so the basemap follows light/dark. */
@@ -19,6 +21,8 @@ export function MapLayers({
   onBasemapChange,
   showHazard,
   onShowHazardChange,
+  extrude,
+  onExtrudeChange,
 }: Props) {
   return (
     <>
@@ -51,33 +55,72 @@ export function MapLayers({
 
       {/* Hiding the hazard overlay is how you check the map against what you
           actually know is there — which is the honest way to use a model. */}
-      <button
-        type="button"
-        role="switch"
-        aria-checked={showHazard}
-        onClick={() => onShowHazardChange(!showHazard)}
-        className="group mt-2.5 flex w-full items-center gap-2.5 text-left"
-      >
-        {showHazard ? (
-          <Eye className="text-tide size-4 shrink-0" aria-hidden="true" />
-        ) : (
-          <EyeOff className="text-ink-dim size-4 shrink-0" aria-hidden="true" />
-        )}
-        <span className="text-ink flex-1 text-[12.5px] font-medium">
-          Flood hazard overlay
-        </span>
-        <span
-          className={`relative h-[18px] w-8 shrink-0 rounded-full transition ${
-            showHazard ? "bg-tide" : "bg-hairline"
-          }`}
-        >
-          <span
-            className={`bg-abyss absolute top-[3px] size-3 rounded-full transition-all ${
-              showHazard ? "left-[17px]" : "left-[3px]"
-            }`}
+      <SwitchRow
+        checked={showHazard}
+        onChange={onShowHazardChange}
+        label="Flood hazard overlay"
+        icon={
+          showHazard ? (
+            <Eye className="text-tide size-4 shrink-0" aria-hidden="true" />
+          ) : (
+            <EyeOff className="text-ink-dim size-4 shrink-0" aria-hidden="true" />
+          )
+        }
+      />
+
+      {/* Extruded zones stand up by their expected depth — tilt the map to
+          read them. Only meaningful while the overlay is showing. */}
+      <SwitchRow
+        checked={extrude}
+        onChange={onExtrudeChange}
+        disabled={!showHazard}
+        label="Show depth in 3D"
+        icon={
+          <Box
+            className={`size-4 shrink-0 ${extrude && showHazard ? "text-tide" : "text-ink-dim"}`}
+            aria-hidden="true"
           />
-        </span>
-      </button>
+        }
+      />
     </>
+  );
+}
+
+function SwitchRow({
+  checked,
+  onChange,
+  label,
+  icon,
+  disabled = false,
+}: {
+  checked: boolean;
+  onChange: (v: boolean) => void;
+  label: string;
+  icon: React.ReactNode;
+  disabled?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      disabled={disabled}
+      onClick={() => onChange(!checked)}
+      className="group mt-2.5 flex w-full items-center gap-2.5 text-left disabled:opacity-40"
+    >
+      {icon}
+      <span className="text-ink flex-1 text-[12.5px] font-medium">{label}</span>
+      <span
+        className={`relative h-[18px] w-8 shrink-0 rounded-full transition ${
+          checked ? "bg-tide" : "bg-hairline"
+        }`}
+      >
+        <span
+          className={`bg-abyss absolute top-[3px] size-3 rounded-full transition-all ${
+            checked ? "left-[17px]" : "left-[3px]"
+          }`}
+        />
+      </span>
+    </button>
   );
 }
