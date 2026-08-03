@@ -107,3 +107,58 @@
 .maplibregl-ctrl-attrib {
   display: none;
 }
+
+/* ------------------------------------------------------------------
+   Dialog motion.
+
+   Four keyframes rather than pulling in tw-animate-css for them. Radix
+   drives these off data-state, and holds the element in the DOM until
+   the exit animation finishes.
+   ------------------------------------------------------------------ */
+
+@keyframes nf-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes nf-fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+@keyframes nf-dialog-in {
+  from { opacity: 0; transform: translate(-50%, -48%) scale(0.96); }
+  to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+@keyframes nf-dialog-out {
+  from { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  to { opacity: 0; transform: translate(-50%, -48%) scale(0.96); }
+}
+
+.nf-overlay[data-state="open"] {
+  animation: nf-fade-in 160ms ease-out;
+}
+.nf-overlay[data-state="closed"] {
+  animation: nf-fade-out 120ms ease-in;
+}
+.nf-dialog {
+  transform: translate(-50%, -50%);
+}
+.nf-dialog[data-state="open"] {
+  animation: nf-dialog-in 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.nf-dialog[data-state="closed"] {
+  animation: nf-dialog-out 130ms ease-in;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nf-overlay[data-state],
+  .nf-dialog[data-state] {
+    animation-duration: 1ms;
+  }
+}
+
+/* Recharts draws focus outlines on its SVG wrappers; we drive focus
+   styling ourselves and the surrounding button already shows it. */
+.recharts-wrapper:focus,
+.recharts-surface:focus {
+  outline: none;
+}
