@@ -13,8 +13,8 @@
   "iconLibrary": "lucide",
   "aliases": {
     "components": "@/components",
-    "utils": "@naboflood/ui/lib/utils",
-    "ui": "@naboflood/ui/components",
+    "utils": "@davflood/ui/lib/utils",
+    "ui": "@davflood/ui/components",
     "lib": "@/lib",
     "hooks": "@/hooks"
   },

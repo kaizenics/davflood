@@ -1,35 +1,35 @@
 {
-  "name": "@naboflood/hazard",
-  "version": "0.0.0",
-  "private": true,
-  "type": "module",
-  "exports": {
-    "./tiers": "./src/tiers.ts",
-    "./tokens": "./src/tokens.ts",
-    "./geo": "./src/geo.ts",
-    "./barangays": "./src/barangays.ts",
-    "./scenarios": "./src/scenarios.ts",
-    "./copy": "./src/copy.ts",
-    "./schema": "./src/schema.ts",
-    "./style": "./src/style.ts",
-    "./layers": "./src/layers.ts",
-    "./rainfall": "./src/rainfall.ts",
-    "./data/*": "./src/data/*"
-  },
-  "scripts": {
-    "check-types": "tsc --noEmit",
-    "generate:data": "tsx scripts/generate-synthetic.ts",
-    "validate:style": "tsx scripts/validate-style.ts",
-    "build:noah": "tsx scripts/build-noah-data.ts"
-  },
-  "dependencies": {
-    "@maplibre/maplibre-gl-style-spec": "24.8.5",
-    "@types/geojson": "^7946.0.16"
-  },
-  "devDependencies": {
-    "@naboflood/config": "workspace:*",
-    "@types/node": "^22.20.1",
-    "tsx": "^4.20.6",
-    "typescript": "^6.0.3"
-  }
+	"name": "@davflood/hazard",
+	"version": "0.0.0",
+	"private": true,
+	"type": "module",
+	"exports": {
+		"./tiers": "./src/tiers.ts",
+		"./tokens": "./src/tokens.ts",
+		"./geo": "./src/geo.ts",
+		"./barangays": "./src/barangays.ts",
+		"./scenarios": "./src/scenarios.ts",
+		"./copy": "./src/copy.ts",
+		"./schema": "./src/schema.ts",
+		"./style": "./src/style.ts",
+		"./layers": "./src/layers.ts",
+		"./rainfall": "./src/rainfall.ts",
+		"./data/*": "./src/data/*"
+	},
+	"scripts": {
+		"check-types": "tsc --noEmit",
+		"validate:style": "tsx scripts/validate-style.ts",
+		"build:noah": "tsx scripts/build-noah-data.ts",
+		"build:admin": "tsx scripts/build-admin-data.ts"
+	},
+	"dependencies": {
+		"@maplibre/maplibre-gl-style-spec": "24.8.5",
+		"@types/geojson": "^7946.0.16"
+	},
+	"devDependencies": {
+		"@davflood/config": "workspace:*",
+		"@types/node": "^22.20.1",
+		"tsx": "^4.20.6",
+		"typescript": "^6.0.3"
+	}
 }

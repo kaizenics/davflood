@@ -26,7 +26,7 @@ importers:
 
   .:
     devDependencies:
-      '@naboflood/config':
+      '@davflood/config':
         specifier: workspace:*
         version: link:packages/config
       '@types/node':
@@ -53,7 +53,7 @@ importers:
       '@iconify-json/lucide':
         specifier: ^1.2.121
         version: 1.2.121
-      '@naboflood/hazard':
+      '@davflood/hazard':
         specifier: workspace:*
         version: link:../../packages/hazard
       '@tailwindcss/vite':
@@ -69,7 +69,7 @@ importers:
         specifier: 'catalog:'
         version: 4.3.3
     devDependencies:
-      '@naboflood/config':
+      '@davflood/config':
         specifier: workspace:*
         version: link:../../packages/config
       typescript:
@@ -78,7 +78,7 @@ importers:
 
   apps/web:
     dependencies:
-      '@naboflood/hazard':
+      '@davflood/hazard':
         specifier: workspace:*
         version: link:../../packages/hazard
       '@radix-ui/react-dialog':
@@ -118,7 +118,7 @@ importers:
         specifier: 'catalog:'
         version: 3.6.0
     devDependencies:
-      '@naboflood/config':
+      '@davflood/config':
         specifier: workspace:*
         version: link:../../packages/config
       '@tailwindcss/vite':
@@ -163,7 +163,7 @@ importers:
         specifier: ^7946.0.16
         version: 7946.0.16
     devDependencies:
-      '@naboflood/config':
+      '@davflood/config':
         specifier: workspace:*
         version: link:../config
       '@types/node':

@@ -39,7 +39,7 @@ export default defineConfig({
         prerender: { outputPath: "/index", crawlLinks: true },
       },
       prerender: { failOnError: true },
-      sitemap: { host: "https://app.naboflood.app" },
+      sitemap: { host: "https://app.davflood.app" },
     }),
     react(),
   ],
