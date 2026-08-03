@@ -208,6 +208,27 @@ function buildScenario(years: ScenarioYears): HazardCollection {
 	return { type: "FeatureCollection", features };
 }
 
+/**
+ * DANGER: src/data now holds the REAL UP NOAH export, produced by
+ * build-noah-data.ts. Running this generator would silently replace real
+ * hazard information with synthetic shapes — the exact failure this project
+ * spends so much effort warning users about.
+ *
+ * Kept because it documents the schema and can rebuild a working dataset if
+ * the NOAH source is ever unavailable, but it will not clobber real data
+ * without being told to.
+ */
+if (!process.argv.includes("--force")) {
+	console.error(
+		[
+			"refusing to run: src/data holds the REAL UP NOAH export.",
+			"This generator produces SYNTHETIC placeholder shapes and would overwrite it.",
+			"Re-run with --force only if you genuinely want placeholder data.",
+		].join("\n"),
+	);
+	process.exit(1);
+}
+
 mkdirSync(OUT_DIR, { recursive: true });
 
 for (const years of [5, 25, 100] as const) {
