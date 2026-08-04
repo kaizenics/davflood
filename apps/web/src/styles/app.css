@@ -156,6 +156,107 @@
   }
 }
 
+/* ------------------------------------------------------------------
+   Focus pin.
+
+   The marker dropped on a barangay the user navigated to. Styled here
+   rather than inline because the element is created imperatively (see
+   components/map/focus-pin.ts) and these rules need the theme
+   variables, which only resolve in the cascade.
+
+   Everything is pointer-transparent except the label: the pin must not
+   swallow a click meant for the hazard zone underneath it.
+   ------------------------------------------------------------------ */
+
+.nf-pin {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  pointer-events: none;
+}
+
+.nf-pin-label {
+  display: flex;
+  align-items: center;
+  gap: 0.125rem;
+  max-width: 12rem;
+  padding: 0.1875rem 0.1875rem 0.1875rem 0.5rem;
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-pill);
+  background: var(--color-deep);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.3;
+  white-space: nowrap;
+  box-shadow: 0 2px 10px rgb(0 0 0 / 0.3);
+  pointer-events: auto;
+}
+
+.nf-pin-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.nf-pin-clear {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1rem;
+  height: 1rem;
+  border-radius: var(--radius-pill);
+  color: var(--color-ink-dim);
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+}
+.nf-pin-clear:hover {
+  background: var(--color-raised);
+  color: var(--color-ink);
+}
+
+.nf-pin-glyph {
+  width: 22px;
+  height: 29px;
+  filter: drop-shadow(0 2px 6px rgb(0 0 0 / 0.45));
+}
+.nf-pin-body {
+  fill: var(--color-tide);
+  stroke: var(--color-deep);
+  stroke-width: 1.5;
+}
+.nf-pin-hole {
+  fill: var(--color-deep);
+}
+
+.nf-pin-pulse {
+  position: absolute;
+  bottom: -7px;
+  left: 50%;
+  width: 14px;
+  height: 14px;
+  margin-left: -7px;
+  border-radius: var(--radius-pill);
+  background: var(--color-tide);
+  animation: nf-pin-pulse 2.4s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+}
+
+@keyframes nf-pin-pulse {
+  0% { transform: scale(0.4); opacity: 0.5; }
+  70% { transform: scale(2.6); opacity: 0; }
+  100% { transform: scale(2.6); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nf-pin-pulse {
+    animation: none;
+    opacity: 0.35;
+  }
+}
+
 /* Recharts draws focus outlines on its SVG wrappers; we drive focus
    styling ourselves and the surrounding button already shows it. */
 .recharts-wrapper:focus,

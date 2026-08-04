@@ -64,7 +64,11 @@ function BarangaysScreen() {
                   onClick={() =>
                     navigate({
                       to: "/",
-                      search: { lng: b.center[0], lat: b.center[1] },
+                      search: {
+                        lng: b.center[0],
+                        lat: b.center[1],
+                        b: b.name,
+                      },
                     })
                   }
                   className="border-hairline/60 hover:bg-raised/40 flex w-full items-center gap-3 border-b py-3.5 text-left transition"

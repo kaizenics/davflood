@@ -30,6 +30,30 @@ import {
   useState,
 } from "react";
 
+import { createFocusPin } from "@/components/map/focus-pin";
+
+/** A place the user asked to be taken to, from the barangay list. */
+export type FocusTarget = {
+  center: LngLat;
+  /** shown on the pin's label; omitted for a bare coordinate */
+  name?: string;
+};
+
+/**
+ * Close enough to read the hazard zones around a barangay, far enough that a
+ * centroid being a few hundred metres off does not put the pin outside the
+ * view. Barangay areas here range from a few blocks downtown to tens of square
+ * kilometres upland, and a centroid is all we have — no bounds to fit to.
+ */
+const FOCUS_ZOOM = 14;
+
+function prefersReducedMotion(): boolean {
+  return (
+    typeof window !== "undefined" &&
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches
+  );
+}
+
 export type FloodMapHandle = {
   flyTo: (center: LngLat, zoom?: number) => void;
   resetCamera: () => void;
@@ -51,6 +75,10 @@ type Props = {
   extrude?: boolean;
   /** fires on every camera pitch change, including drag gestures */
   onPitchChange?: (pitch: number) => void;
+  /** fly here and drop a pin; null clears the pin and leaves the camera */
+  focus?: FocusTarget | null;
+  /** the pin's dismiss button — usually clears the URL that set `focus` */
+  onFocusClear?: () => void;
 };
 
 /**
@@ -137,11 +165,14 @@ export const FloodMap = forwardRef<FloodMapHandle, Props>(function FloodMap(
     showHazard = true,
     extrude = false,
     onPitchChange,
+    focus = null,
+    onFocusClear,
   },
   ref,
 ) {
   const container = useRef<HTMLDivElement | null>(null);
   const map = useRef<maplibregl.Map | null>(null);
+  const pin = useRef<maplibregl.Marker | null>(null);
   const [failure, setFailure] = useState<string | null>(null);
   const [loaded, setLoaded] = useState(false);
 
@@ -157,6 +188,7 @@ export const FloodMap = forwardRef<FloodMapHandle, Props>(function FloodMap(
   const showHazardRef = useRef(showHazard);
   const extrudeRef = useRef(extrude);
   const onPitchChangeRef = useRef(onPitchChange);
+  const onFocusClearRef = useRef(onFocusClear);
 
   useEffect(() => {
     onSelectRef.current = onSelect;
@@ -167,6 +199,7 @@ export const FloodMap = forwardRef<FloodMapHandle, Props>(function FloodMap(
     showHazardRef.current = showHazard;
     extrudeRef.current = extrude;
     onPitchChangeRef.current = onPitchChange;
+    onFocusClearRef.current = onFocusClear;
   });
 
   useImperativeHandle(ref, () => ({
@@ -303,6 +336,8 @@ export const FloodMap = forwardRef<FloodMapHandle, Props>(function FloodMap(
     map.current = m;
     return () => {
       clearTimeout(watchdog);
+      pin.current?.remove();
+      pin.current = null;
       m.remove();
       map.current = null;
     };
@@ -342,6 +377,46 @@ export const FloodMap = forwardRef<FloodMapHandle, Props>(function FloodMap(
     applyHazardVisibility(m, showHazard);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [extrude]);
+
+  /**
+   * Fly to the requested place and pin it.
+   *
+   * Gated on `loaded`, not just on the map existing. A camera command issued
+   * before the style has parsed is silently discarded by maplibre, and the
+   * map is created on the same render that a barangay link arrives on — so
+   * the naive version dropped exactly the flight the user asked for. When
+   * `loaded` flips this effect re-runs and the flight happens then.
+   *
+   * Markers survive a style reload (they are DOM, not style), so a basemap
+   * swap leaves the pin where it is.
+   */
+  useEffect(() => {
+    const m = map.current;
+    if (!m || !loaded) return;
+
+    pin.current?.remove();
+    pin.current = null;
+    if (!focus) return;
+
+    const center: [number, number] = [...focus.center];
+    pin.current = new maplibregl.Marker({
+      element: createFocusPin({
+        name: focus.name,
+        onClear: () => onFocusClearRef.current?.(),
+      }),
+      anchor: "bottom",
+    })
+      .setLngLat(center)
+      .addTo(m);
+
+    // Pitch and bearing are deliberately left alone: the user may have set
+    // them, and this is a "go here", not a "reset the view".
+    if (prefersReducedMotion()) {
+      m.jumpTo({ center, zoom: FOCUS_ZOOM });
+    } else {
+      m.flyTo({ center, zoom: FOCUS_ZOOM, duration: 2200, curve: 1.5 });
+    }
+  }, [focus, loaded]);
 
   /**
    * Swapping the basemap replaces the whole style, which drops the hazard

@@ -7,7 +7,7 @@ import type { ScenarioYears } from "@davflood/hazard/scenarios";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { Construction, MousePointerClick } from "lucide-react";
 import type { ReactNode } from "react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { FloodMap, type FloodMapHandle } from "@/components/map/flood-map";
 import { HazardLegend } from "@/components/map/hazard-legend";
@@ -20,18 +20,21 @@ import { ZonePanel } from "@/components/map/zone-panel";
 import { DATA_IS_PLACEHOLDER, EMPTY, loadScenario } from "@/lib/hazard-source";
 import { useTheme } from "@/lib/theme";
 
-type Search = { lng?: number; lat?: number };
+/** `b` is the barangay name, carried only so the pin can be labelled. */
+type Search = { lng?: number; lat?: number; b?: string };
 
 export const Route = createFileRoute("/")({
   component: MapScreen,
   validateSearch: (search: Record<string, unknown>): Search => ({
     lng: typeof search.lng === "number" ? search.lng : undefined,
     lat: typeof search.lat === "number" ? search.lat : undefined,
+    b: typeof search.b === "string" ? search.b : undefined,
   }),
 });
 
 function MapScreen() {
-  const { lng, lat } = Route.useSearch();
+  const { lng, lat, b } = Route.useSearch();
+  const navigate = Route.useNavigate();
   const mapRef = useRef<FloodMapHandle>(null);
 
   const [scenario, setScenario] = useState<ScenarioYears>(DEFAULT_SCENARIO);
@@ -75,11 +78,16 @@ function MapScreen() {
 
   const activeScenario = scenarioByYears[scenario];
 
-  useEffect(() => {
-    if (typeof lng === "number" && typeof lat === "number") {
-      mapRef.current?.flyTo([lng, lat] as LngLat, 14);
-    }
-  }, [lng, lat]);
+  /* The URL is the whole state of "take me to this barangay" — the map flies
+     and pins from this prop rather than an imperative call, because the map
+     is not loaded yet at the moment the link lands and would drop it. */
+  const focus = useMemo(
+    () =>
+      typeof lng === "number" && typeof lat === "number"
+        ? { center: [lng, lat] as LngLat, name: b }
+        : null,
+    [lng, lat, b],
+  );
 
   // a zone selected under one scenario may not exist under another
   useEffect(() => setSelected(null), [scenario]);
@@ -181,6 +189,10 @@ function MapScreen() {
             showHazard={showHazard}
             extrude={extrude}
             onPitchChange={setPitch}
+            focus={focus}
+            onFocusClear={() =>
+              navigate({ to: "/", search: {}, replace: true })
+            }
           />
         ) : (
           <div className="bg-abyss absolute inset-0" />
