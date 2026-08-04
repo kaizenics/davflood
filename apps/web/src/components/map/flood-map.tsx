@@ -175,6 +175,17 @@ export const FloodMap = forwardRef<FloodMapHandle, Props>(function FloodMap(
   const pin = useRef<maplibregl.Marker | null>(null);
   const [failure, setFailure] = useState<string | null>(null);
   const [loaded, setLoaded] = useState(false);
+  /**
+   * Bumped every time the hazard layers are (re)built — on first style load
+   * and again after every basemap swap, which tears the whole style down.
+   *
+   * It exists to make the data effect below re-run at those moments. Without
+   * it, delivering the polygons depends on winning a race against style
+   * loading, and losing that race is silent: the layers are present, visible
+   * and correctly configured over an empty source, so the map renders a
+   * perfect basemap with no flood data on it and reports no error.
+   */
+  const [layerEpoch, setLayerEpoch] = useState(0);
 
   // The map is created once, but props can change before `load` fires. These
   // refs let the load handler read CURRENT values rather than the ones its
@@ -288,6 +299,7 @@ export const FloodMap = forwardRef<FloodMapHandle, Props>(function FloodMap(
         applyHazardVisibility(m, showHazardRef.current);
         m.resize();
         setLoaded(true);
+        setLayerEpoch((n) => n + 1);
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
         console.error("[FloodMap] failed to add hazard layers:", err);
@@ -352,7 +364,10 @@ export const FloodMap = forwardRef<FloodMapHandle, Props>(function FloodMap(
     if (src && "setData" in src) {
       (src as maplibregl.GeoJSONSource).setData(data);
     }
-  }, [data, scenario]);
+    // layerEpoch, not just data: re-push whatever is current every time the
+    // layers are rebuilt, so the source can never be left holding the empty
+    // collection it was created with
+  }, [data, scenario, layerEpoch]);
 
   useEffect(() => {
     if (map.current) applySelection(map.current, selectedZoneId);

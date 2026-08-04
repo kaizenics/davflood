@@ -29,5 +29,11 @@ import maplibreWorkerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?worker&ur
  * artifact with its dependencies resolved, so the URL is always right.
  *
  * Must run before the first `new maplibregl.Map()`.
+ *
+ * This module is listed in the app's `sideEffects` field, and has to stay
+ * there. It is imported for its side effect and exports nothing, so a blanket
+ * `"sideEffects": false` lets Rollup drop the call below — silently, and only
+ * in the production build, where the symptom is the black map described
+ * above and dev keeps working because it never tree-shakes.
  */
 setWorkerUrl(maplibreWorkerUrl);
