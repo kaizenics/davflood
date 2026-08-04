@@ -2,11 +2,10 @@
  * Design tokens shared by every renderer.
  *
  * These are the exact sRGB conversions of the oklch values in
- * `apps/marketing/src/styles/global.css`. They exist as hex because a
- * MapLibre `paint` property needs a raw colour string, and because
- * interpolated Tailwind class names (`text-${token}`) do not survive a
- * Tailwind scan in either Astro or uniwind — both consumers already
- * hand-maintain literal class maps for exactly this reason.
+ * `apps/web/src/styles/app.css`. They exist as hex because a MapLibre
+ * `paint` property needs a raw colour string, and because interpolated
+ * Tailwind class names (`text-${token}`) do not survive a Tailwind scan —
+ * the app hand-maintains a literal class map for exactly this reason.
  *
  * ONE RULE ABOVE ALL: the hazard colours are SEMANTIC. They mean flood
  * severity and nothing else — never a button, never a hover state, never

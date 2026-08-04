@@ -6,8 +6,8 @@ import type { Theme } from "./tokens";
  *
  * These depth bands are not ours to invent — they come from the national
  * hazard model. `id` and `token` are deliberately asymmetric (`medium` vs
- * `haz-med`) because the marketing site's Tailwind classes already use the
- * short form; changing either breaks a consumer.
+ * `haz-med`) because the app's Tailwind classes already use the short form;
+ * changing either breaks a consumer.
  */
 export type HazardId = "low" | "medium" | "high";
 

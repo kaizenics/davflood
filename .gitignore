@@ -42,10 +42,6 @@ local.db
 local.db-shm
 local.db-wal
 
-# Turbo
-.turbo
-.nx
-
 # Better-T-Stack
 .alchemy
 .vercel

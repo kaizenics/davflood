@@ -1,5 +1,5 @@
 /**
- * Safety- and licence-critical copy. Shared so the app and the marketing site
+ * Safety- and licence-critical copy. It lives in one place so the wording
  * physically cannot drift: attribution is a licence obligation under the
  * NOAH and OSM terms, and the disclaimer is the single most important
  * sentence in the product.

@@ -14,23 +14,20 @@ and the worst one in the model.
 ```
 apps/
   web         the app — TanStack Start (SPA + prerender), MapLibre GL
-  marketing   the public site — Astro, near-zero JS
 packages/
   hazard      domain: hazard tiers, geography, barangays, map style, data
   config      shared tsconfig base
 ```
 
-`@davflood/hazard` is the single source of truth for anything both surfaces need: the UP NOAH
-hazard classification, the design tokens, the map style and the attribution text. Safety and
-licence copy lives there so the app and the site cannot drift apart.
+`@davflood/hazard` is the single source of truth for the domain: the UP NOAH hazard
+classification, the design tokens, the map style and the attribution text. Safety and licence
+copy lives there so it stays in one place rather than scattered through the UI.
 
 ## Getting started
 
 ```bash
 pnpm install
-pnpm dev            # everything
-pnpm dev:web        # the app   -> http://localhost:3001
-pnpm dev:marketing  # the site  -> http://localhost:4321
+pnpm dev      # the app -> http://localhost:3001
 ```
 
 ## Data
