@@ -25,7 +25,9 @@ export function MapLayers({
   onExtrudeChange,
 }: Props) {
   return (
-    <>
+    // one owner for the rhythm — the rows used to carry their own top margins,
+    // which doubled up as soon as they were nested in a spaced container
+    <div className="space-y-2.5">
       <div
         role="radiogroup"
         aria-label="Basemap"
@@ -82,7 +84,7 @@ export function MapLayers({
           />
         }
       />
-    </>
+    </div>
   );
 }
 
@@ -106,7 +108,7 @@ function SwitchRow({
       aria-checked={checked}
       disabled={disabled}
       onClick={() => onChange(!checked)}
-      className="group mt-2.5 flex w-full items-center gap-2.5 text-left disabled:opacity-40"
+      className="group flex w-full items-center gap-2.5 text-left disabled:opacity-40"
     >
       {icon}
       <span className="text-ink flex-1 text-[12.5px] font-medium">{label}</span>

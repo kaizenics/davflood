@@ -2,69 +2,70 @@ import { formatDepth } from "@davflood/hazard/schema";
 import type { HazardProperties } from "@davflood/hazard/schema";
 import { scenarioByYears } from "@davflood/hazard/scenarios";
 import { hazardById } from "@davflood/hazard/tiers";
-import { X } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 
-import { hazardBorder, hazardText } from "@/lib/hazard-classes";
+import { hazardBg, hazardText } from "@/lib/hazard-classes";
 
 type Props = {
-  zone: HazardProperties | null;
+  zone: HazardProperties;
   onClose: () => void;
 };
 
 /**
- * The tapped zone — the reason the map exists, so it is the one block in the
- * sidebar allowed to carry weight: a colour rule down the edge and a depth
- * figure large enough to read at a glance.
+ * The tapped zone — the same question the city reading answers, asked of one
+ * place instead of the whole city. It takes over that slot rather than sitting
+ * below it: this is the answer the user just asked for, and it used to render
+ * six sections down, off the bottom of the panel.
  *
  * Order is deliberate: WHERE, HOW DEEP, WHAT IT MEANS, WHAT TO DO.
+ *
+ * The severity colour is load-bearing here — stripe, figure and label all
+ * carry it — because this block is a hazard statement. Everything around it
+ * stays on the brand accent for exactly the same reason.
  */
 export function ZonePanel({ zone, onClose }: Props) {
-  if (!zone) return null;
-
   const tier = hazardById[zone.hazard];
   const scenario = scenarioByYears[zone.scenario];
 
   return (
     <section
-      aria-label={`Selected zone: Barangay ${zone.barangay}`}
-      className={`border-hairline/60 border-b border-l-[3px] px-5 py-4 ${hazardBorder[zone.hazard]}`}
+      aria-label={`Selected zone in Barangay ${zone.barangay}`}
+      className="relative px-5 pt-4 pb-5"
     >
-      <div className="flex items-start justify-between gap-3">
-        <h2 className="text-ink-dim text-[10px] font-semibold tracking-[0.13em] uppercase">
-          Selected zone
-        </h2>
-        <button
-          type="button"
-          onClick={onClose}
-          aria-label="Clear selection"
-          className="text-ink-dim hover:text-ink -mt-1 -mr-1 rounded p-1 transition"
-        >
-          <X className="size-3.5" />
-        </button>
-      </div>
+      <span
+        className={`${hazardBg[zone.hazard]} absolute top-0 bottom-0 left-0 w-[3px]`}
+        aria-hidden="true"
+      />
 
-      <p className="text-ink mt-1.5 text-[17px] leading-tight font-semibold">
+      <button
+        type="button"
+        onClick={onClose}
+        className="text-ink-dim hover:text-ink -ml-1 flex items-center gap-1.5 rounded px-1 py-0.5 text-[11px] font-medium transition"
+      >
+        <ArrowLeft className="size-3.5" aria-hidden="true" />
+        Back to the whole city
+      </button>
+
+      <h2 className="text-ink mt-2 text-[15px] leading-snug font-semibold text-balance">
         Brgy. {zone.barangay}
-      </p>
+      </h2>
 
       {/* the number people actually came for */}
-      <div className="mt-3 flex items-baseline gap-2.5">
-        <span
-          className={`text-[26px] leading-none font-semibold tracking-tight ${hazardText[zone.hazard]}`}
-          data-numeric
-        >
-          {formatDepth(zone)}
-        </span>
-        <span
-          className={`text-[11px] font-bold tracking-wide uppercase ${hazardText[zone.hazard]}`}
-        >
-          {tier.label}
-        </span>
-      </div>
+      <p
+        className={`${hazardText[zone.hazard]} mt-3 text-[30px] leading-none font-semibold tracking-tight`}
+        data-numeric
+      >
+        {formatDepth(zone)}
+      </p>
+      <p
+        className={`${hazardText[zone.hazard]} mt-1.5 text-[12.5px] font-semibold`}
+      >
+        {tier.summary.replace(/\.$/, "")} · {tier.name}
+      </p>
 
-      <p className="text-ink-dim mt-1.5 text-[11px]">
-        {tier.name} · {scenario.label} scenario · {scenario.annualChance} chance
-        a year
+      <p className="text-ink-dim mt-1 text-[11px]">
+        In a {scenario.label} storm · {scenario.annualChance} chance in any
+        given year
       </p>
 
       <p className="text-ink-dim mt-3.5 text-[12.5px] leading-relaxed">
@@ -72,10 +73,10 @@ export function ZonePanel({ zone, onClose }: Props) {
       </p>
 
       <div className="border-hairline/60 mt-3.5 border-t pt-3">
-        <p className="text-ink mb-1 text-[10px] font-semibold tracking-[0.13em] uppercase">
-          What to do
+        <p className="text-ink text-[12.5px] leading-relaxed">
+          <span className="text-ink font-semibold">What to do: </span>
+          {tier.action}
         </p>
-        <p className="text-ink text-[12.5px] leading-relaxed">{tier.action}</p>
       </div>
     </section>
   );

@@ -10,6 +10,7 @@
 		"./barangays": "./src/barangays.ts",
 		"./scenarios": "./src/scenarios.ts",
 		"./copy": "./src/copy.ts",
+		"./footprint": "./src/footprint.ts",
 		"./schema": "./src/schema.ts",
 		"./style": "./src/style.ts",
 		"./layers": "./src/layers.ts",

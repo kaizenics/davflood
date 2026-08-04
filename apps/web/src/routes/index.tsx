@@ -1,19 +1,23 @@
-import { disclaimer } from "@davflood/hazard/copy";
+import { BARANGAYS_MAPPED } from "@davflood/hazard/barangays";
+import { attributionFor, disclaimer } from "@davflood/hazard/copy";
 import { CAMERA } from "@davflood/hazard/geo";
 import type { LngLat } from "@davflood/hazard/geo";
 import type { HazardCollection, HazardProperties } from "@davflood/hazard/schema";
 import { DEFAULT_SCENARIO, scenarioByYears } from "@davflood/hazard/scenarios";
 import type { ScenarioYears } from "@davflood/hazard/scenarios";
 import { Link, createFileRoute } from "@tanstack/react-router";
-import { Construction, MousePointerClick } from "lucide-react";
-import type { ReactNode } from "react";
+import {
+  ChevronRight,
+  Construction,
+  MousePointerClick,
+  Search,
+} from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 
+import { CityReading } from "@/components/map/city-reading";
 import { FloodMap, type FloodMapHandle } from "@/components/map/flood-map";
-import { HazardLegend } from "@/components/map/hazard-legend";
 import { MapControls } from "@/components/map/map-controls";
-import { MapLayers } from "@/components/map/map-layers";
-import { PitchControl } from "@/components/map/pitch-control";
+import { MapViewDrawer } from "@/components/map/map-view-drawer";
 import { RainfallPanel } from "@/components/map/rainfall-panel";
 import { ScenarioToggle } from "@/components/map/scenario-toggle";
 import { ZonePanel } from "@/components/map/zone-panel";
@@ -97,82 +101,116 @@ function MapScreen() {
       {/* ── sidebar ──────────────────────────────────────────
           One surface, divided by hairlines. Not a stack of
           separately-bordered cards. */}
-      <aside className="border-hairline order-2 flex w-full min-w-0 shrink-0 flex-col border-t lg:order-1 lg:h-full lg:w-[21rem] lg:border-t-0 lg:border-r xl:w-[23rem]">
+      {/* ── sidebar ──────────────────────────────────────────
+          Ordered by consequence, not by category: which storm,
+          what it does, what is at the place you tapped, then —
+          folded away — how the map is drawn. */}
+      <aside className="border-hairline bg-deep/40 order-2 flex w-full min-w-0 shrink-0 flex-col border-t lg:order-1 lg:h-full lg:w-[21rem] lg:border-t-0 lg:border-r xl:w-[23rem]">
         {/* scroll area — the footer below is pinned, so long content
             can never collide with it */}
-        <div className="min-h-0 flex-1 overflow-y-auto">
+        <div className="divide-hairline/60 min-h-0 flex-1 divide-y overflow-y-auto">
           {DATA_IS_PLACEHOLDER && (
-            <p className="text-haz-med bg-haz-med/10 border-haz-med/25 flex items-center gap-2 border-b px-5 py-2.5 text-[11px] font-semibold">
+            <p className="text-haz-med bg-haz-med/10 flex items-center gap-2 px-5 py-2.5 text-[11px] font-semibold">
               <Construction className="size-3.5 shrink-0" aria-hidden="true" />
               Placeholder data — not real hazard information
             </p>
           )}
 
-          <Section label="Scenario">
+          {/* The scenario governs everything below it, so it sits above
+              everything below it — and states its own consequence rather
+              than being labelled "Scenario". */}
+          <div className="px-5 py-4">
             <ScenarioToggle value={scenario} onChange={setScenario} />
-            <p className="text-ink-dim mt-2.5 text-[12.5px] leading-relaxed">
-              {activeScenario.blurb}
-            </p>
-          </Section>
-
-          <Section label="Rainfall">
-            <RainfallPanel />
-          </Section>
-
-          <Section label="View angle">
-            <PitchControl
-              pitch={pitch}
-              onPitchChange={(p, animate) => {
-                setPitch(p);
-                mapRef.current?.setPitch(p, animate);
-              }}
-            />
-          </Section>
-
-          <Section label="Layers">
-            <MapLayers
-              basemap={view}
-              onBasemapChange={setView}
-              showHazard={showHazard}
-              onShowHazardChange={setShowHazard}
-              extrude={extrude}
-              onExtrudeChange={setExtrude}
-            />
-          </Section>
+          </div>
 
           {dataError && (
-            <p className="text-haz-high bg-haz-high/10 border-haz-high/25 border-b px-5 py-2.5 text-[11px] font-semibold">
+            <p className="text-haz-high bg-haz-high/10 px-5 py-2.5 text-[11px] font-semibold">
               Hazard data failed to load — {dataError}
             </p>
           )}
 
-          <Section label="Hazard levels">
-            <HazardLegend basemap={basemap} dimmed={!showHazard} />
-          </Section>
-
+          {/* ONE reading slot, two scales. Tapping a zone narrows the
+              question from "the city" to "this place"; going back widens
+              it again. Both answer "how deep does it get here". */}
           {selected ? (
             <ZonePanel zone={selected} onClose={() => setSelected(null)} />
           ) : (
-            <Section label="Selected zone">
-              <p className="text-ink-dim flex items-start gap-2.5 text-[12.5px] leading-relaxed">
-                <MousePointerClick
-                  className="mt-0.5 size-4 shrink-0 opacity-60"
-                  aria-hidden="true"
-                />
-                Click a coloured zone on the map to see its expected depth and
-                what to do.
-              </p>
-            </Section>
+            <CityReading
+              data={data}
+              scenario={activeScenario}
+              dimmed={!showHazard}
+            />
           )}
+
+          {!selected && (
+            <p className="text-ink-dim flex items-start gap-2.5 px-5 py-3 text-[11.5px] leading-relaxed">
+              <MousePointerClick
+                className="mt-px size-3.5 shrink-0 opacity-70"
+                aria-hidden="true"
+              />
+              Tap a coloured zone for the expected depth at that spot.
+            </p>
+          )}
+
+          <div className="px-5 py-3.5">
+            <RainfallPanel />
+          </div>
+
+          <MapViewDrawer
+            basemap={view}
+            onBasemapChange={setView}
+            showHazard={showHazard}
+            onShowHazardChange={setShowHazard}
+            extrude={extrude}
+            onExtrudeChange={setExtrude}
+            pitch={pitch}
+            onPitchChange={(p, animate) => {
+              setPitch(p);
+              mapRef.current?.setPitch(p, animate);
+            }}
+          />
+
+          {/* The other way in. Hunting for your own barangay by panning a
+              city 53 km across is the hard path; this is the easy one, and
+              it was previously only reachable from the top nav. */}
+          <Link
+            to="/barangays"
+            className="group hover:bg-raised/40 flex items-center gap-2.5 px-5 py-3.5 transition"
+          >
+            <Search
+              className="text-ink-dim size-4 shrink-0"
+              aria-hidden="true"
+            />
+            <span className="min-w-0 flex-1">
+              <span className="text-ink block text-[12.5px] font-semibold">
+                Find your barangay
+              </span>
+              <span className="text-ink-dim block text-[11px]">
+                Search all {BARANGAYS_MAPPED} and fly straight to it
+              </span>
+            </span>
+            <ChevronRight
+              className="text-ink-dim group-hover:text-ink size-4 shrink-0 transition"
+              aria-hidden="true"
+            />
+          </Link>
         </div>
 
-        <Link
-          to="/about"
-          className="border-hairline text-ink-dim hover:text-ink hover:bg-raised/40 shrink-0 border-t px-5 py-3 text-[11px] leading-relaxed transition"
-        >
-          <span className="text-ink font-semibold">{disclaimer.short}</span>{" "}
-          Where the data comes from →
-        </Link>
+        {/* Pinned: the disclaimer is the most important sentence in the
+            product, and the imagery credit is a licence obligation for as
+            long as the imagery is on screen. Neither may scroll away. */}
+        <div className="border-hairline shrink-0 border-t">
+          <Link
+            to="/about"
+            className="text-ink-dim hover:text-ink hover:bg-raised/40 block px-5 py-2.5 text-[11px] leading-relaxed transition"
+          >
+            <span className="text-ink font-semibold">{disclaimer.short}</span>{" "}
+            Where the data comes from →
+          </Link>
+          <p className="text-ink-dim border-hairline/60 border-t px-5 py-2 text-[10px] leading-relaxed">
+            {attributionFor(basemap)}
+          </p>
+        </div>
       </aside>
 
       {/* ── map ──────────────────────────────────────────── */}
@@ -208,16 +246,5 @@ function MapScreen() {
         </div>
       </div>
     </div>
-  );
-}
-
-function Section({ label, children }: { label: string; children: ReactNode }) {
-  return (
-    <section className="border-hairline/60 border-b px-5 py-4">
-      <h2 className="text-ink-dim mb-2.5 text-[10px] font-semibold tracking-[0.13em] uppercase">
-        {label}
-      </h2>
-      {children}
-    </section>
   );
 }
