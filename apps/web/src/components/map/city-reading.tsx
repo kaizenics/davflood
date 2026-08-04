@@ -1,13 +1,13 @@
-import { footprintOf, formatArea } from "@davflood/hazard/footprint";
-import type { HazardCollection } from "@davflood/hazard/schema";
+import { formatArea } from "@davflood/hazard/footprint";
+import type { Footprint } from "@davflood/hazard/footprint";
 import type { Scenario } from "@davflood/hazard/scenarios";
 import { hazardTiers } from "@davflood/hazard/tiers";
-import { useMemo } from "react";
 
 import { hazardBg } from "@/lib/hazard-classes";
 
 type Props = {
-  data: HazardCollection;
+  /** measured once by the route — the collapsed mobile sheet reports it too */
+  footprint: Footprint;
   scenario: Scenario;
   /** the overlay is switched off on the map, so this is describing something invisible */
   dimmed?: boolean;
@@ -26,10 +26,7 @@ type Props = {
  * Colour is never the only channel: every row carries its depth band and its
  * share as text.
  */
-export function CityReading({ data, scenario, dimmed = false }: Props) {
-  // ~10k polygons at the 100-year return period; a shoelace pass over them is
-  // sub-frame, but it has no business re-running on an unrelated render
-  const fp = useMemo(() => footprintOf(data), [data]);
+export function CityReading({ footprint: fp, scenario, dimmed = false }: Props) {
   const ready = fp.zones > 0;
 
   return (

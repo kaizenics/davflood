@@ -1,13 +1,16 @@
 import { BARANGAYS_MAPPED } from "@davflood/hazard/barangays";
 import { attributionFor, disclaimer } from "@davflood/hazard/copy";
+import { footprintOf, formatArea } from "@davflood/hazard/footprint";
 import { CAMERA } from "@davflood/hazard/geo";
 import type { LngLat } from "@davflood/hazard/geo";
+import { formatDepth } from "@davflood/hazard/schema";
 import type { HazardCollection, HazardProperties } from "@davflood/hazard/schema";
 import { DEFAULT_SCENARIO, scenarioByYears } from "@davflood/hazard/scenarios";
 import type { ScenarioYears } from "@davflood/hazard/scenarios";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import {
   ChevronRight,
+  ChevronUp,
   Construction,
   MousePointerClick,
   Search,
@@ -21,8 +24,10 @@ import { MapViewDrawer } from "@/components/map/map-view-drawer";
 import { RainfallPanel } from "@/components/map/rainfall-panel";
 import { ScenarioToggle } from "@/components/map/scenario-toggle";
 import { ZonePanel } from "@/components/map/zone-panel";
+import { useBottomSheet } from "@/lib/bottom-sheet";
 import { DATA_IS_PLACEHOLDER, EMPTY, loadScenario } from "@/lib/hazard-source";
 import { useTheme } from "@/lib/theme";
+import { cn } from "@/lib/utils";
 
 /** `b` is the barangay name, carried only so the pin can be labelled. */
 type Search = { lng?: number; lat?: number; b?: string };
@@ -82,6 +87,12 @@ function MapScreen() {
 
   const activeScenario = scenarioByYears[scenario];
 
+  /* ~10k polygons at the 100-year return period; a shoelace pass over them is
+     sub-frame, but it has no business re-running on an unrelated render.
+     Measured here rather than inside the reading because the collapsed mobile
+     sheet shows the same figure, and it should only ever be computed once. */
+  const footprint = useMemo(() => footprintOf(data), [data]);
+
   /* The URL is the whole state of "take me to this barangay" — the map flies
      and pins from this prop rather than an imperative call, because the map
      is not loaded yet at the moment the link lands and would drop it. */
@@ -96,16 +107,81 @@ function MapScreen() {
   // a zone selected under one scenario may not exist under another
   useEffect(() => setSelected(null), [scenario]);
 
+  /* The panel is a drag-to-open sheet below lg and the static column above it;
+     `open` is inert at desktop widths, where the classes never apply. */
+  const sheet = useBottomSheet();
+
+  /* Tapping a zone is a question, and on a phone the answer lives inside a
+     collapsed sheet. Open it — otherwise the tap appears to do nothing. */
+  const { setOpen: setSheetOpen } = sheet;
+  useEffect(() => {
+    if (selected) setSheetOpen(true);
+  }, [selected, setSheetOpen]);
+
   return (
-    <div className="absolute inset-0 flex flex-col lg:flex-row">
-      {/* ── sidebar ──────────────────────────────────────────
-          One surface, divided by hairlines. Not a stack of
-          separately-bordered cards. */}
-      {/* ── sidebar ──────────────────────────────────────────
+    <div className="absolute inset-0 lg:flex lg:flex-row">
+      {/* On a phone the sheet covers the map while it is open, so tapping the
+          scrim is the fastest way back to the map. */}
+      {sheet.open && (
+        <button
+          type="button"
+          tabIndex={-1}
+          aria-label="Collapse the panel"
+          onClick={() => sheet.setOpen(false)}
+          className="fixed inset-0 z-20 cursor-default bg-black/40 lg:hidden"
+        />
+      )}
+
+      {/* ── panel ────────────────────────────────────────────
           Ordered by consequence, not by category: which storm,
           what it does, what is at the place you tapped, then —
-          folded away — how the map is drawn. */}
-      <aside className="border-hairline bg-deep/40 order-2 flex w-full min-w-0 shrink-0 flex-col border-t lg:order-1 lg:h-full lg:w-[21rem] lg:border-t-0 lg:border-r xl:w-[23rem]">
+          folded away — how the map is drawn.
+
+          One element, two shapes. Below lg it is a draggable bottom
+          sheet over a full-bleed map; from lg up it is the static
+          left column it has always been. Same DOM either way, so the
+          panel is never built twice and never flashes on hydration. */}
+      <aside
+        ref={sheet.ref}
+        data-open={sheet.open}
+        className={cn(
+          // `nf-sheet` owns position, height and the open/closed transform
+          // below lg — see app.css for why that is hand-written CSS
+          "nf-sheet border-hairline bg-deep/95 lg:bg-deep/40 flex min-w-0 flex-col backdrop-blur-xl",
+          "lg:h-full lg:w-[21rem] lg:border-r lg:backdrop-blur-none xl:w-[23rem]",
+        )}
+      >
+        {/* The grab handle — and, collapsed, the only part of the panel on
+            screen, so it carries the reading rather than being decoration. */}
+        <button
+          type="button"
+          {...sheet.handleProps}
+          aria-expanded={sheet.open}
+          aria-label={sheet.open ? "Collapse the panel" : "Expand the panel"}
+          className="flex h-[60px] w-full shrink-0 cursor-grab touch-none flex-col items-center justify-center gap-1.5 px-5 active:cursor-grabbing lg:hidden"
+        >
+          <span
+            className="bg-hairline h-1 w-9 shrink-0 rounded-full"
+            aria-hidden="true"
+          />
+          <span className="flex w-full items-center gap-2">
+            <span className="text-ink min-w-0 flex-1 truncate text-left text-[12.5px] font-semibold">
+              {selected
+                ? `Brgy. ${selected.barangay} · ${formatDepth(selected)}`
+                : footprint.zones > 0
+                  ? `About ${formatArea(footprint.totalKm2)} km² floods · ${activeScenario.label}`
+                  : `${activeScenario.label} storm`}
+            </span>
+            <ChevronUp
+              className={cn(
+                "text-ink-dim size-4 shrink-0 transition-transform",
+                sheet.open && "rotate-180",
+              )}
+              aria-hidden="true"
+            />
+          </span>
+        </button>
+
         {/* scroll area — the footer below is pinned, so long content
             can never collide with it */}
         <div className="divide-hairline/60 min-h-0 flex-1 divide-y overflow-y-auto">
@@ -136,7 +212,7 @@ function MapScreen() {
             <ZonePanel zone={selected} onClose={() => setSelected(null)} />
           ) : (
             <CityReading
-              data={data}
+              footprint={footprint}
               scenario={activeScenario}
               dimmed={!showHazard}
             />
@@ -213,8 +289,11 @@ function MapScreen() {
         </div>
       </aside>
 
-      {/* ── map ──────────────────────────────────────────── */}
-      <div className="relative order-1 min-h-[20rem] flex-1 lg:order-2 lg:h-full">
+      {/* ── map ────────────────────────────────────────────
+          Full-bleed under the sheet on a phone — the sheet is
+          fixed, so it takes no space out of the flow and the map
+          gets the whole screen. */}
+      <div className="absolute inset-0 lg:relative lg:order-2 lg:h-full lg:flex-1">
         {mounted ? (
           <FloodMap
             ref={mapRef}
