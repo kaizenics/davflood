@@ -455,8 +455,14 @@ export const FloodMap = forwardRef<FloodMapHandle, Props>(function FloodMap(
       <div ref={container} className="absolute inset-0 h-full w-full" />
 
       {/* A blank map is the worst possible failure mode: it reads as "no
-          flooding here". Say what went wrong instead. */}
-      {(failure || !loaded) && (
+          flooding here". Say what went wrong instead.
+
+          Only while nothing has rendered, though. `error` also fires for a
+          single tile that failed to fetch, and a dropped tile on an otherwise
+          working map was putting "The map could not load" across a map that
+          plainly had — which is worse than saying nothing, because it invites
+          the reader to distrust hazard data that is right there and correct. */}
+      {!loaded && (
         <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-2 p-6 text-center">
           {failure ? (
             <>

@@ -21,6 +21,7 @@ import { CityReading } from "@/components/map/city-reading";
 import { FloodMap, type FloodMapHandle } from "@/components/map/flood-map";
 import { MapControls } from "@/components/map/map-controls";
 import { MapViewDrawer } from "@/components/map/map-view-drawer";
+import { MapViewSheet } from "@/components/map/map-view-sheet";
 import { RainfallPanel } from "@/components/map/rainfall-panel";
 import { ScenarioToggle } from "@/components/map/scenario-toggle";
 import { ZonePanel } from "@/components/map/zone-panel";
@@ -117,6 +118,15 @@ function MapScreen() {
   useEffect(() => {
     if (selected) setSheetOpen(true);
   }, [selected, setSheetOpen]);
+
+  /* Phones reach the map-view controls from the map; desktop from the panel. */
+  const [mapViewOpen, setMapViewOpen] = useState(false);
+
+  /* The slider is the camera's mirror, so both have to move together. */
+  const setPitchEverywhere = (p: number, animate: boolean) => {
+    setPitch(p);
+    mapRef.current?.setPitch(p, animate);
+  };
 
   return (
     <div className="absolute inset-0 lg:flex lg:flex-row">
@@ -232,19 +242,20 @@ function MapScreen() {
             <RainfallPanel />
           </div>
 
-          <MapViewDrawer
-            basemap={view}
-            onBasemapChange={setView}
-            showHazard={showHazard}
-            onShowHazardChange={setShowHazard}
-            extrude={extrude}
-            onExtrudeChange={setExtrude}
-            pitch={pitch}
-            onPitchChange={(p, animate) => {
-              setPitch(p);
-              mapRef.current?.setPitch(p, animate);
-            }}
-          />
+          {/* Desktop only: on a phone these live on the map itself, one tap
+              from the thing they change — see MapViewSheet. */}
+          <div className="hidden lg:block">
+            <MapViewDrawer
+              basemap={view}
+              onBasemapChange={setView}
+              showHazard={showHazard}
+              onShowHazardChange={setShowHazard}
+              extrude={extrude}
+              onExtrudeChange={setExtrude}
+              pitch={pitch}
+              onPitchChange={setPitchEverywhere}
+            />
+          </div>
 
           {/* The other way in. Hunting for your own barangay by panning a
               city 53 km across is the hard path; this is the easy one, and
@@ -321,9 +332,24 @@ function MapScreen() {
             onReset={() => mapRef.current?.resetCamera()}
             terrain={terrain}
             onToggleTerrain={() => setTerrain((v) => !v)}
+            onOpenMapView={() => setMapViewOpen((v) => !v)}
+            mapViewOpen={mapViewOpen}
           />
         </div>
       </div>
+
+      <MapViewSheet
+        open={mapViewOpen}
+        onClose={() => setMapViewOpen(false)}
+        basemap={view}
+        onBasemapChange={setView}
+        showHazard={showHazard}
+        onShowHazardChange={setShowHazard}
+        extrude={extrude}
+        onExtrudeChange={setExtrude}
+        pitch={pitch}
+        onPitchChange={setPitchEverywhere}
+      />
     </div>
   );
 }

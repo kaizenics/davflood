@@ -1,6 +1,12 @@
 import type { LngLat } from "@davflood/hazard/geo";
 import { inBBox } from "@davflood/hazard/geo";
-import { Loader2, LocateFixed, Mountain, RotateCcw } from "lucide-react";
+import {
+  Loader2,
+  LocateFixed,
+  Mountain,
+  RotateCcw,
+  SlidersHorizontal,
+} from "lucide-react";
 import { useState } from "react";
 
 type Props = {
@@ -8,6 +14,10 @@ type Props = {
   onReset: () => void;
   terrain: boolean;
   onToggleTerrain: () => void;
+  /** opens the map-view sheet; only rendered on small screens, where those
+      controls are not otherwise reachable without opening the panel */
+  onOpenMapView?: () => void;
+  mapViewOpen?: boolean;
 };
 
 /**
@@ -20,6 +30,8 @@ export function MapControls({
   onReset,
   terrain,
   onToggleTerrain,
+  onOpenMapView,
+  mapViewOpen,
 }: Props) {
   const [locating, setLocating] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
@@ -71,6 +83,18 @@ export function MapControls({
       >
         <Mountain className="size-4" />
       </ControlButton>
+
+      {onOpenMapView && (
+        <div className="lg:hidden">
+          <ControlButton
+            label="Map view — basemap, overlay and angle"
+            onClick={onOpenMapView}
+            active={mapViewOpen}
+          >
+            <SlidersHorizontal className="size-4" />
+          </ControlButton>
+        </div>
+      )}
 
       {notice && (
         <p className="border-hairline bg-abyss/90 text-ink-dim max-w-44 rounded-lg border px-2.5 py-1.5 text-right text-[10px] backdrop-blur">
