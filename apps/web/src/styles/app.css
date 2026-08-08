@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+/* Manrope, self-hosted variable (200–800) — no CDN round-trip on a connection
+   that may already be struggling. Subsets are unicode-range gated, so a
+   latin-only page only ever fetches the one file. */
+@import "@fontsource-variable/manrope/index.css";
+
 @custom-variant dark (&:where(.dark, .dark *));
 
 /* ------------------------------------------------------------------
@@ -23,7 +28,9 @@
    ------------------------------------------------------------------ */
 
 @theme {
-  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-sans:
+    "Manrope Variable", "Manrope", ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", sans-serif;
 
   /* light (default) */
   --color-abyss: #f9fafb;

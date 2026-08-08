@@ -3,7 +3,10 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "sideEffects": ["**/*.css", "**/maplibre-worker.ts"],
+  "sideEffects": [
+    "**/*.css",
+    "**/maplibre-worker.ts"
+  ],
   "scripts": {
     "dev": "vite dev",
     "build": "vite build",
@@ -12,6 +15,7 @@
   },
   "dependencies": {
     "@davflood/hazard": "workspace:*",
+    "@fontsource-variable/manrope": "^5.3.0",
     "@radix-ui/react-dialog": "^1.1.23",
     "@tanstack/react-query": "catalog:",
     "@tanstack/react-router": "^1.170.18",
