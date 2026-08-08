@@ -23,8 +23,8 @@ import { MapControls } from "@/components/map/map-controls";
 import { MapViewDrawer } from "@/components/map/map-view-drawer";
 import { MapViewSheet } from "@/components/map/map-view-sheet";
 import { RainfallPanel } from "@/components/map/rainfall-panel";
+import { ReadingSlot } from "@/components/map/reading-slot";
 import { ScenarioToggle } from "@/components/map/scenario-toggle";
-import { ZonePanel } from "@/components/map/zone-panel";
 import { useBottomSheet } from "@/lib/bottom-sheet";
 import { DATA_IS_PLACEHOLDER, EMPTY, loadScenario } from "@/lib/hazard-source";
 import { useTheme } from "@/lib/theme";
@@ -218,25 +218,25 @@ function MapScreen() {
           {/* ONE reading slot, two scales. Tapping a zone narrows the
               question from "the city" to "this place"; going back widens
               it again. Both answer "how deep does it get here". */}
-          {selected ? (
-            <ZonePanel zone={selected} onClose={() => setSelected(null)} />
-          ) : (
+          {/* The hint lives inside the slot rather than beside it: it belongs
+              to the city-wide state and has to leave with it, otherwise it
+              disappears on its own while the reading is still animating. Its
+              divider is written out because it is no longer a direct child of
+              the divide-y column. */}
+          <ReadingSlot zone={selected} onClose={() => setSelected(null)}>
             <CityReading
               footprint={footprint}
               scenario={activeScenario}
               dimmed={!showHazard}
             />
-          )}
-
-          {!selected && (
-            <p className="text-ink-dim flex items-start gap-2.5 px-5 py-3 text-[11.5px] leading-relaxed">
+            <p className="text-ink-dim border-hairline/60 flex items-start gap-2.5 border-t px-5 py-3 text-[11.5px] leading-relaxed">
               <MousePointerClick
                 className="mt-px size-3.5 shrink-0 opacity-70"
                 aria-hidden="true"
               />
               Tap a coloured zone for the expected depth at that spot.
             </p>
-          )}
+          </ReadingSlot>
 
           <div className="px-5 py-3.5">
             <RainfallPanel />
