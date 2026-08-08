@@ -57,8 +57,13 @@ const ZERO: Record<HazardId, number> = { low: 0, medium: 0, high: 0 };
 
 /**
  * The tiers are a classification of the same raster, so they tile rather than
- * overlap and the areas are safe to add. The source is simplified to ~22 m,
- * which is why every figure this feeds is shown as approximate.
+ * overlap and the areas are safe to add.
+ *
+ * Measured AFTER ./smooth has rounded the rings, which is deliberate: the
+ * figure has to describe the polygons on screen, not a set the user cannot
+ * see. Smoothing takes ~2.6% off the total, and the rings it works from carry
+ * 100 m edges to begin with — between them, that is why every figure this
+ * feeds is prefixed "about".
  */
 export function footprintOf(fc: HazardCollection): Footprint {
 	const km2: Record<HazardId, number> = { ...ZERO };

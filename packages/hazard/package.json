@@ -12,6 +12,7 @@
 		"./copy": "./src/copy.ts",
 		"./footprint": "./src/footprint.ts",
 		"./schema": "./src/schema.ts",
+		"./smooth": "./src/smooth.ts",
 		"./style": "./src/style.ts",
 		"./layers": "./src/layers.ts",
 		"./rainfall": "./src/rainfall.ts",

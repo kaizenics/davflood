@@ -1,5 +1,6 @@
 import type { HazardCollection } from "@davflood/hazard/schema";
 import type { ScenarioYears } from "@davflood/hazard/scenarios";
+import { smoothCollection } from "@davflood/hazard/smooth";
 
 // `?url` makes Vite emit each file as a static asset and hand back its URL,
 // instead of inlining ~9 MB of JSON into the JS bundle.
@@ -50,7 +51,12 @@ export async function loadScenario(
   if (!res.ok) {
     throw new Error(`Could not load the ${years}-year hazard data (${res.status})`);
   }
-  const fc = (await res.json()) as HazardCollection;
+  /* Corner-cut before anything sees the geometry, so the map, the extrusion
+     walls and the km² figure all describe the same polygons — see
+     @davflood/hazard/smooth for what that costs and why it is paid here rather
+     than in the build. Cached alongside the parse: ~27 ms on the 100-year
+     file, once per scenario. */
+  const fc = smoothCollection((await res.json()) as HazardCollection);
   cache.set(years, fc);
   return fc;
 }
