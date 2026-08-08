@@ -1,0 +1,22 @@
+<!--
+  The header wordmark's mark, redrawn edge-to-edge for a 16px tab.
+
+  Hexes are literal and taken from the DARK palette (`@davflood/hazard/tokens`)
+  because a favicon has no access to the app's CSS variables. It carries its own
+  dark tile so it holds up against both a light and a dark browser chrome, which
+  a theme-reactive mark cannot be relied on to do.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <clipPath id="cell">
+    <rect width="32" height="32" rx="8" />
+  </clipPath>
+  <g clip-path="url(#cell)">
+    <rect width="32" height="32" fill="#0f141a" />
+    <path d="M-2 19C4 10.5 10 27.5 16 19C22 10.5 28 27.5 34 19V34H-2Z" fill="#008295" />
+    <path
+      d="M-2 19C4 10.5 10 27.5 16 19C22 10.5 28 27.5 34 19"
+      stroke="#3bcddc"
+      stroke-width="2.2"
+    />
+  </g>
+</svg>
