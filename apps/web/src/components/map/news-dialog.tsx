@@ -43,17 +43,32 @@ export function NewsDialog({ pin, onClose }: Props) {
                 href={item.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group block"
+                className="group flex gap-3"
               >
-                <span className="text-ink group-hover:text-tide block text-[13px] leading-snug font-medium transition">
-                  {item.title}
-                  <ExternalLink
-                    className="ml-1 inline size-3 align-[-1px] opacity-60"
-                    aria-hidden="true"
+                {item.image && (
+                  <img
+                    src={item.image}
+                    alt=""
+                    loading="lazy"
+                    decoding="async"
+                    referrerPolicy="no-referrer"
+                    onError={(e) => {
+                      e.currentTarget.style.display = "none";
+                    }}
+                    className="border-hairline/60 bg-raised size-20 shrink-0 rounded-lg border object-cover"
                   />
-                </span>
-                <span className="text-ink-dim mt-1 block text-[11px]">
-                  {item.source} · {item.date} · {describeAge(item.date)}
+                )}
+                <span className="min-w-0 flex-1">
+                  <span className="text-ink group-hover:text-tide block text-[13px] leading-snug font-medium transition">
+                    {item.title}
+                    <ExternalLink
+                      className="ml-1 inline size-3 align-[-1px] opacity-60"
+                      aria-hidden="true"
+                    />
+                  </span>
+                  <span className="text-ink-dim mt-1 block text-[11px]">
+                    {item.source} · {item.date} · {describeAge(item.date)}
+                  </span>
                 </span>
               </a>
             </li>

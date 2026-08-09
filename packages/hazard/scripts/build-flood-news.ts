@@ -188,6 +188,131 @@ function escapeRe(s: string): string {
   return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
+/**
+ * The publishers' own feeds.
+ *
+ * Worth reading directly, for two reasons Google News cannot give us. Their
+ * links are the real article rather than an interstitial, and their items
+ * carry the lead photograph — Google's every og:image is Google's own logo,
+ * so anything sourced through it is text or nothing.
+ *
+ * They are also the local desks. A national wire says "Davao City"; MindaNews
+ * says which barangay, which is what puts a pin on the map.
+ */
+const LOCAL_FEEDS: [name: string, url: string][] = [
+  // WordPress exposes its search as a feed, which is the difference between
+  // "the last ten things this desk published" and "everything this desk has
+  // written about flooding". The front-page feeds carried almost nothing:
+  // flood stories are common, but flood stories whose HEADLINE also says
+  // Davao are not.
+  ["MindaNews", "https://mindanews.com/?s=flood&feed=rss2"],
+  ["Mindanao Times", "https://www.mindanaotimes.com.ph/?s=flood&feed=rss2"],
+  ["Edge Davao", "https://edgedavao.net/?s=flood&feed=rss2"],
+  ["Davao Today", "https://davaotoday.com/feed/"],
+  ["Inquirer", "https://newsinfo.inquirer.net/feed"],
+];
+
+async function fromLocalFeeds(): Promise<NewsItem[]> {
+  const out: NewsItem[] = [];
+
+  for (const [name, url] of LOCAL_FEEDS) {
+    try {
+      const res = await fetch(url, {
+        headers: { "user-agent": "davflood-news/1.0" },
+        redirect: "follow",
+      });
+      if (!res.ok) throw new Error(`http ${res.status}`);
+      const xml = await res.text();
+
+      for (const m of xml.matchAll(/<item>([\s\S]*?)<\/item>/g)) {
+        const block = m[1] ?? "";
+        const cdata = (s: string) =>
+          s.replace(/^<!\[CDATA\[/, "").replace(/\]\]>$/, "").trim();
+        const tag = (n: string) => {
+          const hit = block.match(
+            new RegExp(`<${n}(?:\\s[^>]*)?>([\\s\\S]*?)</${n}>`),
+          );
+          return hit?.[1] ? cdata(hit[1]) : "";
+        };
+
+        const title = decodeEntities(tag("title")).replace(/\s+/g, " ").trim();
+        const link = tag("link");
+        if (!title || !link || !keep(title)) continue;
+
+        const when = new Date(tag("pubDate"));
+        if (Number.isNaN(when.getTime())) continue;
+
+        out.push({
+          title,
+          url: link,
+          source: name,
+          date: when.toISOString().slice(0, 10),
+          ...(imageFrom(block) ? { image: imageFrom(block)! } : {}),
+        });
+      }
+    } catch (err) {
+      // one dead feed is not worth failing the run over
+      console.warn(`  ${name}: ${err instanceof Error ? err.message : err}`);
+    }
+    await new Promise((r) => setTimeout(r, 400));
+  }
+
+  return out;
+}
+
+/**
+ * WordPress feeds emit headlines pre-escaped — "Dizon&#8217;s pledge",
+ * "EMERGENCE &#124; ...". Unescaped, those land in the UI as literal
+ * ampersand-hash noise, and they also break barangay matching on any name
+ * containing punctuation.
+ */
+function decodeEntities(s: string): string {
+  const named: Record<string, string> = {
+    amp: "&",
+    lt: "<",
+    gt: ">",
+    quot: '"',
+    apos: "'",
+    nbsp: " ",
+    hellip: "…",
+    mdash: "—",
+    ndash: "–",
+    rsquo: "’",
+    lsquo: "‘",
+    ldquo: "“",
+    rdquo: "”",
+  };
+  return s
+    .replace(/&#(\d+);/g, (_, n) => String.fromCodePoint(Number(n)))
+    .replace(/&#x([0-9a-f]+);/gi, (_, n) => String.fromCodePoint(parseInt(n, 16)))
+    .replace(/&([a-z]+);/gi, (whole, name: string) => named[name.toLowerCase()] ?? whole);
+}
+
+/**
+ * Is `candidate` a better copy of the same story than the one we hold?
+ *
+ * A photograph is the strongest signal, then a real article link — a
+ * news.google.com URL is an interstitial the reader has to click through.
+ */
+function betterCopy(candidate: NewsItem, held: NewsItem): boolean {
+  const score = (i: NewsItem) =>
+    (i.image ? 2 : 0) + (i.url.includes("news.google.com") ? 0 : 1);
+  return score(candidate) > score(held);
+}
+
+/** Feeds carry the lead image in one of three places, depending on the CMS. */
+function imageFrom(block: string): string | null {
+  const raw =
+    block.match(/<media:content[^>]+url=["']([^"']+)["']/i)?.[1] ??
+    block.match(/<media:thumbnail[^>]+url=["']([^"']+)["']/i)?.[1] ??
+    block.match(/<enclosure[^>]+url=["']([^"']+\.(?:jpe?g|png|webp))["']/i)?.[1] ??
+    block.match(/<img[^>]+src=["']([^"']+)["']/i)?.[1];
+  if (!raw) return null;
+  // the site is https and some CMSs still emit http; a mixed-content image is
+  // blocked outright, so upgrade it and let the browser hide it if it 404s
+  return raw.replace(/^http:\/\//, "https://");
+}
+
 async function fromGdelt(): Promise<NewsItem[]> {
   const url =
     `https://api.gdeltproject.org/api/v2/doc/doc?query=${encodeURIComponent(GDELT_QUERY)}` +
@@ -249,8 +374,11 @@ async function main() {
   const problems: string[] = [];
 
   for (const [name, run] of [
-    // Google News first: it is the one that reliably carries Davao City, and
-    // the only one that has never refused us. The rest are best-effort.
+    // Publishers first, so their version of a story — with its real link and
+    // its photograph — is the one that wins the dedupe below.
+    ["Local feeds", fromLocalFeeds],
+    // Then Google News for reach: it is the one that reliably carries Davao
+    // City, and the only one that has never refused us.
     ["Google News", fromGoogleNews],
     ["GDELT", fromGdelt],
     ...(process.env["RELIEFWEB_APPNAME"]
@@ -285,29 +413,38 @@ async function main() {
     ? ((JSON.parse(readFileSync(out, "utf8")) as NewsFile).items ?? [])
     : [];
 
-  // Two sources carry the same story under different URLs, so the headline is
-  // the identity that matters, not the link. Previously-seen items win, so a
-  // story keeps the date it was first published under.
-  const seen = new Set<string>();
-  const merged: NewsItem[] = [];
+  /**
+   * Two sources carry the same story under different URLs, so the headline is
+   * the identity, not the link. Where they collide the better copy wins: a
+   * publisher's version has the real article link and its photograph, where
+   * Google's has an interstitial and no usable image.
+   */
+  const byKey = new Map<string, NewsItem>();
   for (const item of [...previous, ...items]) {
     const key = item.title.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
-    if (!key || seen.has(key)) continue;
+    if (!key) continue;
     if (ageInDays(item.date) > NEWS_RETENTION_DAYS) continue;
-    seen.add(key);
+
+    const held = byKey.get(key);
+    if (held && !betterCopy(item, held)) continue;
+
     // geotag late, so re-runs pick up matcher improvements on old items too
     const where = locateHeadline(item.title);
-    merged.push({
+    byKey.set(key, {
       title: item.title,
       url: item.url,
       source: item.source,
-      date: item.date,
+      // keep the earliest date we ever saw, so a story does not appear to
+      // re-happen when a second source picks it up days later
+      date: held ? (held.date < item.date ? held.date : item.date) : item.date,
+      ...(item.image ? { image: item.image } : held?.image ? { image: held.image } : {}),
       ...(where ? { barangay: where.barangay, center: where.center } : {}),
     });
   }
 
-  merged.sort((a, b) => b.date.localeCompare(a.date));
+  const merged = [...byKey.values()].sort((a, b) => b.date.localeCompare(a.date));
   const located = merged.filter((i) => i.center).length;
+  const pictured = merged.filter((i) => i.image).length;
 
   const { writeFileSync } = await import("node:fs");
   writeFileSync(
@@ -315,7 +452,7 @@ async function main() {
     `${JSON.stringify({ fetched: new Date().toISOString(), items: merged }, null, 2)}\n`,
   );
   console.log(
-    `wrote ${merged.length} items (${located} pinned to a barangay, ${previous.length} carried over) to ${out}`,
+    `wrote ${merged.length} items (${located} pinned, ${pictured} with a photo, ${previous.length} carried over) to ${out}`,
   );
 }
 

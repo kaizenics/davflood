@@ -1,6 +1,17 @@
 {
-  "fetched": "2026-08-09T04:05:00.188Z",
+  "fetched": "2026-08-09T04:34:14.442Z",
   "items": [
+    {
+      "title": "DPWH starts Talomo River flood-control works after Taal flooding",
+      "url": "https://edgedavao.net/the-big-news/2026/08/dpwh-starts-talomo-river-flood-control-works-after-taal-flooding/",
+      "source": "Edge Davao",
+      "date": "2026-08-08",
+      "barangay": "Talomo River",
+      "center": [
+        125.47859,
+        7.19116
+      ]
+    },
     {
       "title": "PCSO swiftly rolls out relief operations for flood-hit Davao City",
       "url": "https://news.google.com/rss/articles/CBMiogFBVV95cUxQbmxPR2JrYzhhSFE4OHlSdVlJbHRiUWZoZTMxQWctbjdNeDQ0blRPWjRyeEVROTFrUnVWOFlfUWVEZGJQRzNYWDJfd1VRbXp3cFVGSTNMVEZhVG4yN3Jacm1XeVBOSUxxYkZoSkkzT1FpRTRaN0FlNEpUVUxZcEdhMUF0czVMOWlRR09QSDY4Z2RqZFd3ZFVxWGp3OUgxRlFoVlE?oc=5",
@@ -9,7 +20,7 @@
     },
     {
       "title": "Aboitiz Renewables delivers relief food packs to 541 flood-affected families in Davao City",
-      "url": "https://news.google.com/rss/articles/CBMiwgFBVV95cUxNblRYYkJmMkJ6cWxlakQwNktTcTR3RFdPR29hMnh5a2ZmUjBNd0wtNmZOcWdBZXhFcVhyeGRRaWM4YlBXeDFEckJvSDlkbm1OcDNYcXFreVV1cmY4QmVndHV5OURFcVhKYzFna19RdGpobnVmVm80Rkh6Ni1QaGJJcVBQZXpQclk4d3RYdkl4dWdkUjBfNXZsVUN1c1p6cjBrR3FrUkNzVl9iV01QRjgxRlJhbTIweWphUDlZZVhqOGxCQQ?oc=5",
+      "url": "https://www.mindanaotimes.com.ph/aboitiz-renewables-delivers-relief-food-packs-to-541-flood-affected-families-in-davao-city/?utm_source=rss&#038;utm_medium=rss&#038;utm_campaign=aboitiz-renewables-delivers-relief-food-packs-to-541-flood-affected-families-in-davao-city",
       "source": "Mindanao Times",
       "date": "2026-08-05"
     },
@@ -97,9 +108,10 @@
     },
     {
       "title": "SPECIAL REPORT | Waters keep rising, communities keep suffering despite billions poured into flood control in parts of Davao Region",
-      "url": "https://news.google.com/rss/articles/CBMihgJBVV95cUxPWFc5QlhmVGt0eGNVSkV6dlFQLXk1dXNnT1ZpNnNYS0lkRE15bGJUMjR6RFRfZDVIZlpFdUpEbGlPb2RqMVRoN2htRHBzdG95Y24xRFdTbVBRWG9DSjJYSm1nYldVQW1NcUNwZzFlNGEtVGUweGhBRmhGaWJ4T0dWZm1NZEtNaGg1LUFoeUY0cjJGRGhhb3BhUWg0SDVLOTdlaTVjWUJkTVJfc0JxRTM3U29WRW9uc2ZWX21uMG1pVUNCTGo4STBlZWEwRGZJMmcwUTFRUVlVM05oNHgwblBUQ1d6elVUY1NsNlZzVUVQYWFEcDVyUFo2a0lMQy1SMVZSZVdVS01R?oc=5",
+      "url": "https://mindanews.com/special-reports/2026/07/special-report-waters-keep-rising-communities-keep-suffering-despite-billions-poured-into-flood-control-in-parts-of-davao-region/",
       "source": "MindaNews",
-      "date": "2026-07-29"
+      "date": "2026-07-29",
+      "image": "https://mindanews.com/wp-content/uploads/2026/07/image-4.jpeg"
     },
     {
       "title": "Dizon finds deficiencies that contributed to Davao flooding",
@@ -117,6 +129,13 @@
         125.47859,
         7.19116
       ]
+    },
+    {
+      "title": "Pulong blames DPWH after Dizon calls recent Davao floods ‘nakakagalit’",
+      "url": "https://mindanews.com/top-stories/2026/07/pulong-blames-dpwh-after-dizon-calls-recent-davao-floods-nakakagalit/",
+      "source": "MindaNews",
+      "date": "2026-07-29",
+      "image": "https://mindanews.com/wp-content/uploads/2026/07/29dizon@bangkal-942x628.jpg"
     },
     {
       "title": "Flood devastates Davao homes despite billions in control projects",
@@ -143,6 +162,13 @@
       "date": "2026-07-28"
     },
     {
+      "title": "Extent of property damages following Davao City flooding still to be determined",
+      "url": "https://mindanews.com/top-stories/2026/07/extent-of-property-damages-following-davao-city-flooding-still-to-be-determined/",
+      "source": "MindaNews",
+      "date": "2026-07-28",
+      "image": "https://mindanews.com/wp-content/uploads/2026/07/bbmdizon-939x628.jpg"
+    },
+    {
       "title": "214 families affected by Davao City flooding",
       "url": "https://news.google.com/rss/articles/CBMigwFBVV95cUxQUnh1dl93NGZ3MUphRkRJaFNITk00a2JlV1N1dks3RkpJQ0cxenExRzd1SENaczVvN1NuZnpCVHhpbEhaaXo5TmJiV3hpdW1NbUF6Z1lNTnBVWFpNVmExMUNMQTAwelpEMEhXNWV0dlladHNvWnNiWHJsZmo2SEZjd2x6WdIBkAFBVV95cUxQWWJPNGpITVJTbUY4UmhIRFRuTGIteW5uZ1EtVWs2YW42RDRraE5neXR6bmpUTGdadE1xTzN6ejJ0cmpfdVNla3ZPTWJkUXBsUzlaOFM2N3R3bS0xbkRpVjJTdHlPY0tDMEtOT2k5VzVBQXdpX1pnUWJkUjI2WjliM3lNVjRCWWpRM2xRX0tTRTE?oc=5",
       "source": "SunStar Publishing Inc.",
@@ -160,9 +186,9 @@
       ]
     },
     {
-      "title": "DSWD-11 prepositions P154-M aid for Davao flood victims",
-      "url": "https://news.google.com/rss/articles/CBMiUEFVX3lxTE83dk0yaUszVDhlem44VC1sa3NCWnNEQV83XzRiYUluamc5b0xERUhUUllYWWk0T0JDT2hmWFgzRHJrRGZnRXV6QXUtVlpyek0x?oc=5",
-      "source": "Philippine News Agency",
+      "title": "DSWD 11 prepositions P154-M aid for Davao flood victims",
+      "url": "https://edgedavao.net/latest-news/2026/07/dswd-11-prepositions-p154-m-aid-for-davao-flood-victims/",
+      "source": "Edge Davao",
       "date": "2026-07-27"
     },
     {
@@ -190,6 +216,12 @@
       "date": "2026-07-27"
     },
     {
+      "title": "Davao flash flood sweeps construction worker to his death",
+      "url": "https://www.mindanaotimes.com.ph/davao-flash-flood-sweeps-construction-worker-to-his-death/?utm_source=rss&#038;utm_medium=rss&#038;utm_campaign=davao-flash-flood-sweeps-construction-worker-to-his-death",
+      "source": "Mindanao Times",
+      "date": "2026-07-27"
+    },
+    {
       "title": "1 dead, 1,200 displaced as floods hit Davao City",
       "url": "https://news.google.com/rss/articles/CBMijAFBVV95cUxPVW5RcFV3Z0FwR1E2RWtiR3dTMzMxVm1Takp3aTRsTkd2THpIeXZGX0x5d3JmM2l6LUlWTHU5VE5DQ3ZDX0VYOFVfS0dYb2ViYml4MEYzNnQyZERYVTFIWlhNSjBGRU1TTm8tMEJWcHp0YkhzWlBaVm92cnpBUWJUUGhsOEtMeW9rZVJUU9IBkgFBVV95cUxPZllMdmFjYTRub1YyY3BySVZ0X3drRV9MdDdoVHhDUVNIOEc0T2p6RXkzdDNKQUlqR2lFeFdiLXNRT1d1YUJpZHlIOEJiWldxYXpULTVCZWVzYTQydXJJejBha0pWMXVtT0JQeEJCUnRGcWhNT20wVnczVk9vWXJtY1JrZ2trTjVoUlBmQkxldmxXQQ?oc=5",
       "source": "Inquirer.net",
@@ -203,9 +235,10 @@
     },
     {
       "title": "Davao barangay hit by flood declares state of calamity",
-      "url": "https://news.google.com/rss/articles/CBMingFBVV95cUxNTWg0eXlhZWdYQnhvSHEyQzNQNnQ0OUNReUIzZTdPakhwbEtUTzBXbkFvUmVEbVd3TmtyaU4wY0VNdnFvRFp5WlpnV0JzODlkc0lheF93bjlkemlEQW4wb0l6TFhZU0JxeVh2elZiYnV3cU1XS0RoR2hsQk1iVVBaSUhvYlpkemY4bm0ySGdQOXUyZnpwZmVxRTd1WVU0dw?oc=5",
+      "url": "https://mindanews.com/top-stories/2026/07/davao-barangay-hit-by-flood-declares-state-of-calamity/",
       "source": "MindaNews",
-      "date": "2026-07-26"
+      "date": "2026-07-26",
+      "image": "https://mindanews.com/wp-content/uploads/2026/07/FloodAftermathDavao-1-942x628.jpg"
     },
     {
       "title": "Marcos Orders Aid For Flood-Hit Davao",
@@ -358,6 +391,17 @@
       "date": "2026-07-25"
     },
     {
+      "title": "Flooding in Davao City leaves debris and houses destroyed on Saturday, July 25, after the Talomo River overflowed due to heavy rains caused by the southwest monsoon last night. Photos by MJ Bacalso",
+      "url": "https://news.google.com/rss/articles/CBMi2wFBVV95cUxNdDBpdzVMLWpFME1hWmdLY0llakUxTDE2R1A1ZGdmQ0FzeGNwMi1WaFBQd2lKTUg4WVVBNUZNVVY5Xzd3dHBjQ2drSXhCeXNPYzhiazlTblNtc2toYlJkUW04VlozeS1EUXR0bmozVUlWLXh6TkJaTVRMem5pM3hnSk5NY0ZKVTV4U1VlRTh2Z0QxcVkwNWpLQXprdWtpcnhCTDBFZzRHVHVwYTVpZExTeVpSbEdfOFY5QWZfTW05OTN4T0JiUkJsemRLZFFSQ1Uwa2J6SmF3YWl2a0k?oc=5",
+      "source": "facebook.com",
+      "date": "2026-07-25",
+      "barangay": "Talomo River",
+      "center": [
+        125.47859,
+        7.19116
+      ]
+    },
+    {
       "title": "As of 4:20 p.m. on July 24, 2026, the Talomo River channel along Purok 6, Barangay Tugbok Proper in Davao City, has overflowed due to heavy rainfall. | via RGP, SunStar Davao 📷 Isaiah John Guanzon #AllYouNeedToKnow",
       "url": "https://news.google.com/rss/articles/CBMi3wFBVV95cUxQN1lMbTNGNlgzT08yNmtGLVRjTXNIVm5SNng4UWlId09SZHZpazJCQnB4OEpRRGdPSW9jYUc0VzBLUE5Td1E1dG1xLUN3NTVNNklEZ0FsSGQwQjZySXNQY2VtTGY5Y2tOOG1Id2dvMGVYbExKSUJ6RWpCbjFTaEdFUXYxOHp5czRCMm93UmE4TFRqMVdZaVVObU9mZFRMX1ZEaTdtdVJYTC1oLUVhRjlxQ29JYlZmRjE2bEM3LW1mSGhFQ0h2dnNHZDVEVjJQMGxXTzdFNjBJVW5zc19zLUFF?oc=5",
       "source": "facebook.com",
@@ -366,6 +410,18 @@
       "center": [
         125.47859,
         7.19116
+      ]
+    },
+    {
+      "title": "Upstream rains flood parts of Tugbok and Talomo districts in Davao City",
+      "url": "https://mindanews.com/top-stories/2026/07/upstream-rains-flood-parts-of-tugbok-and-talomo-districts-in-davao-city/",
+      "source": "MindaNews",
+      "date": "2026-07-24",
+      "image": "https://mindanews.com/wp-content/uploads/2026/07/Screenshot_20260725_010135_Facebook-1115x628.jpg",
+      "barangay": "Tugbok",
+      "center": [
+        125.48412,
+        7.10994
       ]
     },
     {
@@ -399,15 +455,17 @@
     },
     {
       "title": "Before the rains come: Why Davao City’s garbage is flooding its streets (2)",
-      "url": "https://news.google.com/rss/articles/CBMiugFBVV95cUxPLU52QWtrUUNDVVQ2bVhtb3M5WFNXaUlJcWtFRUJObE9veWRTQVdjb3d0NktuMDZoSXhsZk5IQm9majRMSnFkMm5EaEY2SkJ1NVN4d3UyT1BKMnNhUGhYdzd6NXpVamtkLTFoTy1yeGQxY216dGxDakpaNXZEc1ZubGtPM3FXdDFBOU92NHlpbW5OU2JOTkJZZ01ONnByYnlsNWdaLVE2SnZRTEFpZnlDLWMwVW9vWVNMOVE?oc=5",
+      "url": "https://mindanews.com/special-reports/2026/06/before-the-rains-come-why-davao-citys-garbage-is-flooding-its-streets-2/",
       "source": "MindaNews",
-      "date": "2026-06-23"
+      "date": "2026-06-23",
+      "image": "https://mindanews.com/wp-content/uploads/2026/06/21trash11.jpeg"
     },
     {
       "title": "Before the rains come: Why Davao City’s garbage is flooding its streets (1)",
-      "url": "https://news.google.com/rss/articles/CBMiugFBVV95cUxNWHN5OWhIWHRrdkI4X2Y0TjdTTVZrRGRMWGxWS2dRZWs5eWZYX3VCNU1DU2JETkt4OFRrdVp1STlqZ2hMMGF1bHZSUUlOY2FPWFR0YnR3al9ua1FUM3Vnd0RmYnBTX2xhNTk3YXk0Yk9rTEZIUGN0VlZqaG43YWlwNEtkM3lid1dhMXVOZDJ6YWo1Vm1xNlMxSW9hUlpKcVA5NnR3UFZhbXJaU3NoT2NHOU1Uem5nRlh4M0E?oc=5",
+      "url": "https://mindanews.com/special-reports/2026/06/before-the-rains-come-why-davao-citys-garbage-is-flooding-its-streets-1/",
       "source": "MindaNews",
-      "date": "2026-06-22"
+      "date": "2026-06-22",
+      "image": "https://mindanews.com/wp-content/uploads/2026/06/21trash1.jpeg"
     },
     {
       "title": "ABS-CBN News. . Sen. Erwin Tulfo said he will inhibit from the flood control probe once formal hearing begins. Meanwhile, firearms registered under ICC-wanted Senator Ronald Dela Rosa are now in the possession of Davao City Police. #ANCHeadlines",

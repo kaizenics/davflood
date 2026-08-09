@@ -17,6 +17,15 @@ export type NewsItem = {
   source: string;
   /** ISO date */
   date: string;
+  /**
+   * The publisher's own lead image, hotlinked.
+   *
+   * Only ever present for items that came from a publisher's own feed —
+   * Google News hands back an interstitial URL whose og:image is Google's
+   * logo, so those items stay text-only rather than carrying a picture that
+   * says nothing.
+   */
+  image?: string;
   /** set when the headline named a barangay we can place */
   barangay?: string;
   center?: LngLat;

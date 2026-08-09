@@ -1,17 +1,6 @@
-import { useQuery } from "@tanstack/react-query";
 import { ExternalLink, Newspaper } from "lucide-react";
 
-type NewsItem = {
-  title: string;
-  url: string;
-  source: string;
-  date: string;
-};
-
-type NewsFile = {
-  fetched: string;
-  items: NewsItem[];
-};
+import { useNewsFile } from "@/hooks/use-news-pins";
 
 /**
  * Recent flooding coverage for Davao City.
@@ -27,18 +16,9 @@ type NewsFile = {
  * that paraphrases a flood report is inventing a source.
  */
 export function FloodNews() {
-  const { data } = useQuery<NewsFile | null>({
-    queryKey: ["flood-news"],
-    queryFn: async ({ signal }) => {
-      const res = await fetch("/flood-news.json", { signal });
-      if (!res.ok) return null; // not published yet — not an error
-      return (await res.json()) as NewsFile;
-    },
-    staleTime: 15 * 60 * 1000,
-    gcTime: 60 * 60 * 1000,
-    retry: 0,
-    refetchOnWindowFocus: false,
-  });
+  // shares its query with the map pins, so the list and the pins can never
+  // disagree about what was reported
+  const { data } = useNewsFile();
 
   const items = data?.items ?? [];
   if (items.length === 0) return null;
@@ -52,24 +32,27 @@ export function FloodNews() {
         </h2>
       </div>
 
-      <ul className="mt-2.5 space-y-2.5">
+      <ul className="mt-2.5 space-y-3">
         {items.slice(0, 4).map((item) => (
           <li key={item.url}>
             <a
               href={item.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="group block"
+              className="group flex gap-2.5"
             >
-              <span className="text-ink group-hover:text-tide block text-[12px] leading-snug font-medium transition">
-                {item.title}
-                <ExternalLink
-                  className="ml-1 inline size-3 align-[-1px] opacity-60"
-                  aria-hidden="true"
-                />
-              </span>
-              <span className="text-ink-dim mt-0.5 block text-[10.5px]">
-                {item.source} · {item.date}
+              {item.image && <Thumb src={item.image} />}
+              <span className="min-w-0 flex-1">
+                <span className="text-ink group-hover:text-tide block text-[12px] leading-snug font-medium transition">
+                  {item.title}
+                  <ExternalLink
+                    className="ml-1 inline size-3 align-[-1px] opacity-60"
+                    aria-hidden="true"
+                  />
+                </span>
+                <span className="text-ink-dim mt-0.5 block text-[10.5px]">
+                  {item.source} · {item.date}
+                </span>
               </span>
             </a>
           </li>
@@ -77,9 +60,36 @@ export function FloodNews() {
       </ul>
 
       <p className="text-ink-dim mt-2.5 text-[10px] leading-relaxed">
-        Reported by others, not verified by DavFlood. Headlines are shown as
-        published.
+        Reported by others, not verified by DavFlood. Headlines and pictures
+        are shown as published.
       </p>
     </div>
+  );
+}
+
+/**
+ * The publisher's lead photograph, hotlinked from their CDN.
+ *
+ * Not copied into this repo: the picture is theirs, it can be corrected or
+ * withdrawn at the source, and a cron job committing binaries every half hour
+ * would bloat the history for no one's benefit. `no-referrer` keeps the
+ * reader's visit to this map out of the publisher's logs.
+ *
+ * It removes itself if the URL dies, which they do — a story that outlives
+ * its picture should still read as a story rather than a broken frame.
+ */
+function Thumb({ src }: { src: string }) {
+  return (
+    <img
+      src={src}
+      alt=""
+      loading="lazy"
+      decoding="async"
+      referrerPolicy="no-referrer"
+      onError={(e) => {
+        e.currentTarget.style.display = "none";
+      }}
+      className="border-hairline/60 bg-raised size-14 shrink-0 rounded-lg border object-cover"
+    />
   );
 }
