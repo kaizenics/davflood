@@ -34,6 +34,8 @@ import {
 } from "react";
 
 import { createFocusPin } from "@/components/map/focus-pin";
+import { createNewsPin } from "@/components/map/news-pin";
+import type { NewsPin } from "@/components/map/news-pin";
 
 /** A place the user asked to be taken to, from the barangay list. */
 export type FocusTarget = {
@@ -81,6 +83,10 @@ type Props = {
   /** rain cells to draw under the hazard polygons */
   rain?: GeoJSON.FeatureCollection;
   showRain?: boolean;
+  /** places named in recent flood reporting */
+  newsPins?: NewsPin[];
+  showNews?: boolean;
+  onOpenNews?: (pin: NewsPin) => void;
   /** fly here and drop a pin; null clears the pin and leaves the camera */
   focus?: FocusTarget | null;
   /** the pin's dismiss button — usually clears the URL that set `focus` */
@@ -180,6 +186,9 @@ export const FloodMap = forwardRef<FloodMapHandle, Props>(function FloodMap(
     onFocusClear,
     rain,
     showRain = false,
+    newsPins,
+    showNews = false,
+    onOpenNews,
   },
   ref,
 ) {
@@ -215,6 +224,7 @@ export const FloodMap = forwardRef<FloodMapHandle, Props>(function FloodMap(
   const onFocusClearRef = useRef(onFocusClear);
   const rainRef = useRef(rain);
   const showRainRef = useRef(showRain);
+  const onOpenNewsRef = useRef(onOpenNews);
 
   useEffect(() => {
     onSelectRef.current = onSelect;
@@ -228,6 +238,7 @@ export const FloodMap = forwardRef<FloodMapHandle, Props>(function FloodMap(
     onFocusClearRef.current = onFocusClear;
     rainRef.current = rain;
     showRainRef.current = showRain;
+    onOpenNewsRef.current = onOpenNews;
   });
 
   useImperativeHandle(ref, () => ({
@@ -492,6 +503,39 @@ export const FloodMap = forwardRef<FloodMapHandle, Props>(function FloodMap(
       m.flyTo({ center, zoom: FOCUS_ZOOM, duration: 2200, curve: 1.5 });
     }
   }, [focus, loaded]);
+
+  /**
+   * News markers.
+   *
+   * DOM markers rather than a layer: there are a handful of them, they need
+   * to be clickable and legible at any zoom, and they must not be queryable
+   * by the hazard tap handler — a news mention is not a zone.
+   */
+  const newsMarkers = useRef<maplibregl.Marker[]>([]);
+  useEffect(() => {
+    const m = map.current;
+    if (!m || !loaded) return;
+
+    for (const marker of newsMarkers.current) marker.remove();
+    newsMarkers.current = [];
+    if (!showNews || !newsPins?.length) return;
+
+    for (const pin of newsPins) {
+      newsMarkers.current.push(
+        new maplibregl.Marker({
+          element: createNewsPin(pin, (p) => onOpenNewsRef.current?.(p)),
+          anchor: "bottom",
+        })
+          .setLngLat(pin.center)
+          .addTo(m),
+      );
+    }
+
+    return () => {
+      for (const marker of newsMarkers.current) marker.remove();
+      newsMarkers.current = [];
+    };
+  }, [newsPins, showNews, loaded]);
 
   /**
    * Swapping the basemap replaces the whole style, which drops the hazard

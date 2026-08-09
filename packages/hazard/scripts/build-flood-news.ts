@@ -17,13 +17,10 @@
  * Usage: tsx scripts/build-flood-news.ts <output.json>
  */
 
-type NewsItem = {
-  title: string;
-  url: string;
-  source: string;
-  /** ISO date */
-  date: string;
-};
+import { existsSync, readFileSync } from "node:fs";
+
+import { NEWS_RETENTION_DAYS, ageInDays, locateHeadline } from "../src/news";
+import type { NewsFile, NewsItem } from "../src/news";
 
 /**
  * "Davao" alone is a region, three provinces and a city. Requiring a flood
@@ -54,7 +51,15 @@ function keep(title: string): boolean {
   // an explicit "Davao City" beats the elsewhere list
   if (t.includes("davao city")) return true;
   if (ELSEWHERE.some((w) => t.includes(w))) return false;
-  return t.includes("davao");
+  if (t.includes("davao")) return true;
+  /**
+   * Naming one of our barangays is as good as naming the city, and this is
+   * the clause that makes the per-barangay queries worth running: a local
+   * desk writing "flooding hits Ma-a" has no reason to add "Davao City", and
+   * requiring it threw away precisely the barangay-level reporting the pins
+   * exist to show.
+   */
+  return locateHeadline(title) !== null;
 }
 
 /**
@@ -67,7 +72,76 @@ function keep(title: string): boolean {
  * restriction only ever applied to the browser.
  */
 async function fromGoogleNews(): Promise<NewsItem[]> {
-  const q = encodeURIComponent('(flood OR flooding OR baha) "Davao City"');
+  /**
+   * Three overlapping windows rather than one query.
+   *
+   * A single search caps out around 100 items, which during a wet month is
+   * only the last couple of weeks — and the whole point of keeping these is
+   * that a flood in Ma-a six weeks ago still tells you something about Ma-a.
+   * Asking month by month reaches the back of the window instead of letting
+   * the recent stuff crowd it out.
+   */
+  const now = Date.now();
+  const day = 86_400_000;
+  const iso = (t: number) => new Date(t).toISOString().slice(0, 10);
+  const windows = [
+    "",
+    ` after:${iso(now - 35 * day)} before:${iso(now - 12 * day)}`,
+    ` after:${iso(now - NEWS_RETENTION_DAYS * day)} before:${iso(now - 32 * day)}`,
+  ];
+
+  const out: NewsItem[] = [];
+  for (const window of windows) {
+    out.push(...(await googleNewsPage(`(flood OR flooding OR baha) "Davao City"${window}`)));
+    await new Promise((r) => setTimeout(r, 800));
+  }
+
+  /**
+   * Then ask about the flood-prone barangays by name.
+   *
+   * The city-wide search overwhelmingly returns city-wide coverage: of the
+   * first sweep, five headlines in sixty named a barangay. But a pin is only
+   * possible when a place is named, and "was there flooding in Ma-a" is
+   * exactly the question someone opens this app with. Naming the barangay in
+   * the query is what surfaces the local desks that answer it.
+   *
+   * Which barangays to ask about comes from the hazard model rather than a
+   * hand-written list: the ones carrying the most deep-water zones are the
+   * ones worth watching, and the list re-derives itself if the data changes.
+   */
+  for (const name of mostFloodProne(10)) {
+    out.push(...(await googleNewsPage(`(flood OR flooding OR baha) "${name}" Davao`)));
+    await new Promise((r) => setTimeout(r, 800));
+  }
+
+  return out;
+}
+
+/** Barangays with the most high-hazard zones in the 25-year scenario. */
+function mostFloodProne(limit: number): string[] {
+  try {
+    const url = new URL("../src/data/davao-25.json", import.meta.url);
+    const fc = JSON.parse(readFileSync(url, "utf8")) as {
+      features?: { properties?: { barangay?: string; hazard?: string } }[];
+    };
+    const tally = new Map<string, number>();
+    for (const f of fc.features ?? []) {
+      const b = f.properties?.barangay;
+      if (!b || f.properties?.hazard !== "high") continue;
+      tally.set(b, (tally.get(b) ?? 0) + 1);
+    }
+    return [...tally.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, limit)
+      .map(([name]) => name);
+  } catch (err) {
+    console.warn("could not rank barangays, skipping per-barangay queries:", err);
+    return [];
+  }
+}
+
+async function googleNewsPage(query: string): Promise<NewsItem[]> {
+  const q = encodeURIComponent(query);
   const res = await fetch(
     `https://news.google.com/rss/search?q=${q}&hl=en-PH&gl=PH&ceid=PH:en`,
     { headers: { "user-agent": "davflood-news/1.0" } },
@@ -200,25 +274,49 @@ async function main() {
     return;
   }
 
-  // Two sources will carry the same story under different URLs, so the
-  // headline is the identity that matters, not the link.
+  /**
+   * Merge with what is already published rather than replacing it.
+   *
+   * The sources drop stories off the back of their windows, and a run that
+   * happened to see fewer would otherwise silently shorten the history. This
+   * only ever adds, and prunes strictly by age.
+   */
+  const previous: NewsItem[] = existsSync(out)
+    ? ((JSON.parse(readFileSync(out, "utf8")) as NewsFile).items ?? [])
+    : [];
+
+  // Two sources carry the same story under different URLs, so the headline is
+  // the identity that matters, not the link. Previously-seen items win, so a
+  // story keeps the date it was first published under.
   const seen = new Set<string>();
-  const deduped = items
-    .filter((i) => {
-      const key = i.title.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
-      if (seen.has(key)) return false;
-      seen.add(key);
-      return true;
-    })
-    .sort((a, b) => b.date.localeCompare(a.date))
-    .slice(0, 12);
+  const merged: NewsItem[] = [];
+  for (const item of [...previous, ...items]) {
+    const key = item.title.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+    if (!key || seen.has(key)) continue;
+    if (ageInDays(item.date) > NEWS_RETENTION_DAYS) continue;
+    seen.add(key);
+    // geotag late, so re-runs pick up matcher improvements on old items too
+    const where = locateHeadline(item.title);
+    merged.push({
+      title: item.title,
+      url: item.url,
+      source: item.source,
+      date: item.date,
+      ...(where ? { barangay: where.barangay, center: where.center } : {}),
+    });
+  }
+
+  merged.sort((a, b) => b.date.localeCompare(a.date));
+  const located = merged.filter((i) => i.center).length;
 
   const { writeFileSync } = await import("node:fs");
   writeFileSync(
     out,
-    `${JSON.stringify({ fetched: new Date().toISOString(), items: deduped }, null, 2)}\n`,
+    `${JSON.stringify({ fetched: new Date().toISOString(), items: merged }, null, 2)}\n`,
   );
-  console.log(`wrote ${deduped.length} items to ${out}`);
+  console.log(
+    `wrote ${merged.length} items (${located} pinned to a barangay, ${previous.length} carried over) to ${out}`,
+  );
 }
 
 main().catch((err) => {

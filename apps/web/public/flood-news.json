@@ -1,5 +1,5 @@
 {
-  "fetched": "2026-08-09T03:45:10.686Z",
+  "fetched": "2026-08-09T04:05:00.188Z",
   "items": [
     {
       "title": "PCSO swiftly rolls out relief operations for flood-hit Davao City",
@@ -65,13 +65,355 @@
       "title": "DAVAO CITY — Sen. Bong Go extended assistance through his Malasakit Team to 70 families affected by the July 24 flash flood in Barangay Talomo Proper, Davao City, assuring residents that help would continue as they recover.",
       "url": "https://news.google.com/rss/articles/CBMiwgFBVV95cUxPVVJ5b3VpQ1FFX3JRNHYxdnMydVY4VWo1RzE1di04eGhaM2NGTVdUTHNIdG5DeDVCaDR0MWs0ZkZGcmlLY1RwRTVHeHNhQm9fbnA4NUhTa3hwTnhwSVdjMnc2WnNqazAtTl9MQkFIcEx6MnlJcEtvcU1jRW1EdVE3N2Y1YlRIdkJZcDlPS3ZxRkFiVVc2NEcySVdTdWdvVFZXTXdoRjc5Zzc2dUtLOEF5ai0taVJ4LWJJMC1WTW1WWlJBdw?oc=5",
       "source": "LinkedIn",
-      "date": "2026-07-30"
+      "date": "2026-07-30",
+      "barangay": "Talomo Proper",
+      "center": [
+        125.55065,
+        7.05616
+      ]
     },
     {
       "title": "Paolo Duterte challenges DPWH to name officials behind delayed Davao flood control",
       "url": "https://news.google.com/rss/articles/CBMisAFBVV95cUxQbjhlcnlDN0xqNk0wMjNuSUtNdHNFWWNMcndXZW9WX0sxT1R2MjlseVZCZnJNdWZmTk1fS0RiQlhSbWF3QkxWdmYtNURxcl9UVDllWnBrRUhhOWZZVzg4bXZORmlydE9LY3lmWDVFelJ2cUlULWJqQ0I0MzVvTHNrS1dxZFpOMFNlWVdsTHdCdjdvUnNTWGF3c0lWY2laUFBEcUt5Ylc1T3ZWd2IyV3BTRw?oc=5",
       "source": "DZRH",
       "date": "2026-07-30"
+    },
+    {
+      "title": "Davao floods: Dizon orders Talomo River clearing after decade without dredging",
+      "url": "https://news.google.com/rss/articles/CBMi2gFBVV95cUxNOVpGYzhDcnVPWkx3bXNMOFpaOG04c2ZsalVGd29WNUZHSkhzeFIwd29qT0xvbzZoT3djUU9rZ3dlY1NZU1FyemFZOUVtNU9tZzhfYXE5MWUxdjdReEVqX3BnZzlMS1hQUFE0dTFIUmFxcDhwUkNIYk40N2dfSGZKZklzRnNZQ09la3ZZT2NIb3UtdnpodlA5b25CSDY3VHI5ZDVPNVdVQ1h4S1Z4OHMyaHp0MGV6cVc5bTJwczJRRlFrb0hDNjJxZHU0ampDNlZHLUFRcWN6TW5ZUdIB3wFBVV95cUxObFZUSWJiZ2g4SDNvWkI2dXJ3VlFTeFZrTnF6Y0FYUHBlMHF5cDRLNmhrVEd1TmJvSExORjZQS0ZJeDMtdjRZUFp4V1ctdjFRYldLSUpTZWFhR1k0MFZ5RG9MUzlRdGhvWUxfTVlmd3FUYkpnTDZwOFpPc1RoZG1yRTRwX3lHUmZweE1wZFc0ZmpxUkdkSWNvbF8wN3JrcGxWSmhDOW1DZXNPRldTMXlPNHFGVlFwWHRYNUhyU1FWVUQ1RDJ6aUxhV0M2bndmdWRDZEhKMGVXYWVKX1Btal9V?oc=5",
+      "source": "GMA Network",
+      "date": "2026-07-30",
+      "barangay": "Talomo River",
+      "center": [
+        125.47859,
+        7.19116
+      ]
+    },
+    {
+      "title": "DPWH to expedite repair of flood control dike in Davao City",
+      "url": "https://news.google.com/rss/articles/CBMiUEFVX3lxTE1GM0p3aUxpVjFIQmNBbGV6NFBQZjVpMDhRUENNcS1DR1F5X3VTX2ZkTHVhWVFGckdxYmhiaWRadzNEc3gwR25xSFh5emc5RUJE?oc=5",
+      "source": "Philippine News Agency",
+      "date": "2026-07-29"
+    },
+    {
+      "title": "SPECIAL REPORT | Waters keep rising, communities keep suffering despite billions poured into flood control in parts of Davao Region",
+      "url": "https://news.google.com/rss/articles/CBMihgJBVV95cUxPWFc5QlhmVGt0eGNVSkV6dlFQLXk1dXNnT1ZpNnNYS0lkRE15bGJUMjR6RFRfZDVIZlpFdUpEbGlPb2RqMVRoN2htRHBzdG95Y24xRFdTbVBRWG9DSjJYSm1nYldVQW1NcUNwZzFlNGEtVGUweGhBRmhGaWJ4T0dWZm1NZEtNaGg1LUFoeUY0cjJGRGhhb3BhUWg0SDVLOTdlaTVjWUJkTVJfc0JxRTM3U29WRW9uc2ZWX21uMG1pVUNCTGo4STBlZWEwRGZJMmcwUTFRUVlVM05oNHgwblBUQ1d6elVUY1NsNlZzVUVQYWFEcDVyUFo2a0lMQy1SMVZSZVdVS01R?oc=5",
+      "source": "MindaNews",
+      "date": "2026-07-29"
+    },
+    {
+      "title": "Dizon finds deficiencies that contributed to Davao flooding",
+      "url": "https://news.google.com/rss/articles/CBMipgFBVV95cUxPMHBxWWtlYXJIa2hXS1JjSE1LMmY1MllMMW9xRGgwRzRzeTd5NWQtZTlkQTlxZjhkbTdPcmRsdEJlU19hZmhJYnl6dUZ4TmpUc1o4TVY5bGFfUDRXbExSZWVOeWQzcG5MTngzT1Qzd2Z2TGZYdW9KbVFpbkxFUVlIMU5mLU9icHJMLWRLUjFVVzNKYjN0SkZCNVdKbVJneTJwSWdVekdR?oc=5",
+      "source": "ABS-CBN",
+      "date": "2026-07-29"
+    },
+    {
+      "title": "DPWH handling of Talomo River flood control measures questioned",
+      "url": "https://news.google.com/rss/articles/CBMilwFBVV95cUxQX09lUkoyd0hPa1c5Rk5FS0FhVHpORzZMRFFxWmZ1dHo0dDJXYjM4ZmdFSHVjeXl4SzY2WjJHZWgwblF6bVNENXFFYkJCbXBxV1RBQ1ZiZ3BwQldWUE0zSjBBVmRLay1ibm9ualJKY3R3SGdkbGFmVG5wQmNWRVpCcXNnOG1qa2JuN2N4Zy1WcGZDWHNoX1Y4?oc=5",
+      "source": "Manila Bulletin",
+      "date": "2026-07-29",
+      "barangay": "Talomo River",
+      "center": [
+        125.47859,
+        7.19116
+      ]
+    },
+    {
+      "title": "Flood devastates Davao homes despite billions in control projects",
+      "url": "https://news.google.com/rss/articles/CBMinwFBVV95cUxPRU43YWlSTWcwQktLMXZ0LUxHeXhySGFXYTVFamVxbjNPMkdXVzN3QTNrdmd4TTdiazZSQnIzcUF2dnNidWVmOU1RUlNPUHJyMk5oa2JhMXZBRV9waXA4NE56RlRTYWFjZnNhTXJKWHdvRXExUlJ4MDhWSS1IcFhZTktPVHdrcDJvOHZwR1ZfTEpyRDhLQ0F6YXVINmdUS2M?oc=5",
+      "source": "Davao Today",
+      "date": "2026-07-28"
+    },
+    {
+      "title": "CSWDO CONTINUES AID FOR DAVAO FLOOD-HIT FAMILIES The City Social Welfare and Development Office (CSWDO)-Davao continues to provide essential assistance to families affected by the recent flooding in Davao City. Relief efforts include the distrib",
+      "url": "https://news.google.com/rss/articles/CBMi3wFBVV95cUxNR08zQnY1RGhDZGthUUZWRzBrbEJSNzU5SkZORGZ2ZS1NZFJCUUd6dGlJTXduWDNqT1BBeks5MC1MQ3NlLXpVTEJZWVRKcHk5SUQwaURhQ1ZHVjNqOE5SRHFCSnlkcHZYeXNzVl9qa21SWkgtV3BCbkd0UGphdkdlWDFFWXJoaWxOM1llSDNCQ3dzb2wxbGE0VUJ5bm8tUVROOHRISXYwOFMxX0NSNmhxZ2FZQU9kQnc4WXIyVEFPYnNjc204a3dNc2h2a1YzQmFVTFZPOUk1eW9kWmJEZkJF?oc=5",
+      "source": "facebook.com",
+      "date": "2026-07-28"
+    },
+    {
+      "title": "Marcos sends DPWH chief Dizon to inspect flood-hit areas in Davao",
+      "url": "https://news.google.com/rss/articles/CBMiygFBVV95cUxPLWxwa1JaY21vN1FNcXk1dmZ3VnVCU3UwazNVQ191Q0hDRFgzbENUS2RGZUVvNktSR2xBNENWLUMxUmNrblNqTG1YRXBpMVR0VEJrVnpiRm9ickl6UW0xRkFQZktiOENJM1A5dkJJVFlPQnZNMlhrcFJEZ0YyMWhTdjMzaXJpeE13RFFPYzFqNURLMms0c3JlajQ1M2V2aEt0YUs4Q1NCaVFYODRTY2dqalFmYVVNX0dqaUNuVGx5SnVzM0c5YWEwbUtB0gHPAUFVX3lxTE5vbkJDQXlGSC1IVjJEVlZGYkNZM0EtUHAzUnI4WUM3dWVHekNCRFdLRVV5MVpnSE1mc3kzaW1laldxQ3dFYnNuUzJWemFpU3JSZl90WnhrWm42M2tSeVVSWlotMEhycGo0Vm5MUlZEQjFCUGtPWTZ2Smp4NjBnbm5Fb0tnNnQ3OWM4OUlNZlBxOGx5YXpISVZ1Q2d6cnVMUTdmV3hLU1lCZ1BCSmVTUE1yZC1mY0hDdnUwRVNOeUpYWVJWTXFjT3d6SnBaT2Eycw?oc=5",
+      "source": "GMA Network",
+      "date": "2026-07-28"
+    },
+    {
+      "title": "DOST-PAGASA PLACES DAVAO CITY UNDER FLOOD ADVISORY The Department of Science and Technology – Philippine Atmospheric, Geophysical and Astronomical Services Administration (DOST-PAGASA) has issued General Flood Advisory No. 1 for t",
+      "url": "https://news.google.com/rss/articles/CBMi4AFBVV95cUxQZUI2U1V6Tk5qUG1yc2VrNkM3MURTbUEzdUhfRTRyMUtlRUphSkFHYTJDLTVrbFRQUDQ3a00ybXNNdmVDZnNjSlpGT0doV0ZmYzkzNmdyWWFJelNhVFhUMDJxbmwxeUJGcDRUdXRWNHBHUkRxdTlTUXpQOXhxMHg4VUJvajJPakltZktmbkRUdi1IZ1BCT3lmQXVZdWNXd0JNVTV0S3pMNmxWMnlqR3JUT3ptQVpONkp6Ni1KbHZMREJoWEVqUTUxOHBsMmlIbC14RXptbmF6YWlNOTU0a2N3Tg?oc=5",
+      "source": "facebook.com",
+      "date": "2026-07-28"
+    },
+    {
+      "title": "214 families affected by Davao City flooding",
+      "url": "https://news.google.com/rss/articles/CBMigwFBVV95cUxQUnh1dl93NGZ3MUphRkRJaFNITk00a2JlV1N1dks3RkpJQ0cxenExRzd1SENaczVvN1NuZnpCVHhpbEhaaXo5TmJiV3hpdW1NbUF6Z1lNTnBVWFpNVmExMUNMQTAwelpEMEhXNWV0dlladHNvWnNiWHJsZmo2SEZjd2x6WdIBkAFBVV95cUxQWWJPNGpITVJTbUY4UmhIRFRuTGIteW5uZ1EtVWs2YW42RDRraE5neXR6bmpUTGdadE1xTzN6ejJ0cmpfdVNla3ZPTWJkUXBsUzlaOFM2N3R3bS0xbkRpVjJTdHlPY0tDMEtOT2k5VzVBQXdpX1pnUWJkUjI2WjliM3lNVjRCWWpRM2xRX0tTRTE?oc=5",
+      "source": "SunStar Publishing Inc.",
+      "date": "2026-07-27"
+    },
+    {
+      "title": "Heavy flooding was reported along Tibungco Road, Davao City on Monday evening, July 27, 2026. The video, taken around 8 p.m., shows several areas affected by intense rainfall across the city. The Davao City Disaster Risk Reduction and Management Offic",
+      "url": "https://news.google.com/rss/articles/CBMi3wFBVV95cUxPS0pnaHBYUE5rOUp5c21GR2QxeWRiWE5tTlZLTm9sZWhTZlVyaG45ZWZBRlBqNVp4bjRXaXg0QTZ1RXVHZjBUODhxNlRraWVZcm5wOWdzNlpyUXhxLWhIaFFUdzVaRzV2M0Q0cjNib3pMeFA1R1pLcTl2Sk5UOEhoXzY1VUxraFVpZE9aU2NmcnRMVEgwTjJYbkdYRUt5Z3E2WTVWbmZQc1FuZjBtS254UHZWbWZaTmwzY1lzNzBYaEIwNmUzMFNJNWowMEZlTE8xWjJHVTdLWnZBdTdxV2U0?oc=5",
+      "source": "facebook.com",
+      "date": "2026-07-27",
+      "barangay": "Tibungco",
+      "center": [
+        125.6488,
+        7.1905
+      ]
+    },
+    {
+      "title": "DSWD-11 prepositions P154-M aid for Davao flood victims",
+      "url": "https://news.google.com/rss/articles/CBMiUEFVX3lxTE83dk0yaUszVDhlem44VC1sa3NCWnNEQV83XzRiYUluamc5b0xERUhUUllYWWk0T0JDT2hmWFgzRHJrRGZnRXV6QXUtVlpyek0x?oc=5",
+      "source": "Philippine News Agency",
+      "date": "2026-07-27"
+    },
+    {
+      "title": "AUTHORITIES have recovered the body of a 54-year-old construction worker who had been reported missing after being swept away by raging floodwaters during the recent heavy rains that inundated parts of Davao City, bringing an end to days of search and",
+      "url": "https://news.google.com/rss/articles/CBMi3wFBVV95cUxPZ0tZVEhzY0Y2bUZUa3RqY01hQk55TlpfNGx6TEZUSUhhNktLb051U2dyZU5MUzhEeFh2Uy1MeE44YndFeXVLVERabm9rRU4zU2JPWFd0X0pwQndzdXduQ2dvbUF1NkhqVUx1dlZJdnhxcFlsa0tDRGFBYlVtTVNJWVdDeldQTUoxVUZ1am5EeTI3ZjJ4TmR1c1hObUQyd1JUTU5FWm5HemVWLUpIR3V5VVhVS2d6VWdzNDNteGdoYVM2eVMyZW9UdE43NzR1NjExMkM2TnJad0h3RUZraGpz?oc=5",
+      "source": "facebook.com",
+      "date": "2026-07-27"
+    },
+    {
+      "title": "Castro to Baste: Help flood-affected Davao constituents first",
+      "url": "https://news.google.com/rss/articles/CBMipAFBVV95cUxNdXhvNVNreGZQVVVzMkFBdzhKcFdFbGRuMGdoWHd6N1BTRTNsMmlkRUUzZHJRX280SnVZRlFZaU5yVWg4NmJyaTcwOEtQa0xpdWJ0WUYxS0VFU3JlbkZmbWl3SG43YVF5Ulp1MDJ3Z0dmMWY5OFdlenFlbG1fSmZWM09HaTNIdWJrM193cW1iYXFiVzFWV3NKOEFpZkVWZ1J2YmZpY9IBqgFBVV95cUxOQ1ZrSmcwOExBSmVMUWt6SDZHcUotX3ZwaVBlZURZcTFiakp6QVQxYVlnUDc2NTdFSlJEMF82VHJwVkc5N1UzbUJqTG1KeFQtWHRBY3VLUW9nZGpZWV9rMzlGa3BfcmhvYk0ySUc3NUlDZWRBSGd4T2djVFc1clI3OUFYMEVXNVRIUTBJYU9sekNraEtkeDRBQ1d1ZXgzMmpiQTFXdV9NZ3dUUQ?oc=5",
+      "source": "Cebu Daily News",
+      "date": "2026-07-27"
+    },
+    {
+      "title": "Probe of Davao flood control projects sought",
+      "url": "https://news.google.com/rss/articles/CBMioAFBVV95cUxNZ0tOeE9SYWY2V29mNDRjVDdQSEI0dy1qU1NyWnBuSHJGVzZEdmxHMHBvQmdnLVVfTTViTUZqbFpSazhHV2RRdlVaVDY5TUZUM1g2SzFmMk1KMnlyYUlmb0hUWGNsNTBVN0tIOFBrM1JIV1JlanZjUk9tUVdiRHZPQU4xVjVhem5tU1c5a3hSLXAxYkpuUnRaUzJEU3k1cm5q?oc=5",
+      "source": "The Manila Times",
+      "date": "2026-07-27"
+    },
+    {
+      "title": "Palace rebuts Baste Duterte, urges focus on flood-hit Davao",
+      "url": "https://news.google.com/rss/articles/CBMirAFBVV95cUxPUkVDYkRabXlFZUs1YlNPQmFLMUpnZkVKa0Zhc3BNbzdzZVg1OHBBaXZSRlFRZ3lMZjNralk2dWZTa0NaQTJvaGdIYnQ1WkR0X3ZwZDdQYTZOaDVHRnNUdGp5dVcxOWsyTW1IaG5uZ3pWYUNXUDVWeVlYNzRMMkhkYS1ya2VVMjFLMk16QVRIT182VXlHbFFfMmY2RlF5T3ZzUlhPT2ctRE84TDFV?oc=5",
+      "source": "The Filipino Times",
+      "date": "2026-07-27"
+    },
+    {
+      "title": "1 dead, 1,200 displaced as floods hit Davao City",
+      "url": "https://news.google.com/rss/articles/CBMijAFBVV95cUxPVW5RcFV3Z0FwR1E2RWtiR3dTMzMxVm1Takp3aTRsTkd2THpIeXZGX0x5d3JmM2l6LUlWTHU5VE5DQ3ZDX0VYOFVfS0dYb2ViYml4MEYzNnQyZERYVTFIWlhNSjBGRU1TTm8tMEJWcHp0YkhzWlBaVm92cnpBUWJUUGhsOEtMeW9rZVJUU9IBkgFBVV95cUxPZllMdmFjYTRub1YyY3BySVZ0X3drRV9MdDdoVHhDUVNIOEc0T2p6RXkzdDNKQUlqR2lFeFdiLXNRT1d1YUJpZHlIOEJiWldxYXpULTVCZWVzYTQydXJJejBha0pWMXVtT0JQeEJCUnRGcWhNT20wVnczVk9vWXJtY1JrZ2trTjVoUlBmQkxldmxXQQ?oc=5",
+      "source": "Inquirer.net",
+      "date": "2026-07-26"
+    },
+    {
+      "title": "Heavy rains cause severe flooding in Davao City; 300 rescued",
+      "url": "https://news.google.com/rss/articles/CBMirwFBVV95cUxNQVAyUGpBT2g3b0l6bER1SGk5dWE2M241aWNsdWhtODR3N0s4NkdzN2NGbl9YN3B3WXpLUGk5bTJ3bi0tMEhUSUdFV24zck1aOWRRcExpMDVBc1QyakRpNFNGM1FGSXRyZHBkX0d5NFpVVmFEbjN5aUI0MGpkQmY0THZ0ZmZNNDcwUngtQXpudk1md19MajJQVjlvNFkwNDhCSFRqMTBsSmpCeWN0TERZ0gG2AUFVX3lxTE1jSktEWVQzSDhDZjVhcU1ZX295Rmh2RGJ3bHRQR3RXa3lmcHZySjFnTkhibVZ2MDRPZ0RqX3hEdXdQekRGMkdJcV9GLVRWa0VVZWdZRFBRakRiQUVXb2xnaE14YlJOYWxael9hWjUzdnExREprSkhDTEllR1p2R1I0RFZ2bkNRQWFCMW8yb2dSV1hUV0U3enJVX0gwN3hYUFJhZ19kaEdHNmg2azlEcGIxbmFmMG9R?oc=5",
+      "source": "Philstar.com",
+      "date": "2026-07-26"
+    },
+    {
+      "title": "Davao barangay hit by flood declares state of calamity",
+      "url": "https://news.google.com/rss/articles/CBMingFBVV95cUxNTWg0eXlhZWdYQnhvSHEyQzNQNnQ0OUNReUIzZTdPakhwbEtUTzBXbkFvUmVEbVd3TmtyaU4wY0VNdnFvRFp5WlpnV0JzODlkc0lheF93bjlkemlEQW4wb0l6TFhZU0JxeVh2elZiYnV3cU1XS0RoR2hsQk1iVVBaSUhvYlpkemY4bm0ySGdQOXUyZnpwZmVxRTd1WVU0dw?oc=5",
+      "source": "MindaNews",
+      "date": "2026-07-26"
+    },
+    {
+      "title": "Marcos Orders Aid For Flood-Hit Davao",
+      "url": "https://news.google.com/rss/articles/CBMibEFVX3lxTE5DTGllQW1Cb052TFNlYWJKclJBR3VSdDBtOTI1RTFoZWpPZXd6d3dYMDEyejU0NXFhSmx6WTk3OVMyUDdjVXhQVlVybUJ4Ry15TGVpMml5OGw1UElKdXRpQTJGUHppYUFUQk8zag?oc=5",
+      "source": "OneNews.PH",
+      "date": "2026-07-26"
+    },
+    {
+      "title": "PCSO rolls out relief operations for flood-hit Davao City",
+      "url": "https://news.google.com/rss/articles/CBMimwFBVV95cUxQaTNZZjdoemY3Z05hNUQzWTFWNUxwNy0tOTZhV0pfSTJDOGZvejdHc0dUOVY2cm52NWFlblVvSkUtTF9xTkpqUThjOERMUGRkNHQ1OTVudm5RTUxuZW5Vc0EyZzhvWmdaWHJsVUVjTlB0UzJNQnJiek1LbTBSRllaV2xSWk5CcEdUaFZHUGt3UnlGVmdzNEQyTGFBMNIBoAFBVV95cUxOZy03c3o2dnk4UFBHeTNBZDM2bXZqQjlrZ1Ewc3ZBd1hQRkRqb19WSkhhLUIwVVJkMVNoQm1NeEhtWE1DRkMyT0dJOS1iQ1VqR05aMVA0ZkJLcmNfWTNQZlp1OFF1OXFwRS1lMEpzQmV5ZjZQbnllSko4ZkRKVWQ4MDNKdnY5a0R3YkNpMExCN1ZlUnBYdFdtdVpFN0dwNUsz?oc=5",
+      "source": "Inquirer.net",
+      "date": "2026-07-26"
+    },
+    {
+      "title": "WATCH: The Coast Guard District Southeastern Mindanao, in coordination with partner response agencies, responded to residents affected by flooding in Barangay Talomo, Davao City on Friday, July 24, following continuous heavy rainfall. Personnel from the",
+      "url": "https://news.google.com/rss/articles/CBMi0AFBVV95cUxPUUV5N2RhZ2NKZGVsX3JNeHAzdlNxN29mU2NJQ00ySGlRY0o5aUpjcGRtMXpIMExZZlZuRUlNc1owRm1jMDB4dTgyRTlxWGdISHRSbHl6UWlXMFo4TDBTdlg2SjhId3ZJTmRfbnRRZ3d0ZmVrN05jejlQNlBraEs5a2lGc1F5eWY5TXhOdnM1ZHVLTWx2OFNuYmdzVmgtNGpGaV9pSjRqT3ZtM1ppM1RJRFFqQ05QaXphSWFMWVBuc0pPeWhGTFNPSlp0NS0tU0VC?oc=5",
+      "source": "facebook.com",
+      "date": "2026-07-26"
+    },
+    {
+      "title": "Flooding in Davao City leaves 1 dead, displaces 1,200",
+      "url": "https://news.google.com/rss/articles/CBMimAFBVV95cUxPT2hqVEw1MklFd05CdDRMV2diSkNYUzhHWW1QYnZmWUpZYkV3QWpqTjYzbWc2ay1sQTVDOEVkNC1rdmF5c3QwWWxLT1ktaEFGRkNKWlBlb0V3ejRwNEE0VzJWUHVmZkYwWElGWHk0MmdYQ3d6TnVGcHE3bWlNd21WZDE3a2Nib2hkV3BVV0ZUTFgzQTJISkFrUNIBngFBVV95cUxNRDd2STBBckhfaF8wMnBvY0VsbnVrd2puTWwzNFRhSEZvb21VUXdCdUpkMDdTZ0doS1FyZmY4aWtQTEc2a0hjVXUtNmVSNXJZUEFuMzFRZ3k5Q1BoVHJBenVVdEtyRElrcW1ERGZ3eExxNTUwQXlGM1U3bmxLZ3lMdmtIQzR5a3g2OFNPek9ZeEFZTWJZcElVeU45LVN5dw?oc=5",
+      "source": "Cebu Daily News",
+      "date": "2026-07-26"
+    },
+    {
+      "title": "MMDA CHAIR QUESTIONS DAVAO FLOOD CONTROL PROJECTS Metropolitan Manila Development Authority (MMDA) Chairman Nicolas Torre III questioned the effectiveness of Davao City’s flood control system after his home in Barangay Talomo was floo",
+      "url": "https://news.google.com/rss/articles/CBMi4AFBVV95cUxNRVFITEw2QXZMRU1JdDRUX3BIODJESkRFVWpTdDNzWkJqLVRsS2FyaXBia2I4YVdOaEJpdTE0VkFiOUtTZmRuRWg5VW9WQ3kyU2JIYjJkVjdJYUpvdmd0T1UyTUNpaDJqcEI3NmE3bm9ob2VmYjRjRU5jWkV2eE5MWElzNjBxYUxaWVlwVnlCbUg3SHVzbjZVMWlqVkl6VjRvSWhsMjhYRnE2M2o5NVg5OWgxdjlKN1pyRXphbVZBWHYxTzRveUo1ZXBOemp0ellxM0g1eEFzQkZ6U1R1bGFmSQ?oc=5",
+      "source": "facebook.com",
+      "date": "2026-07-26"
+    },
+    {
+      "title": "Castro to Baste Duterte: Focus on helping flooded constituents in Davao",
+      "url": "https://news.google.com/rss/articles/CBMirAFBVV95cUxQcDFOT05qbWNsaWZ1R1RRaW5ueldnZDNPZHFSSzJOX0NKVWV4Nmt6eGJ0YzZ0Z1RWVklRV05wWmVHNUxRXzYwaU5Ldm9QTXp0ZjcxYkdhR1NySkZJeXBpZFdMQWxDWEwxdzVHR1BhN0c5bHM1dWlwODVLS3pnbHAwWC04XzhMTkZsV3Fmc0paV2tWTHpfa0M0WDVCaUxKUVNVYm9LYUUtSXlPLTJx0gGyAUFVX3lxTE1nR1JZcks0and3a1k2bk1HSnZTWTVORi1KOFlULWNrZ0QzVXZ3M1JjRXFjU0VjZGhhMXBYcDR5SnA5bVpteHlNd3B6OVJqZ25PcUp5dFZvV0dTQ2tLOXVGUXdhdEtsRi1aM1FIOWVQZExUQjV1YU9IZUJVc011dGgwYnI0R2Z5OUZlZjQzcnlKcUJBOFVGXzFVbHZMajBIOHFIUFNIelV1RWlxN2h5dmxqWGc?oc=5",
+      "source": "Inquirer.net",
+      "date": "2026-07-26"
+    },
+    {
+      "title": "Kahit balwarte ni Duterte: Marcos admin assures aid for flood-hit Davao",
+      "url": "https://news.google.com/rss/articles/CBMiuAFBVV95cUxPWVluNmFNSm14dG5TTFhYRVYydHU3Tzl2Tm9scDlJRFZrRFc1Ukhmc1o2bTdZdUhfSGlWR3ZLRzVvWHhLNDRYOWRYUDNRRm9qSk1zc2haZEFHcUZpY1Z3T2J3VGVKdjVla1JlYjd0eU5JclpNOUdfdUctanBrSDFIb3FsTTNyQkVkQldkUFhBVDlfXzZ6aWpteFdqaDFoUWdGRV94MEl2bFFqMGlESER6bEFaNHBRdVZG?oc=5",
+      "source": "politiko.com.ph",
+      "date": "2026-07-26"
+    },
+    {
+      "title": "'Dapat may makasuhan': Tinio tells Ombudsman to probe 'Davao flood control scandal'",
+      "url": "https://news.google.com/rss/articles/CBMiqwFBVV95cUxQTy1kUExJUkRFQ1dUWU9sVk1iU0JtM0JIbTIwQmF4akZOOUZnUEI5b01uY0E5TTNDTnpJVzQwZ3plTmgzeDE4MmFpUW9GNllDWHZ1OUlaeml2dVYyUmJCVVFnV1pzX21LSnBvRG55ZFdHdEZOTW1ReXR5c0FpN1hPeEVQUXlUNlcxb24tTUhrQ3I5RFc1UVB5bTFEbG9YT2FYN0ZkUzFVeWNKSUU?oc=5",
+      "source": "Manila Bulletin",
+      "date": "2026-07-26"
+    },
+    {
+      "title": "Don't politicize 'unavoidable' Davao floods, says Bong Go",
+      "url": "https://news.google.com/rss/articles/CBMijgFBVV95cUxNbmFBX0FlVzBuWnF2b2M3N1B1a1U1Mzd4dDlRcWtmSERmWU1ieTNNUWNKVGpRM0ZNWTBrNUJHZWkxQm1mdzZ5SXo2bllMREhvcXNTNzNNN0xpUXdENjhid21pbHN4QjAzLW1fWWNOZDJoNnNFME9pVWJvZmtiZXk0OFFnWjJkMGhqVmxIb3d30gGTAUFVX3lxTFBfOUFtay1rci1CQlpJX3JEcy1VaVlFbjFwS2ZsMThFWHNwRnFJb2xnS2gxT3FvRllGRWNOMkM3U3VKeUZSa0hzOXd0ZWs4cU5hTE94X2VhNl9JWVFQNmFRME1nX2hKclVzOFhkS2ZZNTFnbUo5SWVfakMyTUJkR1RwY1lSWjhwLUhQaWV0amdKVjNyZw?oc=5",
+      "source": "GMA Network",
+      "date": "2026-07-26"
+    },
+    {
+      "title": "OVER 900 INDIVIDUALS AFFECTED BY DAVAO FLOODING — DSWD At least 214 families, or 928 individuals, have been affected by flooding in several parts of Davao City, according to the Department of Social Welfare and Development (DSWD) Field Offic",
+      "url": "https://news.google.com/rss/articles/CBMi4AFBVV95cUxNa1ZtRFRGV1N2STB2VURidVo3SmFqYmtCWk5tTWdNZjRFcGUtWjBFb2NaQWEzUTZjNmxXNnhYbEFhZDFHWjJMZWJDeHNYZzFQQV9ZVEt4X1dwVF9Gc2hoUjJ3U3FGNkl5ZHprSWF2Q25NREZwLU9tN0NNZTlMaFJNQ2xLTEtaYUJlNlhXZFdpN2FYM3RmUUNEUmN0NWE4MkNyODFwOHlqMlQyeF9UTmFNNkJkejZiaUc2M1kzeFdpZTlid3JBWlNnUHF2TmRTOF90bHlhR1FUUVlnLXRzSlBDOQ?oc=5",
+      "source": "facebook.com",
+      "date": "2026-07-26"
+    },
+    {
+      "title": "Flooded again: Nicolas Torre challenges effectiveness of Davao’s billion-peso flood control projects",
+      "url": "https://news.google.com/rss/articles/CBMi4wFBVV95cUxOZUdyd1Q0M0Yyd3NyTG1PT243VHowSnVlUHlIelhnQmVNT3VCV19xUjBNb0w5ZkFSQWdwSTZtS255a0steGwwXzd4M3ZZd0tham1IV1pZQmNnMWpyTm5rWkdqYzhzRkc5TDZmWklQV2xIc2ZvQ0pObExSalM4MkNMeWFtaFlEQW5SMlVwVUJIeUlEa2R1LWNvVTU4Q1NNcEpYTkU4cHhLTDZDcUR6XzJTekUxZTV3VnZHZWViQW13SEVMZmdIdUZjSWVwYXd3aS15dHlvMkZTMGY4di1GYnVxNkJLNA?oc=5",
+      "source": "politiko.com.ph",
+      "date": "2026-07-26"
+    },
+    {
+      "title": "Severe flooding hits Davao City; residents rescued",
+      "url": "https://news.google.com/rss/articles/CBMiqgFBVV95cUxPNXBaSG1ybWt2M0pmOV95U2w2NVE3UE1PNUxPQUQ4ZWVLcDVXQTlTUHpyVHRSS3lqSkVaUkFrbHB3bTMzZlFkaXBCeWxROVZtUmU5WjA2TjRhY0p3SlhVUzctaDd2QUIxYVhqLXp4MklxdThxN2JyeHE5MjVmcUFJUmFoWXdzV21Sb0ZwSGFnMmZPOFpiVGt2OE5fRnJLTU5RbWVlNVlSc01EQQ?oc=5",
+      "source": "GMA Network",
+      "date": "2026-07-25"
+    },
+    {
+      "title": "Heavy monsoon rain triggers severe Davao flooding, evacuations",
+      "url": "https://news.google.com/rss/articles/CBMiqwFBVV95cUxNdFFzTHRweFdyRl9jdmd1SGRIemkwbzc5TXZjUTU1N1I0aURzbGpQcG41enhGWE8zMU9mYWFod2RJb2pKUjh2U3hPNlJuUlgyaGRUTkNYRWVHZWtZdERvSElqdGhpTngxOTY2MEVZS29uUkJmTEV2V2c4TVVic21ybWJXY3BMaXpGZVNKODVnMEg1V2hMQ0pyQUwyaDRDVzhURXBMYUJDUkNhakE?oc=5",
+      "source": "Rappler",
+      "date": "2026-07-25"
+    },
+    {
+      "title": "Floods hit parts of Davao City amid storm, some residents evacuated",
+      "url": "https://news.google.com/rss/articles/CBMipwFBVV95cUxQSGxQNEhRaWRzaUxkbzVnSnRmODhHa1MtYmhkbHpEVVJodnVablV1aUhKR1Q3bjdRc0FqVl81WkVTM0ptbHpTMjlhNzljMi1oVjZRWUlHdEpiQmxMZTlvQTZDTlg5R0tnRGl1ZFhGQ2N2T0NzWlR5WGtQakVROV9sdklNR3oxVk9WNmJVcmMxWVRIZkVKc0JWM1Ywd3FKWWtfNWlQZzkwY9IBrAFBVV95cUxNazh0UlE3VlZ5WEF4c2ZCSlZkbGw2QWZXOC1pdjd6TDBxbHFfUmhZT2hUdk9mYzk0Y2ZqT3ZjN1BMMk80X3NySGdIWnpySWhka3B3cGpETnE5MlFUNWdudjF0TU9WdTVmOXBHbW5obmhzOUhvQS1kQjBETER4VkxzOTYyc2k4MmpxQ0FiVVN1ekRiOUtJLTZtbVdjVzNfRkJwTWtsa2t2OVkyTThN?oc=5",
+      "source": "Inquirer.net",
+      "date": "2026-07-25"
+    },
+    {
+      "title": "Torre says his Davao home flooded Metropolitan Manila Development Authority Chairman Nicolas Torre III says floodwaters inundate his family's home at NHA Bangkal, Barangay Talomo, Davao City, again, prompting him to question the effectiveness of the ci",
+      "url": "https://news.google.com/rss/articles/CBMi2wFBVV95cUxNZ1B1emNJNXBHYzZyUXh6LUJIejc1eHRDTFB0RmFwT3otaFBRZjRhQy16RnhwVzZWT0VrNWg0NVI4NjVQeEkzTTlGdDEwVHUtc2hBOHRVTzJpcjBYSTdMVkZHY0ZpTmNyREFZZkFsRjF6YWs2V3ZwQmdQVllWVWxwMW41TFhOMkMwamNVLTg0M2dZN3NDUHlLUFF5TEQ5emx2VVJFUGRtbHVDdnJfcm5zNTNMZ2diYXJPWEZ0dDVQNWhJUTcyR3ZkN09sd0dFcXktZFdsRUZ1dDJ4eVU?oc=5",
+      "source": "facebook.com",
+      "date": "2026-07-25"
+    },
+    {
+      "title": "WATCH: Heavy rain brought by the southwest monsoon triggers widespread flooding in several villages in Davao City on Friday, July 24, where residents say floodwaters rose to nearly rooftop level in some communities within hours, forcing families to flee. | Vi",
+      "url": "https://news.google.com/rss/articles/CBMi2wFBVV95cUxQbXNJSmFkeVptWEwyTml2Wnc0ZVE4TGJpSzdHRnFTU0JUcU1QTFZ3czVKRklETUFZNWxsQ2xkTk5kQUVKcmVuRUV1NlNTYjJWNER3aG1oTXZhMTM4SExLbU96VDRIZ3JoSlVyaWRwNWxTbDN5OFVIcy0xNFJZaDNqOG12NHFSUkM4ZHVaeWVxRks5YXNhemZ6TmlhN1FTRVM5MVFUMFBJb2Z5ckxHekVIMFNCbTRwbWlFeHVobF9vanYtbnZJMF9XQ2I1VEppM1VmdHBnLS1lNmZMbXc?oc=5",
+      "source": "facebook.com",
+      "date": "2026-07-25"
+    },
+    {
+      "title": "Flood triggered by ‘habagat’ inundates Davao City",
+      "url": "https://news.google.com/rss/articles/CBMiggFBVV95cUxQMS1iUnEwYW5jM3NackFZY1ZZb0xFM1BMUEFGdUpwVHRieG1HYXF3Q1VlcXgtQWZDOXdtd2pjMDRQUGFKeDNGX1NEaFRBek4xV3hVZ0h0QmhFVDQ5aFF3WXhmMFdaTnM1QUp3ZXRmS2MyODR6ZzNYc1lNUnBiMW5jTGtB?oc=5",
+      "source": "Manila Bulletin",
+      "date": "2026-07-25"
+    },
+    {
+      "title": "LOOK: Since the heavy rains triggered flooding in parts of Davao City on Friday, July 24, Davao City Fire District, DCFD Special Rescue Force, Emergency Medical Services, and other partner agencies have been actively conducting rescue operations and pro",
+      "url": "https://news.google.com/rss/articles/CBMi0AFBVV95cUxOSUNZZk9PVXZ0WEpoc0x5MEZ1MXFDdVNvUWNiWTM1dGVQZ0o1U21OUnZWam03ZFNLdkZyZ0cydGhwVkpOTkNMTG1kc1FwSzJYeWh4RU5ST0gyeGpXX1Z2ZGV5Z21kamI1bVdPTW1hd2d2TVZtOE16TXF0RkJ1cXozeVR0MzhKeER5UEE3SFNvc1dyVUdJZmJOTlZDZ2RrTzlDa3Fvc0lKTnZfT0pybEhWcWhQQXJSTnVDaGV6YXUtMXNXZFBNSi1KbmVGdnRpNXBr?oc=5",
+      "source": "facebook.com",
+      "date": "2026-07-25"
+    },
+    {
+      "title": "Floods hit Davao WATCH: Heavy rain brought by the southwest monsoon triggers widespread flooding in several villages in Davao City on Friday, July 24, where residents say floodwaters rose to nearly rooftop level in some communities within hours, forcing f",
+      "url": "https://news.google.com/rss/articles/CBMi2wFBVV95cUxPdHpubmI5WG5TOVNmRmJsVUY2NmlpSlNxbUwxWjhxNTYxTF8yT0VMbms2M0VvLTYtNWlLN1NCOG53dV9OU3cweDdOeFNlazVjS2JFeTcxS3l4TXp5N0g5bkdqYzRHbmMzSWF5SzNhUzhNOEc2S2EyclpwNHliRmJUZnpZSUN6elNKU1l1TW1XOGFZc3JnWVFfWU1fRWFDYnZpQS1ueWp4bGV3NUo4SThDcjNSQVRmNHQwNFhBeE50UVFMa2x6MnZkSDVuemZ1OUx2RWFYMGtPek5fS00?oc=5",
+      "source": "facebook.com",
+      "date": "2026-07-25"
+    },
+    {
+      "title": "Heavy rains triggered flooding in parts of Davao City on Friday night, forcing residents to evacuate as rivers overflowed and floodwaters submerged residential communities. https://tinyurl.com/2p9v88a8 | via ONE News",
+      "url": "https://news.google.com/rss/articles/CBMi3AFBVV95cUxORllwOFVSYjhwMnViRW5ZOEFJSFhUN25nWDdwZzVIVTdiNmFzUGc1WFlKdlRoX0gtRFpfTlZYbEdVMXkwSmU3aW5RMTFZNk5uQWdCOWtxOXZfUmtrN2dlUUtubEh2LXNVQlNnOG15MWUxYl9jdUxScHFBaEJRZUpKSDlVemh5aGJDTHF3SG9xN2xlODNXRjNtT2xVSTdMYzFYa0Jiak9aQTFKbVJ3YllFcUhYYXpOdWRQb1RHb0lHSTVOQy1TZ0pkZ21haXBrZ3UyY3VkOHRQeldmSnBK?oc=5",
+      "source": "facebook.com",
+      "date": "2026-07-25"
+    },
+    {
+      "title": "Some photos of the Davao Volunteer Fire Brigade Inc. during its swift response to the recent flooding incident in Davao City on July 24–25, 2026, providing critical assistance to affected communities. Members of the brigade immediately conducted rescue and",
+      "url": "https://news.google.com/rss/articles/CBMi4AFBVV95cUxOQTZIY055WERYakN1eXpsRmdWWXQtTGFnZEFoMzB5NzVhN243ZnNkaks0NXEtSVVGaGtDUmJ2QXV2MkJaeHk2OExzckt6Y3U0cDZxc3NKRi05ZlhMc21HOG00eEQ5SHg4ZlFyUUpWbVNiRVlzenFfUHFzUnRzMW1yVnUyM2s0Y2FrRU02WmZkcER4cUlhV1NWU1Vyd1h2ZDFnV24xMGlJd1ZmeWJfOFBhYnhZaHFqWTJabjBFVjVpb1UzYS1vRE1NS0lwb2xvOUNraVdfUkl1N2VGQWl5aWx4Uw?oc=5",
+      "source": "facebook.com",
+      "date": "2026-07-25"
+    },
+    {
+      "title": "Personnel from the Coast Guard District Southeastern Mindanao (CGDSEM) rescued residents trapped by heavy flooding in Barangay Talomo, Davao City, following torrential rains brought by the Southwest Monsoon (Habagat). \"According to the latest report fr",
+      "url": "https://news.google.com/rss/articles/CBMi3AFBVV95cUxNVVpNVlVxMWxTMHhaZDVhak1uZGd5TlpMdVV1SXdjX2VqX0kzSUJ0aC1IeWdkdE90RmEzbjNOanNuaHNfVG03Wm4zTGl6cVZ4a0VDNmVzdXdYMUlxTDRHRU1QanZWVnk4Y2J4NUFoa3ZnRmlqSlc1VDdUcjJWeFF0ZHY4UmtxYTNGUWZXRE96c1lrU1psQWpZZUZiNldLYXJtVldmQzFtdVJldkFNcEJqc25WbDFrT0hIUkdINFc1cDBjYXJnMVdPRUp4VmRmeFBFMWFNQVM3MnlZY0N2?oc=5",
+      "source": "facebook.com",
+      "date": "2026-07-25"
+    },
+    {
+      "title": "'BILANG RESIDENTE NG DAVAO CITY, HINDI AKO NAGHAHANAP NG PALUSOT, ANG HINIHINGI KO AY RESULTA' MMDA General Manager and former Philippine National Police (PNP) chief Nicolas Torre III questioned the effectiveness of flood control me",
+      "url": "https://news.google.com/rss/articles/CBMi3AFBVV95cUxOTmpIcXhoRnpGSlp6T3JIYW1zSmRNNDV2VEFwNGQxem53aEppWWticTZqR3hjUV93SXo1LXFKcFBMWHNzWF9aMWVubXNrZFlfamxYdXg3TU4ybkdhc3lReWdVTlRmS3IxZGZndFo5cjhVUDktM25KRkM1RlNBN0NqNzVYMVBtTWI3enYyNUZVeWY1cWx3MVdjRzAtam80TFBsWkthbnVRbGJCWFFNMmdIZXlfcXIzODJoRkdoVFdndjhRMVVzaVJNVU5FVC0xSDlIT1U0RmJzenhoN25t?oc=5",
+      "source": "facebook.com",
+      "date": "2026-07-25"
+    },
+    {
+      "title": "2 bata napakapit sa puno sa pagragasa ng baha sa Davao City",
+      "url": "https://news.google.com/rss/articles/CBMisAFBVV95cUxPMUp2d0dJZG9WYV9uYzFweWxmdG5CQ1U2RWRLbFRTR1pJTkFDMTdHamZkS055NU5uTjFibG9FS2lURzgyblo1dFNCcE9EaWwta1pwSjdrRjNMOXdLcUo4LUNnSXRyT0cxTXlJU3laeVM5c2JXYkhhbUhOX3ZleEllaWowYTBDWGJiX25obWJIQXdpdVlmRmFFZG1NTFZEaDdHd2NBUzFJS09sRVRVNnI5dA?oc=5",
+      "source": "ABS-CBN",
+      "date": "2026-07-25"
+    },
+    {
+      "title": "Torre inusisa ang flood control matapos pasukin ng baha ang bahay sa Davao City",
+      "url": "https://news.google.com/rss/articles/CBMi1gFBVV95cUxPT29tZXViZ1JNMjZUTElkeUxuZjdrYVBwSnhNbTM1aWh6VmhoUmh1dVJwaGZ4bjVpa1prcXlSM1I0VVBpWG84dVlaT29pZjB2YnNKcnVpcnRwNHBsVm5TMXowUzZjU1E0cHZCLWNLRHl2ZG93LW9nTVdkWHh0dzZyVkMwOFVieEJ0M0RpYlh2RWFyNVppbnlScWRxMWtLR3czVEZWQ3NYRlN5aUtMWUtNSFU1T00wTUJrdkRFeGFLSzViUmluMndRbHdFdnVrSURUd3BlcWF3?oc=5",
+      "source": "ABS-CBN",
+      "date": "2026-07-25"
+    },
+    {
+      "title": "As of 4:20 p.m. on July 24, 2026, the Talomo River channel along Purok 6, Barangay Tugbok Proper in Davao City, has overflowed due to heavy rainfall. | via RGP, SunStar Davao 📷 Isaiah John Guanzon #AllYouNeedToKnow",
+      "url": "https://news.google.com/rss/articles/CBMi3wFBVV95cUxQN1lMbTNGNlgzT08yNmtGLVRjTXNIVm5SNng4UWlId09SZHZpazJCQnB4OEpRRGdPSW9jYUc0VzBLUE5Td1E1dG1xLUN3NTVNNklEZ0FsSGQwQjZySXNQY2VtTGY5Y2tOOG1Id2dvMGVYbExKSUJ6RWpCbjFTaEdFUXYxOHp5czRCMm93UmE4TFRqMVdZaVVObU9mZFRMX1ZEaTdtdVJYTC1oLUVhRjlxQ29JYlZmRjE2bEM3LW1mSGhFQ0h2dnNHZDVEVjJQMGxXTzdFNjBJVW5zc19zLUFF?oc=5",
+      "source": "facebook.com",
+      "date": "2026-07-24",
+      "barangay": "Talomo River",
+      "center": [
+        125.47859,
+        7.19116
+      ]
+    },
+    {
+      "title": "A DAVAO City-based environmental group proposed employing Nature-based Solutions (NbS) as a way to mitigate flooding in the city. Full story: https://www.sunstar.com.ph/davao/group-urges-davao-city-to-adopt-nature-based-solutions #AllYouNeedToKnow",
+      "url": "https://news.google.com/rss/articles/CBMi3wFBVV95cUxPZ1hGeEIzY2hmUlJOM3hIMUFBVVZaTUJMcVhJUzRRdWJLZkliMDNmM1dTeTQxSUJscWg5UE13R2lXMFYxc2trUmk4d3BGOE5HREVJUEpXSk5UeW5SRkU0T0E3bURUd3A0V2dqWkNHTHkyLUtQX3dIak8xcE9ZU3pHVTFrc1NMM0RUclZfTlhXZzJMTThKMVZIbEpvU1BRU0o5aE1BTnNxTm9lelhlaEdERlBHcWg3NlpYVjhzaHMyVmhEX1NFQl9RajJoVW1hMklVQ2dvV2hsQ1dsMjdfQzNZ?oc=5",
+      "source": "facebook.com",
+      "date": "2026-07-19"
+    },
+    {
+      "title": "Floodwaters turned a portion of R. Castillo Street in Davao City into a makeshift “diving spot” for children following heavy rains on Friday afternoon, July 10, 2026. The video was taken around 4 p.m. Motorists are advised to take alternative routes, while resident",
+      "url": "https://news.google.com/rss/articles/CBMi4AFBVV95cUxOR2RoNVpZUDRvSS04RWpUNFhlVHRSeUhkb1N2R0Frd1h5bXQ0czBEcUZJWklpNE5LbFR6TjN5SW5lSzdWUjdURUMySldmQnp0ZjZJS3FoUngzR3VQR2JNN0Q2NzA0VHpmMldLTDZNTFloWTNkZnA1ZndyaHhXNkl5WkdTUUNPZm9HRjRNXzRxOTFwMWhrdXRZU1pEOE9wX1RWOFgyOTNudzY4LWZMcnpIcTZVc2JNRTFNemtWZjZ3RWFfN0NRMmtiWjZ0cVhOUmxJLXE1U01sLVBuWVhPUjZEZQ?oc=5",
+      "source": "facebook.com",
+      "date": "2026-07-10"
+    },
+    {
+      "title": "Motorists move slowly along C. Bangoy Street in Davao City around 5:45 p.m. on Monday, July 6, 2026, as flooding hampers traffic following a strong downpour. According to the Davao City Disaster Risk Reduction and Management Office (CDRRMO), the inte",
+      "url": "https://news.google.com/rss/articles/CBMi4AFBVV95cUxPLThMTE83c0lVTC1pWXlyTUdocHpDNFRmNzM4eXBFMGpFTHdHMDRlajVzSEh3REJ5UV9HLUVzUU04OVdtSFBTeURzQjRpRS16RmozZ1hLaWozdVpGRjBZclkxWWNRVjVNUUhQMHJvQnNXRDVPbFdZdG5EWGdpYlpXRExfS0QwNjZBYnBXOEszMThpS2ZHRXJUN2pnSXE3dE1CVVBSUjAzS1cxbE5WSXlYU2NEUWpnSzVyRkxsV1BwMHA3VGI2a2d3OHFNT3dhWE03THNBQTZ3bElHaHlUajFVcQ?oc=5",
+      "source": "facebook.com",
+      "date": "2026-07-06"
+    },
+    {
+      "title": "Pipila ka lugar sa Buhangin, Davao City ang gibaha I One Mindanao",
+      "url": "https://news.google.com/rss/articles/CBMixwFBVV95cUxNbEtLeWlPQm5DbGNOWHNXb2xuTHdEVlRxZFVoTmY5SmNaRHpOcHZ4TkNEY3JXRjF2SFZUY25RRVpDRW1VS3kzTlRxaHNTU0dMbFIyNTU2bVJWWlFoZlhKbk1qbGNrcEUzamJuRHBvUjJPSTBjb2xtUWJEdE4tbEJZNmQ3X2hwN0xZMC12aXNUVFdqSTJTRXdCQm5WZE5pOUZ6Wjg5SmVqTmJidWpjdVNPZ3dKNWJhZGs2Rl95Y1JHT3BfZG43RHIw?oc=5",
+      "source": "GMA Network",
+      "date": "2026-07-01",
+      "barangay": "Buhangin",
+      "center": [
+        125.6135,
+        7.1087
+      ]
+    },
+    {
+      "title": "Before the rains come: Why Davao City’s garbage is flooding its streets (2)",
+      "url": "https://news.google.com/rss/articles/CBMiugFBVV95cUxPLU52QWtrUUNDVVQ2bVhtb3M5WFNXaUlJcWtFRUJObE9veWRTQVdjb3d0NktuMDZoSXhsZk5IQm9majRMSnFkMm5EaEY2SkJ1NVN4d3UyT1BKMnNhUGhYdzd6NXpVamtkLTFoTy1yeGQxY216dGxDakpaNXZEc1ZubGtPM3FXdDFBOU92NHlpbW5OU2JOTkJZZ01ONnByYnlsNWdaLVE2SnZRTEFpZnlDLWMwVW9vWVNMOVE?oc=5",
+      "source": "MindaNews",
+      "date": "2026-06-23"
+    },
+    {
+      "title": "Before the rains come: Why Davao City’s garbage is flooding its streets (1)",
+      "url": "https://news.google.com/rss/articles/CBMiugFBVV95cUxNWHN5OWhIWHRrdkI4X2Y0TjdTTVZrRGRMWGxWS2dRZWs5eWZYX3VCNU1DU2JETkt4OFRrdVp1STlqZ2hMMGF1bHZSUUlOY2FPWFR0YnR3al9ua1FUM3Vnd0RmYnBTX2xhNTk3YXk0Yk9rTEZIUGN0VlZqaG43YWlwNEtkM3lid1dhMXVOZDJ6YWo1Vm1xNlMxSW9hUlpKcVA5NnR3UFZhbXJaU3NoT2NHOU1Uem5nRlh4M0E?oc=5",
+      "source": "MindaNews",
+      "date": "2026-06-22"
+    },
+    {
+      "title": "ABS-CBN News. . Sen. Erwin Tulfo said he will inhibit from the flood control probe once formal hearing begins. Meanwhile, firearms registered under ICC-wanted Senator Ronald Dela Rosa are now in the possession of Davao City Police. #ANCHeadlines",
+      "url": "https://news.google.com/rss/articles/CBMi2AFBVV95cUxNMEpfT1VsQUMyVk0yZFAycHR6ZUx2VzJBcEI1c3kwTFcxaV82eHh3NEJNTWRHbDR5VGROblFaRHJxd1FURmdQc3RSZ1FLVHNldG5VWTlRUVVRUDRaWU0wNTRqVmNzMEVENDI4WWhPcjBhSnQ5RUxSZmNJc2FVTFZHRzZSUFFnM2dRWWNib3pBQmtLc3hldXBqVElVMHlUNUdyNFlQQzVydmNNd3MtSXJXb1hYTDZveDFMOV9rR1NsWXZ3T1ZmMVJpR1VUaHlLM2JmT2xldHBwVUg?oc=5",
+      "source": "facebook.com",
+      "date": "2026-06-15"
     }
   ]
 }

@@ -1,4 +1,12 @@
-import { Box, CloudRain, Eye, EyeOff, Layers, Satellite } from "lucide-react";
+import {
+  Box,
+  CloudRain,
+  Eye,
+  EyeOff,
+  Layers,
+  Newspaper,
+  Satellite,
+} from "lucide-react";
 
 type Props = {
   /** "map" follows the theme; "satellite" overrides it */
@@ -10,6 +18,10 @@ type Props = {
   onExtrudeChange: (v: boolean) => void;
   showRain: boolean;
   onShowRainChange: (v: boolean) => void;
+  showNews: boolean;
+  onShowNewsChange: (v: boolean) => void;
+  /** how many places recent reporting actually named */
+  newsCount: number;
 };
 
 /** "Map" resolves to the active theme, so the basemap follows light/dark. */
@@ -27,6 +39,9 @@ export function MapLayers({
   onExtrudeChange,
   showRain,
   onShowRainChange,
+  showNews,
+  onShowNewsChange,
+  newsCount,
 }: Props) {
   return (
     // one owner for the rhythm — the rows used to carry their own top margins,
@@ -85,6 +100,25 @@ export function MapLayers({
         icon={
           <CloudRain
             className={`size-4 shrink-0 ${showRain ? "text-tide" : "text-ink-dim"}`}
+            aria-hidden="true"
+          />
+        }
+      />
+
+      {/* Reports, not readings — the label says "reported" so the pins can
+          never be mistaken for something the app measured. */}
+      <SwitchRow
+        checked={showNews}
+        onChange={onShowNewsChange}
+        disabled={newsCount === 0}
+        label={
+          newsCount === 0
+            ? "No reported flooding on record"
+            : `Reported flooding (${newsCount})`
+        }
+        icon={
+          <Newspaper
+            className={`size-4 shrink-0 ${showNews && newsCount ? "text-tide" : "text-ink-dim"}`}
             aria-hidden="true"
           />
         }

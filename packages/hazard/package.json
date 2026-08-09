@@ -18,6 +18,7 @@
 		"./rainfall": "./src/rainfall.ts",
 		"./rain-grid": "./src/rain-grid.ts",
 		"./river": "./src/river.ts",
+		"./news": "./src/news.ts",
 		"./data/*": "./src/data/*"
 	},
 	"scripts": {

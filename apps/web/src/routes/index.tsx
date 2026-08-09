@@ -25,8 +25,11 @@ import { RainfallPanel } from "@/components/map/rainfall-panel";
 import { ReadingSlot } from "@/components/map/reading-slot";
 import { ScenarioToggle } from "@/components/map/scenario-toggle";
 import { FloodNews } from "@/components/map/flood-news";
+import { NewsDialog } from "@/components/map/news-dialog";
+import type { NewsPin } from "@/components/map/news-pin";
 import { RainLegend } from "@/components/map/rain-legend";
 import { RiverPanel } from "@/components/map/river-panel";
+import { useNewsPins } from "@/hooks/use-news-pins";
 import { useRainGrid } from "@/hooks/use-rain-grid";
 import { useBottomSheet } from "@/lib/bottom-sheet";
 import { DATA_IS_PLACEHOLDER, EMPTY, loadScenario } from "@/lib/hazard-source";
@@ -129,6 +132,13 @@ function MapScreen() {
      request only goes out once someone asks for it. */
   const [showRain, setShowRain] = useState(false);
   const { data: rainGrid } = useRainGrid(showRain);
+
+  /* Places named in recent flood reporting. On by default — unlike the rain
+     layer this costs no extra request (the panel already has the file) and
+     it is the only thing here describing flooding that actually happened. */
+  const [showNews, setShowNews] = useState(true);
+  const newsPins = useNewsPins();
+  const [openNews, setOpenNews] = useState<NewsPin | null>(null);
 
   /* The slider is the camera's mirror, so both have to move together. */
   const setPitchEverywhere = (p: number, animate: boolean) => {
@@ -274,6 +284,9 @@ function MapScreen() {
               onExtrudeChange={setExtrude}
               showRain={showRain}
               onShowRainChange={setShowRain}
+              showNews={showNews}
+              onShowNewsChange={setShowNews}
+              newsCount={newsPins.length}
               pitch={pitch}
               onPitchChange={setPitchEverywhere}
             />
@@ -330,6 +343,9 @@ function MapScreen() {
             }
             rain={rainGrid?.cells}
             showRain={showRain}
+            newsPins={newsPins}
+            showNews={showNews}
+            onOpenNews={setOpenNews}
           />
         ) : (
           <div className="bg-abyss absolute inset-0" />
@@ -366,9 +382,16 @@ function MapScreen() {
         onExtrudeChange={setExtrude}
         showRain={showRain}
         onShowRainChange={setShowRain}
+        showNews={showNews}
+        onShowNewsChange={setShowNews}
+        newsCount={newsPins.length}
         pitch={pitch}
         onPitchChange={setPitchEverywhere}
       />
+
+      {openNews && (
+        <NewsDialog pin={openNews} onClose={() => setOpenNews(null)} />
+      )}
     </div>
   );
 }
