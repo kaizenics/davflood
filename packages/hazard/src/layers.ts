@@ -3,12 +3,15 @@ import type {
 	LayerSpecification,
 } from "@maplibre/maplibre-gl-style-spec";
 
+import { rainColorsFor } from "./rain-grid";
 import { FIRST_LABEL_LAYER } from "./style";
 import { hazardColorFor, hazardOrder } from "./tiers";
 import { colorsFor } from "./tokens";
 import type { Theme } from "./tokens";
 
 export const SOURCE_HAZARD = "hazard";
+export const SOURCE_RAIN = "rain";
+export const RAIN_LAYER_ID = "rain-cells";
 
 export const LAYER_IDS = {
 	fillLow: "hazard-fill-low",
@@ -182,3 +185,58 @@ export function hazardLayers(
 
 /** Hazard sits under labels but over everything else. */
 export const HAZARD_BEFORE_ID = FIRST_LABEL_LAYER;
+
+/**
+ * The rain grid: flat squares under the hazard polygons.
+ *
+ * Under, always. Rain is context and hazard is the safety information, so if
+ * the two overlap the depth bands are the ones that must stay readable — and
+ * the opacity here is low enough that they do.
+ *
+ * No outline. A stroke would make the squares read as boundaries of something
+ * real, when they are only the resolution the weather model happens to have.
+ */
+export function rainLayers(theme: Theme = "dark"): LayerSpecification[] {
+  const rain = rainColorsFor(theme === "light" ? "light" : "dark");
+  return [
+    {
+      id: RAIN_LAYER_ID,
+      type: "fill",
+      source: SOURCE_RAIN,
+      paint: {
+        "fill-color": [
+          "match",
+          ["get", "band"],
+          "light",
+          rain.light,
+          "moderate",
+          rain.moderate,
+          "heavy",
+          rain.heavy,
+          "intense",
+          rain.intense,
+          "torrential",
+          rain.torrential,
+          rain.light,
+        ],
+        // heavier rain reads more solid, so intensity survives even if the
+        // legend is off screen
+        "fill-opacity": [
+          "match",
+          ["get", "band"],
+          "light",
+          0.18,
+          "moderate",
+          0.26,
+          "heavy",
+          0.34,
+          "intense",
+          0.42,
+          "torrential",
+          0.5,
+          0.2,
+        ],
+      },
+    },
+  ];
+}

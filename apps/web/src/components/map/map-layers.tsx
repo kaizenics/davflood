@@ -1,4 +1,4 @@
-import { Box, Eye, EyeOff, Layers, Satellite } from "lucide-react";
+import { Box, CloudRain, Eye, EyeOff, Layers, Satellite } from "lucide-react";
 
 type Props = {
   /** "map" follows the theme; "satellite" overrides it */
@@ -8,6 +8,8 @@ type Props = {
   onShowHazardChange: (v: boolean) => void;
   extrude: boolean;
   onExtrudeChange: (v: boolean) => void;
+  showRain: boolean;
+  onShowRainChange: (v: boolean) => void;
 };
 
 /** "Map" resolves to the active theme, so the basemap follows light/dark. */
@@ -23,6 +25,8 @@ export function MapLayers({
   onShowHazardChange,
   extrude,
   onExtrudeChange,
+  showRain,
+  onShowRainChange,
 }: Props) {
   return (
     // one owner for the rhythm — the rows used to carry their own top margins,
@@ -72,6 +76,20 @@ export function MapLayers({
 
       {/* Extruded zones stand up by their expected depth — tilt the map to
           read them. Only meaningful while the overlay is showing. */}
+      {/* Weather, not hazard — and labelled so nobody reads the blue squares
+          as water on the ground. */}
+      <SwitchRow
+        checked={showRain}
+        onChange={onShowRainChange}
+        label="Rain falling now"
+        icon={
+          <CloudRain
+            className={`size-4 shrink-0 ${showRain ? "text-tide" : "text-ink-dim"}`}
+            aria-hidden="true"
+          />
+        }
+      />
+
       <SwitchRow
         checked={extrude}
         onChange={onExtrudeChange}

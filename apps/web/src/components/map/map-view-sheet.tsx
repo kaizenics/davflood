@@ -13,6 +13,8 @@ type Props = {
   onShowHazardChange: (v: boolean) => void;
   extrude: boolean;
   onExtrudeChange: (v: boolean) => void;
+  showRain: boolean;
+  onShowRainChange: (v: boolean) => void;
   pitch: number;
   onPitchChange: (pitch: number, animate: boolean) => void;
 };
@@ -38,6 +40,8 @@ export function MapViewSheet({
   onShowHazardChange,
   extrude,
   onExtrudeChange,
+  showRain,
+  onShowRainChange,
   pitch,
   onPitchChange,
 }: Props) {
@@ -92,6 +96,8 @@ export function MapViewSheet({
             onShowHazardChange={onShowHazardChange}
             extrude={extrude}
             onExtrudeChange={onExtrudeChange}
+            showRain={showRain}
+            onShowRainChange={onShowRainChange}
           />
 
           <div>

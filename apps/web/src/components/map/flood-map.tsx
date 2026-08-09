@@ -4,8 +4,11 @@ import {
   HAZARD_BEFORE_ID,
   HAZARD_FILL_LAYER_IDS,
   LAYER_IDS,
+  RAIN_LAYER_ID,
   SOURCE_HAZARD,
+  SOURCE_RAIN,
   hazardLayers,
+  rainLayers,
 } from "@davflood/hazard/layers";
 import { asHazardProperties } from "@davflood/hazard/schema";
 import type { HazardProperties } from "@davflood/hazard/schema";
@@ -75,6 +78,9 @@ type Props = {
   extrude?: boolean;
   /** fires on every camera pitch change, including drag gestures */
   onPitchChange?: (pitch: number) => void;
+  /** rain cells to draw under the hazard polygons */
+  rain?: GeoJSON.FeatureCollection;
+  showRain?: boolean;
   /** fly here and drop a pin; null clears the pin and leaves the camera */
   focus?: FocusTarget | null;
   /** the pin's dismiss button — usually clears the URL that set `focus` */
@@ -103,6 +109,11 @@ function applyTerrain(m: maplibregl.Map, enabled: boolean) {
 
 /** All hazard layers, including the outline and selection rings. */
 const ALL_HAZARD_LAYERS = Object.values(LAYER_IDS);
+
+function applyRainVisibility(m: maplibregl.Map, visible: boolean) {
+  if (!m.getLayer(RAIN_LAYER_ID)) return;
+  m.setLayoutProperty(RAIN_LAYER_ID, "visibility", visible ? "visible" : "none");
+}
 
 function applyHazardVisibility(m: maplibregl.Map, visible: boolean) {
   for (const id of ALL_HAZARD_LAYERS) {
@@ -167,6 +178,8 @@ export const FloodMap = forwardRef<FloodMapHandle, Props>(function FloodMap(
     onPitchChange,
     focus = null,
     onFocusClear,
+    rain,
+    showRain = false,
   },
   ref,
 ) {
@@ -200,6 +213,8 @@ export const FloodMap = forwardRef<FloodMapHandle, Props>(function FloodMap(
   const extrudeRef = useRef(extrude);
   const onPitchChangeRef = useRef(onPitchChange);
   const onFocusClearRef = useRef(onFocusClear);
+  const rainRef = useRef(rain);
+  const showRainRef = useRef(showRain);
 
   useEffect(() => {
     onSelectRef.current = onSelect;
@@ -211,6 +226,8 @@ export const FloodMap = forwardRef<FloodMapHandle, Props>(function FloodMap(
     extrudeRef.current = extrude;
     onPitchChangeRef.current = onPitchChange;
     onFocusClearRef.current = onFocusClear;
+    rainRef.current = rain;
+    showRainRef.current = showRain;
   });
 
   useImperativeHandle(ref, () => ({
@@ -287,6 +304,24 @@ export const FloodMap = forwardRef<FloodMapHandle, Props>(function FloodMap(
     const initLayers = () => {
       if (m.getSource(SOURCE_HAZARD)) return; // style reloads re-fire this
       try {
+        /* Rain first, so the hazard layers added below — which use the same
+           `before` anchor — land on top of it. Every later rebuild of the
+           hazard layers re-inserts them above the rain for the same reason,
+           so the ordering holds without anyone maintaining it. */
+        m.addSource(SOURCE_RAIN, {
+          type: "geojson",
+          data: rainRef.current ?? { type: "FeatureCollection", features: [] },
+        });
+        for (const layer of rainLayers(
+          basemapRef.current === "light" ? "light" : "dark",
+        )) {
+          m.addLayer(
+            layer as maplibregl.LayerSpecification,
+            m.getLayer(HAZARD_BEFORE_ID) ? HAZARD_BEFORE_ID : undefined,
+          );
+        }
+        applyRainVisibility(m, showRainRef.current);
+
         m.addSource(SOURCE_HAZARD, { type: "geojson", data: dataRef.current });
         rebuildHazardLayers(m, {
           basemap: basemapRef.current,
@@ -380,6 +415,21 @@ export const FloodMap = forwardRef<FloodMapHandle, Props>(function FloodMap(
   useEffect(() => {
     if (map.current) applyHazardVisibility(map.current, showHazard);
   }, [showHazard]);
+
+  /* Same layerEpoch trick as the hazard data: re-push on every style rebuild
+     so the rain source cannot be left holding the empty collection. */
+  useEffect(() => {
+    const src = map.current?.getSource(SOURCE_RAIN);
+    if (src && "setData" in src) {
+      (src as maplibregl.GeoJSONSource).setData(
+        rain ?? { type: "FeatureCollection", features: [] },
+      );
+    }
+  }, [rain, layerEpoch]);
+
+  useEffect(() => {
+    if (map.current) applyRainVisibility(map.current, showRain);
+  }, [showRain, layerEpoch]);
 
   /* flat <-> extruded: different layer types, so remove and re-add. A basemap
      swap does not come through here — setStyle refires style.load, and

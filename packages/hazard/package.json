@@ -16,6 +16,7 @@
 		"./style": "./src/style.ts",
 		"./layers": "./src/layers.ts",
 		"./rainfall": "./src/rainfall.ts",
+		"./rain-grid": "./src/rain-grid.ts",
 		"./data/*": "./src/data/*"
 	},
 	"scripts": {

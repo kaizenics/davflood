@@ -11,6 +11,8 @@ type Props = {
   onShowHazardChange: (v: boolean) => void;
   extrude: boolean;
   onExtrudeChange: (v: boolean) => void;
+  showRain: boolean;
+  onShowRainChange: (v: boolean) => void;
   pitch: number;
   onPitchChange: (pitch: number, animate: boolean) => void;
 };
@@ -36,6 +38,8 @@ export function MapViewDrawer({
   onShowHazardChange,
   extrude,
   onExtrudeChange,
+  showRain,
+  onShowRainChange,
   pitch,
   onPitchChange,
 }: Props) {
@@ -44,6 +48,7 @@ export function MapViewDrawer({
   const summary = [
     basemap === "satellite" ? "Satellite" : "Map",
     showHazard ? (extrude ? "3D depth" : "Flat overlay") : "Overlay off",
+    ...(showRain ? ["Rain on"] : []),
     `${Math.round(pitch)}°`,
   ].join(" · ");
 
@@ -85,6 +90,8 @@ export function MapViewDrawer({
             onShowHazardChange={onShowHazardChange}
             extrude={extrude}
             onExtrudeChange={onExtrudeChange}
+            showRain={showRain}
+            onShowRainChange={onShowRainChange}
           />
           <div>
             <p className="text-ink-dim mb-2 text-[11px] font-medium">

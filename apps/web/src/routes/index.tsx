@@ -25,6 +25,8 @@ import { MapViewSheet } from "@/components/map/map-view-sheet";
 import { RainfallPanel } from "@/components/map/rainfall-panel";
 import { ReadingSlot } from "@/components/map/reading-slot";
 import { ScenarioToggle } from "@/components/map/scenario-toggle";
+import { RainLegend } from "@/components/map/rain-legend";
+import { useRainGrid } from "@/hooks/use-rain-grid";
 import { useBottomSheet } from "@/lib/bottom-sheet";
 import { DATA_IS_PLACEHOLDER, EMPTY, loadScenario } from "@/lib/hazard-source";
 import { useTheme } from "@/lib/theme";
@@ -121,6 +123,11 @@ function MapScreen() {
 
   /* Phones reach the map-view controls from the map; desktop from the panel. */
   const [mapViewOpen, setMapViewOpen] = useState(false);
+
+  /* Off by default: it is weather, the hazard map is the point, and the
+     request only goes out once someone asks for it. */
+  const [showRain, setShowRain] = useState(false);
+  const { data: rainGrid } = useRainGrid(showRain);
 
   /* The slider is the camera's mirror, so both have to move together. */
   const setPitchEverywhere = (p: number, animate: boolean) => {
@@ -252,6 +259,8 @@ function MapScreen() {
               onShowHazardChange={setShowHazard}
               extrude={extrude}
               onExtrudeChange={setExtrude}
+              showRain={showRain}
+              onShowRainChange={setShowRain}
               pitch={pitch}
               onPitchChange={setPitchEverywhere}
             />
@@ -321,9 +330,19 @@ function MapScreen() {
             onFocusClear={() =>
               navigate({ to: "/", search: {}, replace: true })
             }
+            rain={rainGrid?.cells}
+            showRain={showRain}
           />
         ) : (
           <div className="bg-abyss absolute inset-0" />
+        )}
+
+        {/* Top-left: clear of the control stack on the right, and above the
+            sheet on a phone. Only while the layer it explains is on. */}
+        {showRain && (
+          <div className="absolute top-4 left-4">
+            <RainLegend grid={rainGrid} theme={basemap === "light" ? "light" : "dark"} />
+          </div>
         )}
 
         <div className="absolute top-4 right-4">
@@ -347,6 +366,8 @@ function MapScreen() {
         onShowHazardChange={setShowHazard}
         extrude={extrude}
         onExtrudeChange={setExtrude}
+        showRain={showRain}
+        onShowRainChange={setShowRain}
         pitch={pitch}
         onPitchChange={setPitchEverywhere}
       />
