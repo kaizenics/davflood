@@ -1,5 +1,4 @@
 import { BARANGAYS_MAPPED } from "@davflood/hazard/barangays";
-import { attributionFor, disclaimer } from "@davflood/hazard/copy";
 import { footprintOf, formatArea } from "@davflood/hazard/footprint";
 import { CAMERA } from "@davflood/hazard/geo";
 import type { LngLat } from "@davflood/hazard/geo";
@@ -292,21 +291,6 @@ function MapScreen() {
           </Link>
         </div>
 
-        {/* Pinned: the disclaimer is the most important sentence in the
-            product, and the imagery credit is a licence obligation for as
-            long as the imagery is on screen. Neither may scroll away. */}
-        <div className="border-hairline shrink-0 border-t">
-          <Link
-            to="/about"
-            className="text-ink-dim hover:text-ink hover:bg-raised/40 block px-5 py-2.5 text-[11px] leading-relaxed transition"
-          >
-            <span className="text-ink font-semibold">{disclaimer.short}</span>{" "}
-            Where the data comes from →
-          </Link>
-          <p className="text-ink-dim border-hairline/60 border-t px-5 py-2 text-[10px] leading-relaxed">
-            {attributionFor(basemap)}
-          </p>
-        </div>
       </aside>
 
       {/* ── map ────────────────────────────────────────────

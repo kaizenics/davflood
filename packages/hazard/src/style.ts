@@ -106,6 +106,13 @@ export function buildBaseStyle(options: BuildStyleOptions = {}): StyleSpecificat
 			[SOURCE_BASEMAP]: {
 				type: "vector",
 				url: OPENFREEMAP_TILEJSON,
+				// ODbL requires this wherever the map is drawn, not merely
+				// somewhere on the site. Declared on the source so MapLibre's
+				// attribution control credits exactly the sources in use — swap
+				// to satellite and Esri's credit appears, OSM's stays for the
+				// labels, and nobody has to remember to update a footer.
+				attribution:
+					'© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors · <a href="https://openfreemap.org/" target="_blank" rel="noopener">OpenFreeMap</a>',
 			},
 			[SOURCE_TERRAIN]: {
 				type: "raster-dem",

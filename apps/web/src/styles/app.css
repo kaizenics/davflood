@@ -110,9 +110,44 @@
   }
 }
 
-/* maplibre draws its own attribution control; ours lives in the legend */
+/* ------------------------------------------------------------------
+   Attribution.
+
+   MapLibre's own control, compact, rather than a hand-rolled line in
+   the panel. It aggregates the attribution declared on each source and
+   shows only the ones actually in use, so switching to satellite adds
+   Esri's credit and switching back drops it — no footer to keep in
+   sync. ODbL and Esri's terms both require the credit wherever the map
+   is drawn, so this cannot simply move to the About page.
+   ------------------------------------------------------------------ */
+
 .maplibregl-ctrl-attrib {
-  display: none;
+  background: color-mix(in srgb, var(--color-abyss) 82%, transparent);
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-pill);
+  color: var(--color-ink-dim);
+  font-family: var(--font-sans);
+  font-size: 10px;
+  backdrop-filter: blur(8px);
+}
+
+.maplibregl-ctrl-attrib a {
+  color: var(--color-ink-dim);
+  text-decoration: underline;
+}
+.maplibregl-ctrl-attrib a:hover {
+  color: var(--color-tide);
+}
+
+.maplibregl-ctrl-attrib-button {
+  background-color: transparent;
+}
+
+/* clear the bottom sheet's resting handle on phones */
+@media (width < 64rem) {
+  .maplibregl-ctrl-bottom-right {
+    margin-bottom: 62px;
+  }
 }
 
 /* ------------------------------------------------------------------

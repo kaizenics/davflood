@@ -280,7 +280,11 @@ export const FloodMap = forwardRef<FloodMapHandle, Props>(function FloodMap(
         [DAVAO_BBOX[0], DAVAO_BBOX[1]],
         [DAVAO_BBOX[2], DAVAO_BBOX[3]],
       ],
-      attributionControl: false,
+      // Compact: a single ⓘ that expands on tap. The credits are a licence
+      // condition of the basemap, the imagery and the hazard data, so they
+      // have to be reachable from the map itself — but they are housekeeping,
+      // not content, and they used to cost the panel two permanent lines.
+      attributionControl: { compact: true },
     });
 
     // Without this the map fails silently: a WebGL failure, a rejected style
@@ -322,7 +326,13 @@ export const FloodMap = forwardRef<FloodMapHandle, Props>(function FloodMap(
         }
         applyRainVisibility(m, showRainRef.current);
 
-        m.addSource(SOURCE_HAZARD, { type: "geojson", data: dataRef.current });
+        m.addSource(SOURCE_HAZARD, {
+          type: "geojson",
+          data: dataRef.current,
+          // ODC-ODbL, same obligation as the basemap
+          attribution:
+            'Hazard data © <a href="https://noah.up.edu.ph/" target="_blank" rel="noopener">UP NOAH</a>',
+        });
         rebuildHazardLayers(m, {
           basemap: basemapRef.current,
           extrude: extrudeRef.current,
