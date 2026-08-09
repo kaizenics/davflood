@@ -57,6 +57,63 @@ function keep(title: string): boolean {
   return t.includes("davao");
 }
 
+/**
+ * Google News RSS — the source that actually carries Davao City.
+ *
+ * It surfaces the local desks that cover this beat (MindaNews, Davao Today,
+ * SunStar) alongside the nationals, which is the difference between "a flood
+ * happened in Mindanao" and "Bucana is under water". No key, no rate limit
+ * worth the name, and from Node there is no CORS to worry about — that
+ * restriction only ever applied to the browser.
+ */
+async function fromGoogleNews(): Promise<NewsItem[]> {
+  const q = encodeURIComponent('(flood OR flooding OR baha) "Davao City"');
+  const res = await fetch(
+    `https://news.google.com/rss/search?q=${q}&hl=en-PH&gl=PH&ceid=PH:en`,
+    { headers: { "user-agent": "davflood-news/1.0" } },
+  );
+  if (!res.ok) throw new Error(`Google News ${res.status}`);
+  const xml = await res.text();
+
+  const cdata = (s: string) =>
+    s.replace(/^<!\[CDATA\[/, "").replace(/\]\]>$/, "").trim();
+
+  return [...xml.matchAll(/<item>([\s\S]*?)<\/item>/g)]
+    .map((m) => {
+      const block = m[1] ?? "";
+      const tag = (name: string) => {
+        // <source> carries a url attribute, so the open tag is not bare
+        const hit = block.match(
+          new RegExp(`<${name}(?:\\s[^>]*)?>([\\s\\S]*?)</${name}>`),
+        );
+        return hit?.[1] ? cdata(hit[1]) : "";
+      };
+
+      const raw = tag("title");
+      const source = tag("source");
+      // Google appends " - Publisher" to every headline; the publisher is
+      // already in <source>, so the suffix is noise
+      const title = source
+        ? raw.replace(new RegExp(`\\s+-\\s+${escapeRe(source)}$`), "")
+        : raw;
+      const when = new Date(tag("pubDate"));
+
+      return {
+        title,
+        url: tag("link"),
+        source: source || "Google News",
+        date: Number.isNaN(when.getTime())
+          ? ""
+          : when.toISOString().slice(0, 10),
+      };
+    })
+    .filter((i) => i.title && i.url && i.date && keep(i.title));
+}
+
+function escapeRe(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 async function fromGdelt(): Promise<NewsItem[]> {
   const url =
     `https://api.gdeltproject.org/api/v2/doc/doc?query=${encodeURIComponent(GDELT_QUERY)}` +
@@ -118,6 +175,9 @@ async function main() {
   const problems: string[] = [];
 
   for (const [name, run] of [
+    // Google News first: it is the one that reliably carries Davao City, and
+    // the only one that has never refused us. The rest are best-effort.
+    ["Google News", fromGoogleNews],
     ["GDELT", fromGdelt],
     ...(process.env["RELIEFWEB_APPNAME"]
       ? ([["ReliefWeb", () => fromReliefWeb(process.env["RELIEFWEB_APPNAME"]!)]] as const)
@@ -140,9 +200,16 @@ async function main() {
     return;
   }
 
+  // Two sources will carry the same story under different URLs, so the
+  // headline is the identity that matters, not the link.
   const seen = new Set<string>();
   const deduped = items
-    .filter((i) => (seen.has(i.url) ? false : (seen.add(i.url), true)))
+    .filter((i) => {
+      const key = i.title.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    })
     .sort((a, b) => b.date.localeCompare(a.date))
     .slice(0, 12);
 
