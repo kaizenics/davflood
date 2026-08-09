@@ -2,7 +2,7 @@
 #
 # The site is static except for one function: /api/news, which fetches the
 # flood reporting when someone asks rather than having a bot commit it to the
-# repository every half hour. See netlify/functions/news.mts.
+# repository every half hour. See packages/netlify/functions/news.mts.
 
 [build]
   command = "pnpm build"
@@ -14,9 +14,13 @@
   NPM_FLAGS = "--version"
 
 [functions]
-  directory = "netlify/functions"
-  # the function imports @davflood/hazard from the workspace, so it has to be
-  # bundled rather than treated as an external dependency
+  # A workspace package like any other, so pnpm links @davflood/hazard into
+  # its own node_modules. At the repo root it had nowhere to resolve that
+  # import from — the root node_modules has no @davflood/hazard, because
+  # nothing at the root depends on it.
+  directory = "packages/netlify/functions"
+  # bundled rather than treated as external, so the workspace import is
+  # inlined instead of being looked for at runtime
   node_bundler = "esbuild"
 
 # Prerendered routes are real files and are served as such. Anything else is

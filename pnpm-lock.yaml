@@ -4,24 +4,6 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
-catalogs:
-  default:
-    '@tanstack/react-query':
-      specifier: ^5.101.4
-      version: 5.101.4
-    '@types/react-dom':
-      specifier: ^19.2.3
-      version: 19.2.4
-    lucide-react:
-      specifier: ^1.27.0
-      version: 1.28.0
-    tailwind-merge:
-      specifier: ^3.6.0
-      version: 3.6.0
-    tailwindcss:
-      specifier: ^4.3.3
-      version: 4.3.3
-
 importers:
 
   .:
@@ -29,9 +11,6 @@ importers:
       '@davflood/config':
         specifier: workspace:*
         version: link:packages/config
-      '@netlify/functions':
-        specifier: ^5.3.0
-        version: 5.3.0
       '@types/node':
         specifier: ^22.20.1
         version: 22.20.1
@@ -138,6 +117,22 @@ importers:
       tsx:
         specifier: ^4.20.6
         version: 4.23.1
+      typescript:
+        specifier: ^6.0.3
+        version: 6.0.3
+
+  packages/netlify:
+    dependencies:
+      '@davflood/hazard':
+        specifier: workspace:*
+        version: link:../hazard
+    devDependencies:
+      '@davflood/config':
+        specifier: workspace:*
+        version: link:../config
+      '@netlify/functions':
+        specifier: ^5.3.0
+        version: 5.3.0
       typescript:
         specifier: ^6.0.3
         version: 6.0.3

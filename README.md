@@ -63,6 +63,7 @@ apps/
   web         the app — TanStack Start (SPA + prerender), MapLibre GL
 packages/
   hazard      domain: hazard tiers, geography, barangays, map style, weather, data
+  netlify     the one server-side thing — /api/news
   config      shared tsconfig base
 ```
 
@@ -112,8 +113,9 @@ pnpm --filter @davflood/hazard exec tsx scripts/build-flood-news.ts apps/web/pub
 ```
 
 Seeds or repairs the committed file by hand. The deployed site does not need it: `/api/news`
-([netlify/functions/news.mts](netlify/functions/news.mts)) fetches the same sources when someone
-asks, behind a half-hour CDN cache, so nothing has to be committed to keep the news current.
+([packages/netlify/functions/news.mts](packages/netlify/functions/news.mts)) fetches the same
+sources when someone asks, behind a half-hour CDN cache, so nothing has to be committed to keep
+the news current.
 
 It cannot be done from the browser — none of the sources send `access-control-allow-origin`, and
 GDELT rate-limits hard — so something server-side has to fetch them. The only question was

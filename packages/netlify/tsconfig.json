@@ -1,0 +1,12 @@
+{
+  "extends": "@davflood/config/tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "types": ["node"],
+    // Netlify's runtime provides fetch, Request and Response from the web,
+    // not from node's globals
+    "lib": ["ESNext", "DOM"]
+  },
+  "include": ["functions/**/*.mts", "functions/**/*.ts"],
+  "exclude": ["node_modules"]
+}
