@@ -9,6 +9,7 @@ const REPO_URL = "https://github.com/kaizenics/davflood";
 const NAV = [
   { to: "/", label: "Map", exact: true },
   { to: "/barangays", label: "Barangays", exact: false },
+  { to: "/news", label: "Reports", exact: false },
   { to: "/learn", label: "Hazard levels", exact: false },
   { to: "/about", label: "The data", exact: false },
 ] as const;

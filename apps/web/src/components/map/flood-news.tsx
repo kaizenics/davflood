@@ -1,6 +1,10 @@
-import { ExternalLink, Newspaper } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import { ChevronRight, ExternalLink, Newspaper } from "lucide-react";
 
 import { useNewsFile } from "@/hooks/use-news-pins";
+
+/** The panel is a summary; the rest live on /news. */
+const SHOWN = 4;
 
 /**
  * Recent flooding coverage for Davao City.
@@ -33,7 +37,7 @@ export function FloodNews() {
       </div>
 
       <ul className="mt-2.5 space-y-3">
-        {items.slice(0, 4).map((item) => (
+        {items.slice(0, SHOWN).map((item) => (
           <li key={item.url}>
             <a
               href={item.url}
@@ -58,6 +62,16 @@ export function FloodNews() {
           </li>
         ))}
       </ul>
+
+      {items.length > SHOWN && (
+        <Link
+          to="/news"
+          className="border-hairline text-ink-dim hover:text-ink hover:border-tide rounded-pill mt-3 flex items-center justify-center gap-1.5 border px-3 py-1.5 text-[11px] font-medium transition"
+        >
+          Show all {items.length} reports
+          <ChevronRight className="size-3.5" aria-hidden="true" />
+        </Link>
+      )}
 
       <p className="text-ink-dim mt-2.5 text-[10px] leading-relaxed">
         Reported by others, not verified by DavFlood. Headlines and pictures
