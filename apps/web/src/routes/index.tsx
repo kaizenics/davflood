@@ -24,7 +24,9 @@ import { MapViewSheet } from "@/components/map/map-view-sheet";
 import { RainfallPanel } from "@/components/map/rainfall-panel";
 import { ReadingSlot } from "@/components/map/reading-slot";
 import { ScenarioToggle } from "@/components/map/scenario-toggle";
+import { FloodNews } from "@/components/map/flood-news";
 import { RainLegend } from "@/components/map/rain-legend";
+import { RiverPanel } from "@/components/map/river-panel";
 import { useRainGrid } from "@/hooks/use-rain-grid";
 import { useBottomSheet } from "@/lib/bottom-sheet";
 import { DATA_IS_PLACEHOLDER, EMPTY, loadScenario } from "@/lib/hazard-source";
@@ -246,6 +248,18 @@ function MapScreen() {
 
           <div className="px-5 py-3.5">
             <RainfallPanel />
+          </div>
+
+          {/* Rain that already fell upstream and is on its way down — the one
+              thing local rainfall cannot show. */}
+          <div className="px-5 py-3.5">
+            <RiverPanel />
+          </div>
+
+          {/* Renders nothing until CI has published a file, which is the
+              normal state on a fresh deploy. */}
+          <div className="empty:hidden [&>*]:px-5 [&>*]:py-3.5">
+            <FloodNews />
           </div>
 
           {/* Desktop only: on a phone these live on the map itself, one tap
