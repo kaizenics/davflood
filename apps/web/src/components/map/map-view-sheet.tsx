@@ -23,7 +23,7 @@ type Props = {
 };
 
 /**
- * How the map is drawn, reachable from the map itself â€” phones only.
+ * How the map is drawn, reachable from the map itself — phones only.
  *
  * These controls live in the panel, which on a phone is a collapsed sheet:
  * changing the basemap or the tilt meant opening the panel, scrolling to the
@@ -111,7 +111,7 @@ export function MapViewSheet({
 
           <div>
             <p className="text-ink-dim mb-2 text-[11px] font-medium">
-              View angle â€” tilt to read depth in 3D
+              View angle — tilt to read depth in 3D
             </p>
             <PitchControl pitch={pitch} onPitchChange={onPitchChange} />
           </div>

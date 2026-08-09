@@ -24,7 +24,7 @@ type Props = {
  * Everything that changes how the map is DRAWN, behind one disclosure.
  *
  * These were two full-weight sections ("View angle", "Layers") sitting above
- * the fold, which put camera chrome in front of the hazard reading â€” the
+ * the fold, which put camera chrome in front of the hazard reading — the
  * panel led with lens settings and buried the answer. They are worth keeping
  * (the tilt gesture is undiscoverable, and hiding the overlay is how you
  * sanity-check the model against what you know is there) but they are not
@@ -55,8 +55,8 @@ export function MapViewDrawer({
     basemap === "satellite" ? "Satellite" : "Map",
     showHazard ? (extrude ? "3D depth" : "Flat overlay") : "Overlay off",
     ...(showRain ? ["Rain on"] : []),
-    `${Math.round(pitch)}Â°`,
-  ].join(" Â· ");
+    `${Math.round(pitch)}°`,
+  ].join(" · ");
 
   return (
     <div className="px-5 py-3.5">
@@ -104,7 +104,7 @@ export function MapViewDrawer({
           />
           <div>
             <p className="text-ink-dim mb-2 text-[11px] font-medium">
-              View angle â€” tilt to read depth in 3D
+              View angle — tilt to read depth in 3D
             </p>
             <PitchControl pitch={pitch} onPitchChange={onPitchChange} />
           </div>
