@@ -1,0 +1,28 @@
+# Netlify deployment.
+#
+# The site is static except for one function: /api/news, which fetches the
+# flood reporting when someone asks rather than having a bot commit it to the
+# repository every half hour. See netlify/functions/news.mts.
+
+[build]
+  command = "pnpm build"
+  publish = "apps/web/dist/client"
+
+[build.environment]
+  NODE_VERSION = "22"
+  # corepack picks the pnpm version out of package.json
+  NPM_FLAGS = "--version"
+
+[functions]
+  directory = "netlify/functions"
+  # the function imports @davflood/hazard from the workspace, so it has to be
+  # bundled rather than treated as an external dependency
+  node_bundler = "esbuild"
+
+# Prerendered routes are real files and are served as such. Anything else is
+# the SPA shell, which is what index.html is built to be — without this, an
+# unknown path gets Netlify's 404 instead of the app's.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

@@ -1,3 +1,4 @@
+import { NEWS_RETENTION_DAYS, ageInDays } from "@davflood/hazard/news";
 import type { NewsFile, NewsItem } from "@davflood/hazard/news";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
@@ -15,15 +16,42 @@ export function useNewsFile() {
   return useQuery<NewsFile | null>({
     queryKey: ["flood-news"],
     queryFn: async ({ signal }) => {
-      const res = await fetch("/flood-news.json", { signal });
-      if (!res.ok) return null; // not published yet — not an error
-      return (await res.json()) as NewsFile;
+      /**
+       * The function first, the committed file second.
+       *
+       * /api/news re-fetches the sources behind a CDN cache, so it is current
+       * without anything being committed. The static file is what answers on
+       * a plain static host, in local preview, and if the function is down —
+       * it is older, but every item carries its own date and anything past
+       * the retention window is dropped below, so stale cannot masquerade as
+       * current.
+       */
+      const file =
+        (await read("/api/news", signal)) ?? (await read("/flood-news.json", signal));
+      if (!file) return null; // nothing published yet — not an error
+
+      return {
+        ...file,
+        items: (file.items ?? []).filter(
+          (item) => ageInDays(item.date) <= NEWS_RETENTION_DAYS,
+        ),
+      };
     },
     staleTime: 15 * 60 * 1000,
     gcTime: 60 * 60 * 1000,
     retry: 0,
     refetchOnWindowFocus: false,
   });
+}
+
+async function read(url: string, signal: AbortSignal): Promise<NewsFile | null> {
+  try {
+    const res = await fetch(url, { signal });
+    if (!res.ok) return null;
+    return (await res.json()) as NewsFile;
+  } catch {
+    return null;
+  }
 }
 
 /**

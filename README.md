@@ -111,12 +111,21 @@ boundaries; the geometry and depth bands are not.
 pnpm --filter @davflood/hazard exec tsx scripts/build-flood-news.ts apps/web/public/flood-news.json
 ```
 
-Run from CI by `.github/workflows/flood-news.yml`, not from the browser: the sources send no
-`access-control-allow-origin`, and GDELT rate-limits to roughly one request every five seconds,
-which a page opened by many people during a storm would exhaust instantly. One caller on a
-schedule instead of one per visitor. Google News carries the local desks; GDELT is best-effort
-behind it, and ReliefWeb joins in if `RELIEFWEB_APPNAME` is set (its API refuses unregistered
-callers).
+Seeds or repairs the committed file by hand. The deployed site does not need it: `/api/news`
+([netlify/functions/news.mts](netlify/functions/news.mts)) fetches the same sources when someone
+asks, behind a half-hour CDN cache, so nothing has to be committed to keep the news current.
+
+It cannot be done from the browser — none of the sources send `access-control-allow-origin`, and
+GDELT rate-limits hard — so something server-side has to fetch them. The only question was
+whether that something writes to git every half hour or answers a request; `s-maxage` means one
+visitor per half hour actually reaches the function, which is the same traffic a cron job would
+have sent.
+
+The function runs a shallow sweep (~4s: the publishers' feeds and one Google News query, in
+parallel) and merges it on top of the committed file, which carries the two-month history the
+shallow sweep cannot reach. The CLI above is the deep one — overlapping date windows plus a
+query per flood-prone barangay, ranked from the hazard model. ReliefWeb joins in if
+`RELIEFWEB_APPNAME` is set; its API refuses unregistered callers.
 
 ## Deployment
 
