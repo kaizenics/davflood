@@ -1,3 +1,4 @@
+import type { SafeGround } from "@davflood/hazard/safe-ground";
 import type { HazardProperties } from "@davflood/hazard/schema";
 import { type ReactNode, useEffect, useState } from "react";
 
@@ -9,6 +10,9 @@ const EXIT_MS = 130;
 type Props = {
   zone: HazardProperties | null;
   onClose: () => void;
+  /** passed straight through to the zone reading */
+  safeGround?: SafeGround | null;
+  onShowSafeGround?: (() => void) | undefined;
   /** What the slot holds when nothing is selected — the city-wide reading. */
   children: ReactNode;
 };
@@ -24,7 +28,13 @@ type Props = {
  * moves left-to-right, going back moves the other way, so the swap reads as a
  * drill-down rather than one block being replaced by another.
  */
-export function ReadingSlot({ zone, onClose, children }: Props) {
+export function ReadingSlot({
+  zone,
+  onClose,
+  safeGround,
+  onShowSafeGround,
+  children,
+}: Props) {
   const [shown, setShown] = useState(zone);
   const [phase, setPhase] = useState<"in" | "out">("in");
   const [dir, setDir] = useState<"deeper" | "back">("back");
@@ -61,7 +71,16 @@ export function ReadingSlot({ zone, onClose, children }: Props) {
       data-dir={dir}
       className="nf-reading"
     >
-      {shown ? <ZonePanel zone={shown} onClose={onClose} /> : children}
+      {shown ? (
+        <ZonePanel
+          zone={shown}
+          onClose={onClose}
+          safeGround={safeGround}
+          onShowSafeGround={onShowSafeGround}
+        />
+      ) : (
+        children
+      )}
     </div>
   );
 }

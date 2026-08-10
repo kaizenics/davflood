@@ -33,6 +33,14 @@ const URLS: Record<ScenarioYears, string> = {
   100: url100,
 };
 
+/**
+ * The hashed asset urls, for the offline pack to precache.
+ *
+ * Exported rather than duplicated: these names carry a content hash that only
+ * the bundler knows, so anything wanting to cache them has to be told.
+ */
+export const SCENARIO_URLS = Object.values(URLS);
+
 const cache = new Map<ScenarioYears, HazardCollection>();
 
 /** Empty collection so the map can render its layers before data arrives. */

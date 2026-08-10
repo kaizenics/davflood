@@ -19,6 +19,8 @@
 		"./rain-grid": "./src/rain-grid.ts",
 		"./river": "./src/river.ts",
 		"./news": "./src/news.ts",
+		"./offline": "./src/offline.ts",
+		"./safe-ground": "./src/safe-ground.ts",
 		"./news-sources": "./src/news-sources.ts",
 		"./data/*": "./src/data/*"
 	},

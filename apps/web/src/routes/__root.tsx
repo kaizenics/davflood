@@ -2,8 +2,10 @@
 import { disclaimer } from "@davflood/hazard/copy";
 import { HeadContent, Scripts, createRootRoute } from "@tanstack/react-router";
 import type { ReactNode } from "react";
+import { useEffect } from "react";
 
 import { AppHeader } from "@/components/app-header";
+import { registerServiceWorker } from "@/lib/offline";
 import { THEME_INIT_SCRIPT } from "@/lib/theme";
 import appCss from "@/styles/app.css?url";
 
@@ -23,6 +25,9 @@ export const Route = createRootRoute({
     links: [
       { rel: "stylesheet", href: appCss },
       { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },
+      { rel: "apple-touch-icon", href: "/icon-192.png" },
+      // installable, so it can be opened from a home screen with no signal
+      { rel: "manifest", href: "/manifest.webmanifest" },
     ],
   }),
   shellComponent: RootDocument,
@@ -30,6 +35,9 @@ export const Route = createRootRoute({
 });
 
 function RootDocument({ children }: { children: ReactNode }) {
+  // once, on the client — see lib/offline.ts
+  useEffect(() => registerServiceWorker(), []);
+
   return (
     // no `className="dark"` here — THEME_INIT_SCRIPT sets it before paint
     <html lang="en-PH">

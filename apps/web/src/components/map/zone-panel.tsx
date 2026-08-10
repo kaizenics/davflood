@@ -1,14 +1,19 @@
 import { formatDepth } from "@davflood/hazard/schema";
 import type { HazardProperties } from "@davflood/hazard/schema";
 import { scenarioByYears } from "@davflood/hazard/scenarios";
+import { formatDistance } from "@davflood/hazard/safe-ground";
+import type { SafeGround } from "@davflood/hazard/safe-ground";
 import { hazardById } from "@davflood/hazard/tiers";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Navigation } from "lucide-react";
 
 import { hazardBg, hazardText } from "@/lib/hazard-classes";
 
 type Props = {
   zone: HazardProperties;
   onClose: () => void;
+  /** nearest point outside the modelled footprint, if the tap was inside one */
+  safeGround?: SafeGround | null;
+  onShowSafeGround?: () => void;
 };
 
 /**
@@ -23,7 +28,12 @@ type Props = {
  * carry it — because this block is a hazard statement. Everything around it
  * stays on the brand accent for exactly the same reason.
  */
-export function ZonePanel({ zone, onClose }: Props) {
+export function ZonePanel({
+  zone,
+  onClose,
+  safeGround,
+  onShowSafeGround,
+}: Props) {
   const tier = hazardById[zone.hazard];
   const scenario = scenarioByYears[zone.scenario];
 
@@ -78,6 +88,36 @@ export function ZonePanel({ zone, onClose }: Props) {
           {tier.action}
         </p>
       </div>
+
+      {/* The next question after "how deep" is always "which way".
+          A straight-line distance is a poor answer to it, but it is a far
+          better one than the silence that was here before — and the wording
+          has to carry what it leaves out. */}
+      {safeGround && (
+        <div className="border-hairline/60 mt-3 border-t pt-3">
+          <div className="flex items-baseline gap-2">
+            <p className="text-ink flex-1 text-[12.5px] leading-relaxed">
+              <span className="font-semibold">Out of the water: </span>
+              about {formatDistance(safeGround.meters)} {safeGround.direction}.
+            </p>
+            {onShowSafeGround && (
+              <button
+                type="button"
+                onClick={onShowSafeGround}
+                className="border-hairline text-ink-dim hover:text-ink hover:border-tide rounded-pill flex shrink-0 items-center gap-1 border px-2 py-0.5 text-[10.5px] font-medium transition"
+              >
+                <Navigation className="size-3" aria-hidden="true" />
+                Show
+              </button>
+            )}
+          </div>
+          <p className="text-ink-dim mt-1.5 text-[10.5px] leading-relaxed">
+            Straight line to the nearest ground this scenario does not flood —
+            not a route, and not an evacuation centre. Higher ground may be
+            further. Follow your barangay&apos;s DRRM instructions.
+          </p>
+        </div>
+      )}
     </section>
   );
 }

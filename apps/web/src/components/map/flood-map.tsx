@@ -69,7 +69,8 @@ export type FloodMapHandle = {
 type Props = {
   scenario: ScenarioYears;
   selectedZoneId: string | null;
-  onSelect: (zone: HazardProperties | null) => void;
+  /** `at` is where the tap landed — the search for a way out starts there */
+  onSelect: (zone: HazardProperties | null, at: LngLat | null) => void;
   data: GeoJSON.FeatureCollection;
   /** terrain is the heaviest part of the render — cheap to switch off */
   terrain?: boolean;
@@ -376,7 +377,10 @@ export const FloodMap = forwardRef<FloodMapHandle, Props>(function FloodMap(
       const hits = m.queryRenderedFeatures(e.point, { layers });
       // fills draw low -> high, so the last hit is the most severe zone
       const top = hits[hits.length - 1];
-      onSelectRef.current(top ? (asHazardProperties(top.properties) ?? null) : null);
+      onSelectRef.current(
+        top ? (asHazardProperties(top.properties) ?? null) : null,
+        top ? [e.lngLat.lng, e.lngLat.lat] : null,
+      );
     });
 
     m.on("pitch", () => {

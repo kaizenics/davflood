@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 
+import { nearestSafeGround } from "@davflood/hazard/safe-ground";
 import { CityReading } from "@/components/map/city-reading";
 import { FloodMap, type FloodMapHandle } from "@/components/map/flood-map";
 import { MapControls } from "@/components/map/map-controls";
@@ -26,6 +27,7 @@ import { ReadingSlot } from "@/components/map/reading-slot";
 import { ScenarioToggle } from "@/components/map/scenario-toggle";
 import { FloodNews } from "@/components/map/flood-news";
 import { NewsDialog } from "@/components/map/news-dialog";
+import { OfflinePanel } from "@/components/map/offline-panel";
 import type { NewsPin } from "@/components/map/news-pin";
 import { RainLegend } from "@/components/map/rain-legend";
 import { RiverPanel } from "@/components/map/river-panel";
@@ -111,8 +113,20 @@ function MapScreen() {
     [lng, lat, b],
   );
 
+  /* Where the tap landed, which is where the way out is measured from — the
+     zone's own geometry cannot say, since a zone can be kilometres long. */
+  const [selectedAt, setSelectedAt] = useState<LngLat | null>(null);
+
+  const safeGround = useMemo(
+    () => (selectedAt ? nearestSafeGround(data, selectedAt) : null),
+    [data, selectedAt],
+  );
+
   // a zone selected under one scenario may not exist under another
-  useEffect(() => setSelected(null), [scenario]);
+  useEffect(() => {
+    setSelected(null);
+    setSelectedAt(null);
+  }, [scenario]);
 
   /* The panel is a drag-to-open sheet below lg and the static column above it;
      `open` is inert at desktop widths, where the classes never apply. */
@@ -241,7 +255,19 @@ function MapScreen() {
               disappears on its own while the reading is still animating. Its
               divider is written out because it is no longer a direct child of
               the divide-y column. */}
-          <ReadingSlot zone={selected} onClose={() => setSelected(null)}>
+          <ReadingSlot
+            zone={selected}
+            onClose={() => {
+              setSelected(null);
+              setSelectedAt(null);
+            }}
+            safeGround={safeGround}
+            onShowSafeGround={
+              safeGround
+                ? () => mapRef.current?.flyTo(safeGround.center, 15)
+                : undefined
+            }
+          >
             <CityReading
               footprint={footprint}
               scenario={activeScenario}
@@ -275,7 +301,11 @@ function MapScreen() {
           {/* Desktop only: on a phone these live on the map itself, one tap
               from the thing they change — see MapViewSheet. */}
           <div className="hidden lg:block">
-            <MapViewDrawer
+            {/* The most useful thing here during a storm, so it sits with the
+              content rather than behind the map-view disclosure. */}
+          <OfflinePanel />
+
+          <MapViewDrawer
               basemap={view}
               onBasemapChange={setView}
               showHazard={showHazard}
@@ -331,7 +361,10 @@ function MapScreen() {
             scenario={scenario}
             data={data}
             selectedZoneId={selected?.zone_id ?? null}
-            onSelect={setSelected}
+            onSelect={(zone, at) => {
+              setSelected(zone);
+              setSelectedAt(at);
+            }}
             terrain={terrain}
             basemap={basemap}
             showHazard={showHazard}
