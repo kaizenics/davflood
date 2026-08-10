@@ -26,6 +26,7 @@ import { MapViewSheet } from "@/components/map/map-view-sheet";
 import { RainfallPanel } from "@/components/map/rainfall-panel";
 import { ReadingSlot } from "@/components/map/reading-slot";
 import { ScenarioToggle } from "@/components/map/scenario-toggle";
+import { SidebarNav } from "@/components/site-nav";
 import { FloodNews } from "@/components/map/flood-news";
 import { NewsDialog } from "@/components/map/news-dialog";
 import { OfflinePanel } from "@/components/map/offline-panel";
@@ -303,6 +304,8 @@ function MapScreen() {
 
         {/* scroll area — the footer below is pinned, so long content
             can never collide with it */}
+        <SidebarNav />
+
         <div className="divide-hairline/60 min-h-0 flex-1 divide-y overflow-y-auto">
           {DATA_IS_PLACEHOLDER && (
             <p className="text-haz-med bg-haz-med/10 flex items-center gap-2 px-5 py-2.5 text-[11px] font-semibold">

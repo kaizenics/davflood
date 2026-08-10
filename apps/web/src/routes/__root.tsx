@@ -1,6 +1,6 @@
 /// <reference types="vite/client" />
 import { disclaimer } from "@davflood/hazard/copy";
-import { HeadContent, Scripts, createRootRoute } from "@tanstack/react-router";
+import { HeadContent, Scripts, createRootRoute, useRouterState } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { useEffect } from "react";
 
@@ -38,6 +38,8 @@ function RootDocument({ children }: { children: ReactNode }) {
   // once, on the client — see lib/offline.ts
   useEffect(() => registerServiceWorker(), []);
 
+  const isMap = useRouterState({ select: (s) => s.location.pathname === "/" });
+
   return (
     // no `className="dark"` here — THEME_INIT_SCRIPT sets it before paint
     <html lang="en-PH">
@@ -47,7 +49,12 @@ function RootDocument({ children }: { children: ReactNode }) {
       </head>
       <body className="bg-abyss text-ink">
         <div className="flex h-dvh flex-col">
-          <AppHeader />
+          {/* The map carries its own masthead in the panel from lg up, so the
+              bar goes — 56px across the top is 56px of the thing the screen
+              exists to show. It stays below lg, where the panel is a collapsed
+              sheet and nav inside it would be nav you cannot see, and it stays
+              at every width on the document pages, which have no panel. */}
+          <AppHeader className={isMap ? "lg:hidden" : undefined} />
           <main className="relative min-h-0 flex-1">{children}</main>
         </div>
         <Scripts />
