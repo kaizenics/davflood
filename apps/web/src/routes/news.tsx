@@ -3,6 +3,8 @@ import type { NewsItem } from "@davflood/hazard/news";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { ExternalLink, MapPin, Newspaper } from "lucide-react";
 
+import { useMounted } from "@/lib/query";
+
 import { useNewsFile } from "@/hooks/use-news-pins";
 
 export const Route = createFileRoute("/news")({
@@ -26,6 +28,18 @@ function NewsScreen() {
   const { data, isLoading } = useNewsFile();
   const items = data?.items ?? [];
 
+  /**
+   * The prerendered HTML and the first client render have to say the same
+   * thing, or React throws a hydration mismatch.
+   *
+   * They did not. The query cannot run during prerender, so the server saw no
+   * data and no fetch in flight and rendered "no reports"; the browser starts
+   * the fetch immediately and renders "loading". Waiting for mount makes both
+   * sides render the same placeholder, and the real answer arrives on the
+   * render after.
+   */
+  const pending = !useMounted() || isLoading;
+
   return (
     <div className="absolute inset-0 flex flex-col overflow-hidden">
       <header className="mx-auto w-full max-w-3xl shrink-0 px-6 pt-10 pb-4 sm:px-8">
@@ -40,7 +54,7 @@ function NewsScreen() {
       </header>
 
       <div className="mx-auto min-h-0 w-full max-w-3xl flex-1 overflow-y-auto px-6 pb-12 sm:px-8">
-        {isLoading ? (
+        {pending ? (
           <p className="text-ink-dim py-16 text-center text-sm">Loading…</p>
         ) : items.length === 0 ? (
           <div className="py-16 text-center">

@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createRouter } from "@tanstack/react-router";
 
+import { gcTime } from "./lib/query";
 import { routeTree } from "./routeTree.gen";
 
 /**
@@ -15,7 +16,8 @@ function makeQueryClient() {
       queries: {
         retry: 1,
         staleTime: 5 * 60 * 1000,
-        gcTime: 24 * 60 * 60 * 1000,
+        // zero during prerender — see lib/query.ts
+        gcTime: gcTime(24 * 60 * 60 * 1000),
         refetchOnWindowFocus: false,
       },
     },

@@ -15,6 +15,7 @@ import {
 import { lazy, Suspense, useState } from "react";
 
 import { useRainfall } from "@/hooks/use-rainfall";
+import { useMounted } from "@/lib/query";
 
 /**
  * recharts is ~400 KB and only ever renders inside this dialog. Lazy so the
@@ -42,6 +43,10 @@ export function RainfallPanel() {
   const [openDay, setOpenDay] = useState<number | null>(null);
   const { data, isLoading, isError } = useRainfall();
 
+  // see lib/query.ts — the prerendered markup and the first client render
+  // must say the same thing, and the query cannot run during prerender
+  const mounted = useMounted();
+  const pending = !mounted || isLoading;
   const unavailable = isError || !data;
   const days = data?.days.slice(0, 4) ?? [];
   const today = days[0];
@@ -77,18 +82,20 @@ export function RainfallPanel() {
 
         <span className="min-w-0 flex-1">
           <span className="text-ink block truncate text-[13.5px] font-semibold">
-            {isLoading
+            {pending
               ? "Checking…"
               : unavailable
                 ? "Forecast unavailable"
                 : describeWeather(data.current.weatherCode)}
           </span>
           <span className="text-ink-dim block truncate text-[11.5px]">
-            {unavailable
-              ? "No connection — the map still works"
-              : today
-                ? `${fmt(today.precipitation)} mm today · ${Math.round(today.probability)}% chance`
-                : "—"}
+            {pending
+              ? " "
+              : unavailable
+                ? "No connection — the map still works"
+                : today
+                  ? `${fmt(today.precipitation)} mm today · ${Math.round(today.probability)}% chance`
+                  : "—"}
           </span>
         </span>
 

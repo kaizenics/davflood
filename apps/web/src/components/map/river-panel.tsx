@@ -2,6 +2,7 @@ import { RIVER_GAUGE, RIVER_NORMAL } from "@davflood/hazard/river";
 import type { River } from "@davflood/hazard/river";
 import { Waves } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+import { gcTime, useMounted } from "@/lib/query";
 
 import { fetchRiver } from "@davflood/hazard/river";
 
@@ -19,44 +20,52 @@ import { fetchRiver } from "@davflood/hazard/river";
  */
 export function RiverPanel() {
   const { data, isLoading, isError } = useQuery<River>({
+    // client-only, like every fetch here — see use-news-pins.ts
+    enabled: typeof window !== "undefined",
     queryKey: ["river", "davao"],
     queryFn: ({ signal }) => fetchRiver(signal),
     // GloFAS is a daily model; polling faster returns the same number
     staleTime: 6 * 60 * 60 * 1000,
-    gcTime: 24 * 60 * 60 * 1000,
+    gcTime: gcTime(24 * 60 * 60 * 1000),
     retry: 1,
     refetchOnWindowFocus: false,
   });
 
-  const unavailable = isError || !data;
-  const notable = !!data && data.level.id !== "low" && data.level.id !== "normal";
+  // see lib/query.ts — the server and the first client render must agree
+  const mounted = useMounted();
+  const pending = !mounted || isLoading;
+  // three states, and only `ready` may touch `data`
+  const ready = !pending && !isError && !!data;
+  const notable = ready && data.level.id !== "low" && data.level.id !== "normal";
 
   return (
     <div>
       <div className="flex items-center gap-3">
         <span
           className={`flex size-9 shrink-0 items-center justify-center rounded-full ${
-            unavailable ? "bg-raised" : "bg-tide/12"
+            ready ? "bg-tide/12" : "bg-raised"
           }`}
         >
           <Waves
-            className={`size-[18px] ${unavailable ? "text-ink-dim" : "text-tide"}`}
+            className={`size-[18px] ${ready ? "text-tide" : "text-ink-dim"}`}
             aria-hidden="true"
           />
         </span>
 
         <span className="min-w-0 flex-1">
           <span className="text-ink block truncate text-[13.5px] font-semibold">
-            {isLoading
+            {pending
               ? "Checking the river…"
-              : unavailable
-                ? "River forecast unavailable"
-                : `${RIVER_GAUGE.name} — ${data.level.label.toLowerCase()}`}
+              : ready
+                ? `${RIVER_GAUGE.name} — ${data.level.label.toLowerCase()}`
+                : "River forecast unavailable"}
           </span>
           <span className="text-ink-dim block truncate text-[11.5px]" data-numeric>
-            {unavailable
-              ? "The map still works without it"
-              : `${data.today.toFixed(0)} m³/s · ${data.timesNormal.toFixed(1)}× the usual`}
+            {pending
+              ? " "
+              : ready
+                ? `${data.today.toFixed(0)} m³/s · ${data.timesNormal.toFixed(1)}× the usual`
+                : "The map still works without it"}
           </span>
         </span>
 
@@ -67,7 +76,7 @@ export function RiverPanel() {
         )}
       </div>
 
-      {!unavailable && (
+      {ready && (
         <>
           <p className="text-ink-dim mt-2.5 text-[12px] leading-relaxed">
             {data.level.blurb}

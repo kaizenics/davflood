@@ -1,6 +1,7 @@
 import { NEWS_RETENTION_DAYS, ageInDays } from "@davflood/hazard/news";
 import type { NewsFile, NewsItem } from "@davflood/hazard/news";
 import { useQuery } from "@tanstack/react-query";
+import { gcTime } from "@/lib/query";
 import { useMemo } from "react";
 
 import type { NewsPin } from "@/components/map/news-pin";
@@ -12,8 +13,24 @@ import type { NewsPin } from "@/components/map/news-pin";
  * both surfaces read the same copy — the pins and the list can never disagree
  * about what was reported.
  */
+/**
+ * Every network hook in this app is client-only, and this one is why.
+ *
+ * Prerendering renders these components in Node. React Query happily ran this
+ * query there, and the fetch below is a RELATIVE url — which the prerenderer
+ * resolves against its own server, where /api/news does not exist. The request
+ * never settled, its socket kept the event loop alive, and `vite build` did
+ * all of its work and then hung: forever locally, and until Netlify killed the
+ * deploy at eighteen minutes.
+ *
+ * The data is client-side by design anyway. There is nothing to gain from
+ * fetching it during a build whose output is a static shell.
+ */
+const IS_BROWSER = typeof window !== "undefined";
+
 export function useNewsFile() {
   return useQuery<NewsFile | null>({
+    enabled: IS_BROWSER,
     queryKey: ["flood-news"],
     queryFn: async ({ signal }) => {
       /**
@@ -38,7 +55,7 @@ export function useNewsFile() {
       };
     },
     staleTime: 15 * 60 * 1000,
-    gcTime: 60 * 60 * 1000,
+    gcTime: gcTime(60 * 60 * 1000),
     retry: 0,
     refetchOnWindowFocus: false,
   });
