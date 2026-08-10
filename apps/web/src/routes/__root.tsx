@@ -1,11 +1,11 @@
 /// <reference types="vite/client" />
 import { disclaimer } from "@davflood/hazard/copy";
-import { HeadContent, Scripts, createRootRoute, useRouterState } from "@tanstack/react-router";
+import { HeadContent, Scripts, createRootRoute } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { useEffect } from "react";
 
 import { AppHeader } from "@/components/app-header";
-import { SiteSidebar } from "@/components/site-nav";
+import { MapShell } from "@/components/map/map-shell";
 import { registerServiceWorker } from "@/lib/offline";
 import { THEME_INIT_SCRIPT } from "@/lib/theme";
 import appCss from "@/styles/app.css?url";
@@ -39,8 +39,6 @@ function RootDocument({ children }: { children: ReactNode }) {
   // once, on the client — see lib/offline.ts
   useEffect(() => registerServiceWorker(), []);
 
-  const isMap = useRouterState({ select: (s) => s.location.pathname === "/" });
-
   return (
     // no `className="dark"` here — THEME_INIT_SCRIPT sets it before paint
     <html lang="en-PH">
@@ -57,11 +55,11 @@ function RootDocument({ children }: { children: ReactNode }) {
               56px of the one thing the screen exists to show. */}
           <AppHeader />
 
-          <div className="flex min-h-0 flex-1">
-            {/* The map has its own column already, at the top of its panel. */}
-            {!isMap && <SiteSidebar />}
-            <main className="relative min-h-0 flex-1">{children}</main>
-          </div>
+          {/* Every page renders into the same column beside the same live
+              map — see components/map/map-shell.tsx. */}
+          <main className="relative min-h-0 flex-1">
+            <MapShell>{children}</MapShell>
+          </main>
         </div>
         <Scripts />
       </body>

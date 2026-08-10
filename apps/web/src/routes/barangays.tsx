@@ -13,21 +13,32 @@ export const Route = createFileRoute("/barangays")({
   component: BarangaysScreen,
 });
 
+/**
+ * The other way into the map: pick a name instead of hunting a city 53 km
+ * across for it.
+ *
+ * The search box sticks to the top of the panel rather than scrolling away
+ * with the first few results — with 182 names below it, a search field you
+ * have to scroll back up to reach is a search field you stop using. See
+ * routes/about.tsx for why nothing here sets a width or a `sm:` breakpoint.
+ */
 function BarangaysScreen() {
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const results = useMemo(() => searchBarangays(query), [query]);
 
   return (
-    <div className="absolute inset-0 flex flex-col overflow-hidden">
-      <header className="mx-auto w-full max-w-3xl shrink-0 px-6 pt-10 pb-4 sm:px-8">
-        <h1 className="text-ink text-3xl font-bold tracking-tight sm:text-4xl">Find your barangay</h1>
-        <p className="text-ink-dim mt-3 text-base">
-          {barangays.length} barangays across Davao City. Pick one to jump the
+    <div className="pb-8">
+      <header className="bg-deep/95 border-hairline/60 sticky top-0 z-10 border-b px-5 pt-6 pb-4 backdrop-blur-xl">
+        <h1 className="text-ink text-[1.7rem] leading-[1.15] font-semibold tracking-tight">
+          Find your barangay
+        </h1>
+        <p className="text-ink-dim mt-2 text-[13.5px] leading-relaxed">
+          {barangays.length} barangays across Davao City. Pick one to fly the
           map there.
         </p>
 
-        <div className="border-hairline bg-raised/60 rounded-pill mt-4 flex items-center gap-2.5 border px-4">
+        <div className="border-hairline bg-raised/60 rounded-pill mt-3.5 flex items-center gap-2.5 border px-4">
           <Search className="text-ink-dim size-4 shrink-0" aria-hidden="true" />
           <input
             value={query}
@@ -35,7 +46,7 @@ function BarangaysScreen() {
             placeholder="Search by name…"
             aria-label="Search barangays"
             autoCorrect="off"
-            className="text-ink placeholder:text-ink-dim min-w-0 flex-1 bg-transparent py-3 text-sm outline-none"
+            className="text-ink placeholder:text-ink-dim min-w-0 flex-1 bg-transparent py-2.5 text-[13.5px] outline-none"
           />
           {query && (
             <button
@@ -50,13 +61,13 @@ function BarangaysScreen() {
         </div>
       </header>
 
-      <div className="mx-auto min-h-0 w-full max-w-3xl flex-1 overflow-y-auto px-6 pb-10 sm:px-8">
+      <div className="px-5">
         {results.length === 0 ? (
-          <p className="text-ink-dim py-16 text-center text-sm">
+          <p className="text-ink-dim py-16 text-center text-[13.5px]">
             No barangay matches “{query}”.
           </p>
         ) : (
-          <ul className="grid sm:grid-cols-2 sm:gap-x-6">
+          <ul>
             {results.map((b) => (
               <li key={b.name}>
                 <button
@@ -71,9 +82,9 @@ function BarangaysScreen() {
                       },
                     })
                   }
-                  className="border-hairline/60 hover:bg-raised/40 flex w-full items-center gap-3 border-b py-3.5 text-left transition"
+                  className="border-hairline/60 hover:bg-raised/40 -mx-2 flex w-[calc(100%+1rem)] items-center gap-3 border-b px-2 py-3 text-left transition"
                 >
-                  <span className="border-hairline bg-raised/60 flex size-9 shrink-0 items-center justify-center rounded-full border">
+                  <span className="border-hairline bg-raised/60 flex size-8 shrink-0 items-center justify-center rounded-full border">
                     {b.poblacion ? (
                       <Building2 className="text-tide size-4" aria-hidden="true" />
                     ) : (
@@ -81,11 +92,11 @@ function BarangaysScreen() {
                     )}
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className="text-ink block text-[15px] font-semibold">
+                    <span className="text-ink block text-[14px] font-semibold">
                       {b.name}
                     </span>
                     {b.poblacion && (
-                      <span className="text-ink-dim block text-[11px]">
+                      <span className="text-ink-dim block text-[10.5px]">
                         Poblacion
                       </span>
                     )}

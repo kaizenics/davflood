@@ -174,47 +174,16 @@ function NavBlock() {
 }
 
 /**
- * The map screen's own masthead, at the top of the panel.
+ * The masthead at the top of the shell's panel — every route, one position.
  *
- * Desktop only. Below lg the panel is a bottom sheet collapsed to a 60px
- * handle, so anything in here would be navigation you cannot see — the header
- * keeps that job on a phone.
+ * Desktop only. Below lg the panel is either a sheet collapsed to a 60px
+ * handle or the page itself, so nav in here would be nav you cannot see or nav
+ * you have to scroll past; the header keeps that job on a phone.
  */
 export function SidebarNav() {
   return (
-    <div className="border-hairline hidden border-b lg:block">
+    <div className="border-hairline hidden shrink-0 border-b lg:block">
       <NavBlock />
     </div>
-  );
-}
-
-/**
- * The same masthead as a column, for the pages that have no panel.
- *
- * Same width as the map's panel and the same padding, so moving between the
- * map and a document page does not move the wordmark or the links — the page
- * changes, the furniture does not.
- *
- * Desktop only, for the same reason as the panel: below lg there is no room
- * beside the content, and the header takes over.
- */
-export function SiteSidebar() {
-  return (
-    <aside className="border-hairline bg-deep/40 hidden w-[21rem] shrink-0 flex-col border-r lg:flex">
-      <NavBlock />
-
-      <div className="flex-1" />
-
-      {/* The credit the header used to carry. It belongs wherever the site
-          furniture is, not only on the page that happens to explain it. */}
-      <a
-        href="https://noah.up.edu.ph/"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="text-ink-dim hover:text-tide border-hairline border-t px-5 py-4 text-[11px] transition"
-      >
-        Hazard data © UP NOAH ↗
-      </a>
-    </aside>
   );
 }
