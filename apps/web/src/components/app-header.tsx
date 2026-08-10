@@ -9,22 +9,16 @@ import {
   ThemeToggle,
   Wordmark,
 } from "@/components/site-nav";
-import { cn } from "@/lib/utils";
-
-type Props = {
-  /** the map screen passes `lg:hidden` — see routes/__root.tsx */
-  className?: string;
-};
 
 /**
- * The header for the document pages.
+ * The navigation for phones.
  *
- * The map screen hides this from lg up and carries the same identity and links
- * at the top of its panel instead: a bar across the top of a map costs 56px of
- * the one thing the screen exists to show. Every other page has no panel, so
- * this is their only navigation and it stays.
+ * From lg up the site is a sidebar app — the map carries its masthead at the
+ * top of its panel, every other page gets a column beside the content — so
+ * this bar exists only below that, where no column fits. Five labels do not
+ * fit across a phone either, hence the menu.
  */
-export function AppHeader({ className }: Props) {
+export function AppHeader() {
   const [menuOpen, setMenuOpen] = useState(false);
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
@@ -43,47 +37,11 @@ export function AppHeader({ className }: Props) {
 
   return (
     // above the map sheet, which is z-30 — the menu must never open behind it
-    <header
-      className={cn(
-        "border-hairline bg-abyss/90 sticky top-0 z-40 shrink-0 border-b backdrop-blur-xl",
-        className,
-      )}
-    >
-      <div className="mx-auto flex h-14 max-w-[110rem] items-center gap-3 px-4 sm:gap-6 sm:px-6">
-        <Link to="/" aria-label="DavFlood — home" className="shrink-0">
+    <header className="border-hairline bg-abyss/90 sticky top-0 z-40 shrink-0 border-b backdrop-blur-xl lg:hidden">
+      <div className="flex h-14 items-center gap-3 px-4 sm:px-6">
+        <Link to="/" aria-label="DavFlood — home" className="min-w-0 flex-1">
           <Wordmark />
         </Link>
-
-        {/* Four labels do not fit a phone. Below lg they move into the menu
-            below rather than being clipped by a scroll container the user
-            cannot see the end of. */}
-        <nav aria-label="Main" className="hidden min-w-0 flex-1 lg:block">
-          <ul className="flex items-center gap-1">
-            {NAV.map(({ to, label, exact }) => (
-              <li key={to}>
-                <Link
-                  to={to}
-                  activeOptions={{ exact }}
-                  className="rounded-pill text-ink-dim hover:text-ink hover:bg-raised/60 block px-3 py-1.5 text-sm font-medium whitespace-nowrap transition"
-                  activeProps={{ className: "!text-ink !bg-raised" }}
-                >
-                  {label}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </nav>
-
-        <div className="min-w-0 flex-1 lg:hidden" />
-
-        <a
-          href="https://noah.up.edu.ph/"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-ink-dim hover:text-tide hidden text-xs whitespace-nowrap transition lg:block"
-        >
-          Data © UP NOAH
-        </a>
 
         <GithubLink />
         <ThemeToggle />
@@ -94,7 +52,7 @@ export function AppHeader({ className }: Props) {
           aria-label={menuOpen ? "Close menu" : "Open menu"}
           aria-expanded={menuOpen}
           aria-controls="mobile-nav"
-          className="border-hairline text-ink-dim hover:text-ink flex size-8 shrink-0 items-center justify-center rounded-full border transition lg:hidden"
+          className="border-hairline text-ink-dim hover:text-ink flex size-8 shrink-0 items-center justify-center rounded-full border transition"
         >
           {menuOpen ? (
             <X className="size-4" aria-hidden="true" />
@@ -112,14 +70,14 @@ export function AppHeader({ className }: Props) {
             tabIndex={-1}
             aria-hidden="true"
             onClick={() => setMenuOpen(false)}
-            className="fixed inset-0 top-14 z-30 cursor-default bg-black/40 lg:hidden"
+            className="fixed inset-0 top-14 z-30 cursor-default bg-black/40"
           />
           <nav
             id="mobile-nav"
             aria-label="Main"
-            className="nf-menu border-hairline bg-abyss/95 absolute inset-x-0 top-full z-40 border-b backdrop-blur-xl lg:hidden"
+            className="nf-menu border-hairline bg-abyss/95 absolute inset-x-0 top-full z-40 border-b backdrop-blur-xl"
           >
-            <ul className="mx-auto max-w-[110rem] px-3 py-2">
+            <ul className="px-3 py-2">
               {NAV.map(({ to, label, exact }) => (
                 <li key={to}>
                   <Link

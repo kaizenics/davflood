@@ -7,11 +7,10 @@ import { useTheme } from "@/lib/theme";
 /**
  * The shared identity and navigation.
  *
- * Two placements, one definition: a header across the top of every document
- * page, and a block at the top of the map's own panel. The map does not want a
- * header — it is the whole point of the screen, and a bar across the top costs
- * it 56px of the thing people came to look at — but the other pages have no
- * panel to put a nav in, so both exist and share this.
+ * One definition, three placements: the top of the map's own panel, a column
+ * down the left of every other page, and — below lg, where no column fits — a
+ * bar across the top. From lg up the site is a sidebar app: the same wordmark
+ * and the same five links, in the same place, whichever page you are on.
  */
 
 export const REPO_URL = "https://github.com/kaizenics/davflood";
@@ -135,19 +134,16 @@ export function ThemeToggle() {
 }
 
 /**
- * The map screen's own masthead, at the top of the panel.
+ * The masthead: who this is, and where else you can go.
  *
- * Desktop only. Below lg the panel is a bottom sheet collapsed to a 60px
- * handle, so anything in here would be navigation you cannot see — the header
- * keeps that job on a phone.
- *
- * The links sit in a row rather than a stack, and wrap rather than scroll: a
- * nav you have to scroll sideways hides its own last item, which is exactly
- * what the header used to do on a narrow screen.
+ * The links sit in a row rather than a stack, and use their short spellings:
+ * the column is 21rem, the full labels wrap there, and five items in a row
+ * cost one line where a stack costs five — leaving the room below for the
+ * thing the page is actually about.
  */
-export function SidebarNav() {
+function NavBlock() {
   return (
-    <div className="border-hairline hidden border-b px-5 py-4 lg:block">
+    <div className="px-5 py-4">
       <div className="flex items-center gap-2">
         <Link to="/" aria-label="DavFlood — home" className="min-w-0 flex-1">
           <Wordmark />
@@ -174,5 +170,51 @@ export function SidebarNav() {
         </ul>
       </nav>
     </div>
+  );
+}
+
+/**
+ * The map screen's own masthead, at the top of the panel.
+ *
+ * Desktop only. Below lg the panel is a bottom sheet collapsed to a 60px
+ * handle, so anything in here would be navigation you cannot see — the header
+ * keeps that job on a phone.
+ */
+export function SidebarNav() {
+  return (
+    <div className="border-hairline hidden border-b lg:block">
+      <NavBlock />
+    </div>
+  );
+}
+
+/**
+ * The same masthead as a column, for the pages that have no panel.
+ *
+ * Same width as the map's panel and the same padding, so moving between the
+ * map and a document page does not move the wordmark or the links — the page
+ * changes, the furniture does not.
+ *
+ * Desktop only, for the same reason as the panel: below lg there is no room
+ * beside the content, and the header takes over.
+ */
+export function SiteSidebar() {
+  return (
+    <aside className="border-hairline bg-deep/40 hidden w-[21rem] shrink-0 flex-col border-r lg:flex">
+      <NavBlock />
+
+      <div className="flex-1" />
+
+      {/* The credit the header used to carry. It belongs wherever the site
+          furniture is, not only on the page that happens to explain it. */}
+      <a
+        href="https://noah.up.edu.ph/"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-ink-dim hover:text-tide border-hairline border-t px-5 py-4 text-[11px] transition"
+      >
+        Hazard data © UP NOAH ↗
+      </a>
+    </aside>
   );
 }

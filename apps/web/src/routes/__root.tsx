@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
 import { useEffect } from "react";
 
 import { AppHeader } from "@/components/app-header";
+import { SiteSidebar } from "@/components/site-nav";
 import { registerServiceWorker } from "@/lib/offline";
 import { THEME_INIT_SCRIPT } from "@/lib/theme";
 import appCss from "@/styles/app.css?url";
@@ -49,13 +50,18 @@ function RootDocument({ children }: { children: ReactNode }) {
       </head>
       <body className="bg-abyss text-ink">
         <div className="flex h-dvh flex-col">
-          {/* The map carries its own masthead in the panel from lg up, so the
-              bar goes — 56px across the top is 56px of the thing the screen
-              exists to show. It stays below lg, where the panel is a collapsed
-              sheet and nav inside it would be nav you cannot see, and it stays
-              at every width on the document pages, which have no panel. */}
-          <AppHeader className={isMap ? "lg:hidden" : undefined} />
-          <main className="relative min-h-0 flex-1">{children}</main>
+          {/* Phones only. There is no room beside the content at that width,
+              and on the map the panel is a collapsed sheet, so nav inside it
+              would be nav you cannot see. From lg up every page carries its
+              navigation in a column instead — a bar across the top of a map is
+              56px of the one thing the screen exists to show. */}
+          <AppHeader />
+
+          <div className="flex min-h-0 flex-1">
+            {/* The map has its own column already, at the top of its panel. */}
+            {!isMap && <SiteSidebar />}
+            <main className="relative min-h-0 flex-1">{children}</main>
+          </div>
         </div>
         <Scripts />
       </body>
