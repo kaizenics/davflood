@@ -144,7 +144,10 @@ function MapScreen() {
       to: evacuation.site.center,
       label: evacuation.site.name,
     });
-    mapRef.current?.fitTo(selectedAt, evacuation.site.center);
+    /* Keep the framing clear of the floating reading, which from lg up sits
+       over the left edge of the map the line is being drawn on. */
+    const cardWidth = window.innerWidth >= 1024 ? 380 : 70;
+    mapRef.current?.fitTo(selectedAt, evacuation.site.center, cardWidth);
     // on a phone the sheet is over the map it just drew on
     sheet.setOpen(false);
   };
@@ -193,6 +196,46 @@ function MapScreen() {
     setPitch(p);
     mapRef.current?.setPitch(p, animate);
   };
+
+  /**
+   * The reading, built once and placed twice.
+   *
+   * From lg up it floats over the map, because the answer belongs beside the
+   * thing it describes — you tap a zone and read it without your eye leaving
+   * the map. On a phone there is no room to float anything: the sheet already
+   * solves this, and a card over a 390px map would be the map.
+   *
+   * Only ever one of the two is rendered — the other is display:none, so it is
+   * out of the accessibility tree as well as out of sight.
+   */
+  const reading = (
+    <ReadingSlot
+      zone={selected}
+      onClose={() => {
+        setSelected(null);
+        setSelectedAt(null);
+      }}
+      safeGround={safeGround}
+      onShowSafeGround={
+        safeGround ? () => mapRef.current?.flyTo(safeGround.center, 15) : undefined
+      }
+      evacuation={evacuation}
+      onShowEvacuation={evacuation ? showEvacuation : undefined}
+    >
+      <CityReading
+        footprint={footprint}
+        scenario={activeScenario}
+        dimmed={!showHazard}
+      />
+      <p className="text-ink-dim border-hairline/60 flex items-start gap-2.5 border-t px-5 py-3 text-[11.5px] leading-relaxed">
+        <MousePointerClick
+          className="mt-px size-3.5 shrink-0 opacity-70"
+          aria-hidden="true"
+        />
+        Tap a coloured zone for the expected depth at that spot.
+      </p>
+    </ReadingSlot>
+  );
 
   return (
     <div className="absolute inset-0 lg:flex lg:flex-row">
@@ -283,40 +326,10 @@ function MapScreen() {
 
           {/* ONE reading slot, two scales. Tapping a zone narrows the
               question from "the city" to "this place"; going back widens
-              it again. Both answer "how deep does it get here". */}
-          {/* The hint lives inside the slot rather than beside it: it belongs
-              to the city-wide state and has to leave with it, otherwise it
-              disappears on its own while the reading is still animating. Its
-              divider is written out because it is no longer a direct child of
-              the divide-y column. */}
-          <ReadingSlot
-            zone={selected}
-            onClose={() => {
-              setSelected(null);
-              setSelectedAt(null);
-            }}
-            safeGround={safeGround}
-            onShowSafeGround={
-              safeGround
-                ? () => mapRef.current?.flyTo(safeGround.center, 15)
-                : undefined
-            }
-            evacuation={evacuation}
-            onShowEvacuation={evacuation ? showEvacuation : undefined}
-          >
-            <CityReading
-              footprint={footprint}
-              scenario={activeScenario}
-              dimmed={!showHazard}
-            />
-            <p className="text-ink-dim border-hairline/60 flex items-start gap-2.5 border-t px-5 py-3 text-[11.5px] leading-relaxed">
-              <MousePointerClick
-                className="mt-px size-3.5 shrink-0 opacity-70"
-                aria-hidden="true"
-              />
-              Tap a coloured zone for the expected depth at that spot.
-            </p>
-          </ReadingSlot>
+              it again. Both answer "how deep does it get here".
+
+              Below lg only — from lg up the same slot floats over the map. */}
+          <div className="lg:hidden">{reading}</div>
 
           <div className="px-5 py-3.5">
             <RainfallPanel />
@@ -421,10 +434,21 @@ function MapScreen() {
           <div className="bg-abyss absolute inset-0" />
         )}
 
-        {/* Top-left: clear of the control stack on the right, and above the
-            sheet on a phone. Only while the layer it explains is on. */}
+        {/* The reading, floating over the map from lg up.
+            Its own surface, because it is no longer sitting on the panel's:
+            a blurred card that reads over cartography, satellite imagery and
+            the hazard ramp alike. It scrolls internally so a long reading can
+            never grow past the map it belongs to. */}
+        <div className="border-hairline bg-deep/92 pointer-events-auto absolute top-4 left-4 z-10 hidden max-h-[calc(100%-2rem)] w-[21rem] overflow-x-hidden overflow-y-auto rounded-2xl border shadow-2xl backdrop-blur-xl lg:block">
+          {reading}
+        </div>
+
+        {/* Below the reading, so the two never share an edge. Only while the
+            layer it explains is on. */}
         {showRain && (
-          <div className="absolute top-4 left-4">
+          /* Top-left on a phone, where the reading is down in the sheet;
+             bottom-left from lg up, where the reading has taken that corner. */
+          <div className="absolute top-4 left-4 lg:top-auto lg:bottom-6">
             <RainLegend grid={rainGrid} theme={basemap === "light" ? "light" : "dark"} />
           </div>
         )}

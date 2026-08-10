@@ -67,8 +67,14 @@ export type FloodMapHandle = {
   resetCamera: () => void;
   /** animate=false for slider drags, true for preset jumps */
   setPitch: (pitch: number, animate?: boolean) => void;
-  /** frame two points at once — used to show a guide line whole */
-  fitTo: (a: LngLat, b: LngLat) => void;
+  /**
+   * Frame two points at once — used to show a guide line whole.
+   *
+   * `padLeft` is how much of the map's left edge is covered by something the
+   * map cannot see: from lg up the reading floats there, and framing into the
+   * full viewport put the destination pin underneath it.
+   */
+  fitTo: (a: LngLat, b: LngLat, padLeft?: number) => void;
 };
 
 /** A direct line from where you are to somewhere you could go. */
@@ -294,7 +300,7 @@ export const FloodMap = forwardRef<FloodMapHandle, Props>(function FloodMap(
       if (animate) m.easeTo({ pitch, duration: 500 });
       else m.jumpTo({ pitch });
     },
-    fitTo(a, b) {
+    fitTo(a, b, padLeft = 70) {
       const m = map.current;
       if (!m) return;
       /* Flattened first. A guide line read at a 52° pitch is foreshortened —
@@ -307,7 +313,7 @@ export const FloodMap = forwardRef<FloodMapHandle, Props>(function FloodMap(
           [Math.max(a[0], b[0]), Math.max(a[1], b[1])],
         ],
         {
-          padding: { top: 90, bottom: 90, left: 70, right: 70 },
+          padding: { top: 90, bottom: 90, left: padLeft, right: 70 },
           pitch: 0,
           bearing: 0,
           maxZoom: 16.5,
