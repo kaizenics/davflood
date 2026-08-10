@@ -21,6 +21,7 @@
 		"./news": "./src/news.ts",
 		"./offline": "./src/offline.ts",
 		"./safe-ground": "./src/safe-ground.ts",
+		"./evacuation": "./src/evacuation.ts",
 		"./news-sources": "./src/news-sources.ts",
 		"./data/*": "./src/data/*"
 	},

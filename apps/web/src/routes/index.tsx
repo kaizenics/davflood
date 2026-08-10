@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 
+import { nearestEvacuation } from "@davflood/hazard/evacuation";
 import { nearestSafeGround } from "@davflood/hazard/safe-ground";
 import { CityReading } from "@/components/map/city-reading";
 import { FloodMap, type FloodMapHandle } from "@/components/map/flood-map";
@@ -120,6 +121,14 @@ function MapScreen() {
   const safeGround = useMemo(
     () => (selectedAt ? nearestSafeGround(data, selectedAt) : null),
     [data, selectedAt],
+  );
+
+  /* Somewhere to actually go, rather than a direction to walk in. Keyed on the
+     scenario because a building that is dry in a 25-year storm may not be in a
+     100-year one, and offering it anyway would be the worst kind of wrong. */
+  const evacuation = useMemo(
+    () => (selectedAt ? nearestEvacuation(selectedAt, scenario) : null),
+    [selectedAt, scenario],
   );
 
   // a zone selected under one scenario may not exist under another
@@ -265,6 +274,12 @@ function MapScreen() {
             onShowSafeGround={
               safeGround
                 ? () => mapRef.current?.flyTo(safeGround.center, 15)
+                : undefined
+            }
+            evacuation={evacuation}
+            onShowEvacuation={
+              evacuation
+                ? () => mapRef.current?.flyTo(evacuation.site.center, 16)
                 : undefined
             }
           >

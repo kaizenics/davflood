@@ -105,6 +105,52 @@ export function isFlooded(fc: HazardCollection, [lng, lat]: LngLat): boolean {
   return false;
 }
 
+/** Is this point inside these rings, holes accounted for? */
+export function ringsContain(
+  rings: Position[][],
+  lng: number,
+  lat: number,
+): boolean {
+  const outer = rings[0];
+  if (!outer || !inRing(outer, lng, lat)) return false;
+  for (let i = 1; i < rings.length; i++) {
+    const hole = rings[i];
+    if (hole && inRing(hole, lng, lat)) return false;
+  }
+  return true;
+}
+
+/**
+ * Some point inside these rings.
+ *
+ * Needed because a tap on the map does not necessarily land inside the polygon
+ * it selected. With depth extrusion on — the default — a zone is drawn as a
+ * volume standing up to sixty metres tall, and at a 52° pitch you are looking
+ * at its side. The tap hits the rendered wall; `lngLat` is the ground beneath
+ * the cursor, which can be well outside the footprint. Measuring "the way out"
+ * from there reported that you were already out of the water, which is exactly
+ * wrong for someone standing in it.
+ *
+ * The average vertex is inside for the long thin shapes this data is made of;
+ * the first vertex is the fallback for the ones where it is not.
+ */
+export function representativePoint(rings: Position[][]): LngLat | null {
+  const outer = rings[0];
+  if (!outer?.length) return null;
+
+  let x = 0;
+  let y = 0;
+  for (const p of outer) {
+    x += p[0] ?? 0;
+    y += p[1] ?? 0;
+  }
+  const mean: LngLat = [x / outer.length, y / outer.length];
+  if (ringsContain(rings, mean[0], mean[1])) return mean;
+
+  const first = outer[0];
+  return first ? [first[0] ?? 0, first[1] ?? 0] : null;
+}
+
 export type SafeGround = {
   center: LngLat;
   /** straight-line distance, metres */
@@ -166,6 +212,8 @@ export function nearestSafeGround(
 
 /** "600 m" / "1.2 km" — walking distances, read at a glance. */
 export function formatDistance(meters: number): string {
-  if (meters < 1000) return `${meters} m`;
+  // rounded: these arrive as floats from the distance maths, and "94.07231703
+  // m west" is not how anyone says it
+  if (meters < 1000) return `${Math.round(meters / 10) * 10} m`;
   return `${(meters / 1000).toFixed(1)} km`;
 }

@@ -10,6 +10,7 @@ import {
   hazardLayers,
   rainLayers,
 } from "@davflood/hazard/layers";
+import { representativePoint, ringsContain } from "@davflood/hazard/safe-ground";
 import { asHazardProperties } from "@davflood/hazard/schema";
 import type { HazardProperties } from "@davflood/hazard/schema";
 import type { ScenarioYears } from "@davflood/hazard/scenarios";
@@ -116,6 +117,22 @@ function applyTerrain(m: maplibregl.Map, enabled: boolean) {
 
 /** All hazard layers, including the outline and selection rings. */
 const ALL_HAZARD_LAYERS = Object.values(LAYER_IDS);
+
+/**
+ * Where to measure the way out from.
+ *
+ * Normally the point under the cursor. But a tap on an extruded zone lands on
+ * the side of a volume, and the ground beneath the cursor can be outside the
+ * footprint entirely — so when it is, fall back to a point known to be inside
+ * the zone the tap actually selected.
+ */
+function originOf(feature: maplibregl.MapGeoJSONFeature, at: LngLat): LngLat {
+  const geometry = feature.geometry;
+  if (geometry?.type !== "Polygon") return at;
+  const rings = geometry.coordinates;
+  if (ringsContain(rings, at[0], at[1])) return at;
+  return representativePoint(rings) ?? at;
+}
 
 function applyRainVisibility(m: maplibregl.Map, visible: boolean) {
   if (!m.getLayer(RAIN_LAYER_ID)) return;
@@ -379,7 +396,7 @@ export const FloodMap = forwardRef<FloodMapHandle, Props>(function FloodMap(
       const top = hits[hits.length - 1];
       onSelectRef.current(
         top ? (asHazardProperties(top.properties) ?? null) : null,
-        top ? [e.lngLat.lng, e.lngLat.lat] : null,
+        top ? originOf(top, [e.lngLat.lng, e.lngLat.lat]) : null,
       );
     });
 

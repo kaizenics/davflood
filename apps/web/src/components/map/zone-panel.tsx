@@ -1,10 +1,12 @@
 import { formatDepth } from "@davflood/hazard/schema";
 import type { HazardProperties } from "@davflood/hazard/schema";
 import { scenarioByYears } from "@davflood/hazard/scenarios";
+import { directionsUrl } from "@davflood/hazard/evacuation";
+import type { NearestSite } from "@davflood/hazard/evacuation";
 import { formatDistance } from "@davflood/hazard/safe-ground";
 import type { SafeGround } from "@davflood/hazard/safe-ground";
 import { hazardById } from "@davflood/hazard/tiers";
-import { ArrowLeft, Navigation } from "lucide-react";
+import { ArrowLeft, MapPin, Navigation } from "lucide-react";
 
 import { hazardBg, hazardText } from "@/lib/hazard-classes";
 
@@ -14,6 +16,9 @@ type Props = {
   /** nearest point outside the modelled footprint, if the tap was inside one */
   safeGround?: SafeGround | null;
   onShowSafeGround?: () => void;
+  /** nearest public building the scenario does not flood */
+  evacuation?: NearestSite | null;
+  onShowEvacuation?: () => void;
 };
 
 /**
@@ -33,6 +38,8 @@ export function ZonePanel({
   onClose,
   safeGround,
   onShowSafeGround,
+  evacuation,
+  onShowEvacuation,
 }: Props) {
   const tier = hazardById[zone.hazard];
   const scenario = scenarioByYears[zone.scenario];
@@ -112,9 +119,52 @@ export function ZonePanel({
             )}
           </div>
           <p className="text-ink-dim mt-1.5 text-[10.5px] leading-relaxed">
-            Straight line to the nearest ground this scenario does not flood —
-            not a route, and not an evacuation centre. Higher ground may be
-            further. Follow your barangay&apos;s DRRM instructions.
+            Straight line to the nearest ground this scenario does not flood.
+            Higher ground may be further.
+          </p>
+        </div>
+      )}
+
+      {evacuation && (
+        <div className="border-hairline/60 mt-3 border-t pt-3">
+          <p className="text-ink-dim text-[10px] font-semibold tracking-[0.13em] uppercase">
+            Somewhere to go
+          </p>
+          <p className="text-ink mt-1.5 text-[13px] leading-snug font-semibold text-balance">
+            {evacuation.site.name}
+          </p>
+          <p className="text-ink-dim mt-0.5 text-[11px]" data-numeric>
+            {evacuation.site.kind} · {formatDistance(evacuation.meters)}{" "}
+            {evacuation.direction}
+          </p>
+
+          <div className="mt-2.5 flex flex-wrap gap-2">
+            {onShowEvacuation && (
+              <button
+                type="button"
+                onClick={onShowEvacuation}
+                className="border-hairline text-ink hover:border-tide rounded-pill flex items-center gap-1.5 border px-2.5 py-1 text-[11px] font-semibold transition"
+              >
+                <MapPin className="size-3.5" aria-hidden="true" />
+                Show on map
+              </button>
+            )}
+            <a
+              href={directionsUrl(evacuation.site.center)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bg-tide text-abyss rounded-pill flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-semibold transition hover:opacity-90"
+            >
+              <Navigation className="size-3.5" aria-hidden="true" />
+              Directions
+            </a>
+          </div>
+
+          <p className="text-ink-dim mt-2.5 text-[10.5px] leading-relaxed">
+            A public building on ground this scenario does not flood — not a
+            designated evacuation centre. Directions open Google Maps, which
+            does not know which roads are flooded. Follow your barangay&apos;s
+            DRRM instructions.
           </p>
         </div>
       )}

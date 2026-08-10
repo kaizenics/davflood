@@ -1,3 +1,4 @@
+import type { NearestSite } from "@davflood/hazard/evacuation";
 import type { SafeGround } from "@davflood/hazard/safe-ground";
 import type { HazardProperties } from "@davflood/hazard/schema";
 import { type ReactNode, useEffect, useState } from "react";
@@ -13,6 +14,8 @@ type Props = {
   /** passed straight through to the zone reading */
   safeGround?: SafeGround | null;
   onShowSafeGround?: (() => void) | undefined;
+  evacuation?: NearestSite | null;
+  onShowEvacuation?: (() => void) | undefined;
   /** What the slot holds when nothing is selected — the city-wide reading. */
   children: ReactNode;
 };
@@ -33,6 +36,8 @@ export function ReadingSlot({
   onClose,
   safeGround,
   onShowSafeGround,
+  evacuation,
+  onShowEvacuation,
   children,
 }: Props) {
   const [shown, setShown] = useState(zone);
@@ -77,6 +82,8 @@ export function ReadingSlot({
           onClose={onClose}
           safeGround={safeGround}
           onShowSafeGround={onShowSafeGround}
+          evacuation={evacuation}
+          onShowEvacuation={onShowEvacuation}
         />
       ) : (
         children
