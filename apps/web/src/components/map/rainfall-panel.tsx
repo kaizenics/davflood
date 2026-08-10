@@ -52,11 +52,21 @@ export function RainfallPanel() {
   const today = days[0];
   const band = today ? rainBand(today.precipitation) : "none";
 
-  // scale bars against the wettest day in view, so heights actually compare
   const peakMm = days.reduce((m, d) => Math.max(m, d.precipitation), 0);
   const peak = days.find((d) => d.precipitation === peakMm && peakMm > 0);
   const totalMm = days.reduce((s, d) => s + d.precipitation, 0);
   const dry = peakMm < 0.5;
+
+  /**
+   * Bars scale against the wettest day in view, but never against less than
+   * 5 mm.
+   *
+   * Purely relative scaling made a 0.2 mm drizzle draw a full-height bar,
+   * which is why the chart used to be hidden on dry days rather than lie. The
+   * floor lets it stay on screen and still tell the truth: a trivial day now
+   * renders as a sliver, and anything above 5 mm behaves as it always did.
+   */
+  const scaleMm = Math.max(peakMm, 5);
 
   const CurrentIcon = data ? weatherIcon(data.current.weatherCode) : CloudRain;
 
@@ -114,28 +124,30 @@ export function RainfallPanel() {
 
       {open && !unavailable && (
         <div className="mt-4">
-          {/* A flat row of empty bars communicates nothing. When there is no
-              rain coming, say so in words. */}
-          {dry ? (
-            <p className="border-hairline/60 text-ink-dim rounded-lg border border-dashed px-3 py-2.5 text-[11.5px]">
-              No meaningful rain expected over the next four days.
-            </p>
-          ) : (
-            <>
+          {/* The days are always shown, dry or not.
+              They used to be replaced by a sentence when nothing much was
+              coming, on the grounds that empty bars say nothing. But a
+              forecast that disappears reads as a forecast that failed, and
+              "0.2 mm on Tuesday" is a real answer to "is it going to rain" —
+              it is only the BARS that were uninformative, and the scale floor
+              above fixes those. The sentence stays, as a caption. */}
+          <>
               <div className="text-ink-dim mb-2 flex items-baseline justify-between text-[10px]">
                 <span className="font-semibold tracking-[0.1em] uppercase">
                   Next 4 days
                 </span>
                 <span data-numeric>
                   {fmt(totalMm)} mm total
-                  {peak ? ` · wettest ${dayLabel(peak, days)}` : ""}
+                  {peak && !dry ? ` · wettest ${dayLabel(peak, days)}` : ""}
                 </span>
               </div>
 
               <ol className="flex items-end gap-1.5">
                 {days.map((day, i) => {
-                  const isPeak = peakMm > 0 && day.precipitation === peakMm;
-                  const pct = peakMm > 0 ? day.precipitation / peakMm : 0;
+                  // nothing is "the wettest day" when the week is dry
+                  const isPeak =
+                    !dry && peakMm > 0 && day.precipitation === peakMm;
+                  const pct = day.precipitation / scaleMm;
                   const DayIcon = weatherIcon(day.weatherCode);
                   return (
                     <li key={day.date} className="flex-1">
@@ -185,10 +197,11 @@ export function RainfallPanel() {
               </ol>
 
               <p className="text-ink-dim mt-2 text-center text-[10px]">
-                Select a day for its hour-by-hour forecast
+                {dry
+                  ? "No meaningful rain in the next four days — select a day for the hours"
+                  : "Select a day for its hour-by-hour forecast"}
               </p>
             </>
-          )}
 
           <p className="text-ink-dim mt-3 text-[10px] leading-relaxed">
             Rain is context, not a flood warning — follow PAGASA for advisories.
