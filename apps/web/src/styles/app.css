@@ -401,6 +401,106 @@
   }
 }
 
+/* ------------------------------------------------------------------
+   Disclosure.
+
+   A panel that opens and closes, rather than appearing and vanishing.
+   Mounting on open can only ever animate one direction — on close the
+   element is gone before a transition can run — so the content stays in
+   the DOM and this collapses it.
+
+   `grid-template-rows: 0fr -> 1fr` is the one honest way to transition to
+   a height the content works out for itself; no measuring, no magic
+   max-height that clips a long forecast or lingers on a short one. The
+   child needs `min-height: 0` or the grid refuses to squash it below its
+   content, and `overflow: hidden` or the bars spill out while it closes.
+   ------------------------------------------------------------------ */
+.nf-collapse {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  /* Closing gets a symmetric curve, not the decelerating one used to open.
+     That curve puts 90% of the travel in the first third, which opens
+     beautifully and shuts like a trapdoor. */
+  transition:
+    grid-template-rows 200ms cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 120ms ease-out;
+}
+
+.nf-collapse > * {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.nf-collapse[data-open="true"] {
+  grid-template-rows: 1fr;
+  opacity: 1;
+  /* Fade in over the second half of the opening, so the bars arrive in a
+     space already made for them rather than racing it. */
+  transition:
+    grid-template-rows 240ms cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 180ms ease-in 60ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nf-collapse,
+  .nf-collapse[data-open="true"] {
+    transition-duration: 1ms;
+    transition-delay: 0ms;
+  }
+}
+
+/* ------------------------------------------------------------------
+   Search results.
+
+   Typing replaces the whole list, which without this is an instant swap
+   of one wall of names for another — you cannot see that anything
+   answered you. A short rise says "this is the new answer".
+   ------------------------------------------------------------------ */
+@keyframes nf-result-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.nf-results > * {
+  animation: nf-result-in 190ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Only the top few are staggered. Past the fold a delay is a wait for
+   something nobody is looking at, and 183 of them would take two seconds
+   to finish arriving. */
+.nf-results > *:nth-child(2) {
+  animation-delay: 18ms;
+}
+.nf-results > *:nth-child(3) {
+  animation-delay: 36ms;
+}
+.nf-results > *:nth-child(4) {
+  animation-delay: 54ms;
+}
+.nf-results > *:nth-child(5) {
+  animation-delay: 72ms;
+}
+.nf-results > *:nth-child(6) {
+  animation-delay: 90ms;
+}
+.nf-results > *:nth-child(n + 7) {
+  animation-delay: 105ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nf-results > * {
+    animation-duration: 1ms;
+    animation-delay: 0ms !important;
+  }
+}
+
 /* The mobile nav drops out of the header rather than appearing. */
 @keyframes nf-menu-in {
   from { opacity: 0; transform: translateY(-6px); }

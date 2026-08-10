@@ -122,9 +122,18 @@ export function RainfallPanel() {
         )}
       </button>
 
-      {open && !unavailable && (
-        <div className="mt-4">
-          {/* The days are always shown, dry or not.
+      {/* Mounted whether it is open or not, so closing can animate too — see
+          `.nf-collapse` in app.css. `inert` keeps the collapsed forecast out
+          of the tab order and the accessibility tree, which `display: none`
+          used to do for free. */}
+      <div
+        className="nf-collapse"
+        data-open={open && !unavailable}
+        inert={!open || unavailable}
+      >
+        <div>
+          <div className="mt-4">
+            {/* The days are always shown, dry or not.
               They used to be replaced by a sentence when nothing much was
               coming, on the grounds that empty bars say nothing. But a
               forecast that disappears reads as a forecast that failed, and
@@ -203,11 +212,13 @@ export function RainfallPanel() {
               </p>
             </>
 
-          <p className="text-ink-dim mt-3 text-[10px] leading-relaxed">
-            Rain is context, not a flood warning — follow PAGASA for advisories.
-          </p>
+            <p className="text-ink-dim mt-3 text-[10px] leading-relaxed">
+              Rain is context, not a flood warning — follow PAGASA for
+              advisories.
+            </p>
+          </div>
         </div>
-      )}
+      </div>
 
       {openDay !== null && days[openDay] && (
         <Suspense fallback={null}>
