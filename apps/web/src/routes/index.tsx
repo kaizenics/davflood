@@ -19,7 +19,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { nearestEvacuation } from "@davflood/hazard/evacuation";
 import { nearestSafeGround } from "@davflood/hazard/safe-ground";
 import { CityReading } from "@/components/map/city-reading";
-import { FloodMap, type FloodMapHandle } from "@/components/map/flood-map";
+import { FloodMap, type FloodMapHandle, type Guide } from "@/components/map/flood-map";
 import { MapControls } from "@/components/map/map-controls";
 import { MapViewDrawer } from "@/components/map/map-view-drawer";
 import { MapViewSheet } from "@/components/map/map-view-sheet";
@@ -131,11 +131,36 @@ function MapScreen() {
     [selectedAt, scenario],
   );
 
+  /* The dashed line drawn on our own map, from the tap to somewhere to go.
+     Held here rather than derived, because it is the answer to a button press
+     — it should not appear the moment a zone is tapped, and it should not
+     vanish because the reading animated. */
+  const [guide, setGuide] = useState<Guide | null>(null);
+
+  const showEvacuation = () => {
+    if (!selectedAt || !evacuation) return;
+    setGuide({
+      from: selectedAt,
+      to: evacuation.site.center,
+      label: evacuation.site.name,
+    });
+    mapRef.current?.fitTo(selectedAt, evacuation.site.center);
+    // on a phone the sheet is over the map it just drew on
+    sheet.setOpen(false);
+  };
+
   // a zone selected under one scenario may not exist under another
   useEffect(() => {
     setSelected(null);
     setSelectedAt(null);
+    setGuide(null);
   }, [scenario]);
+
+  /* A line to a shelter for a zone you are no longer looking at is a line to
+     nowhere, so it goes when the reading does. */
+  useEffect(() => {
+    if (!selected) setGuide(null);
+  }, [selected]);
 
   /* The panel is a drag-to-open sheet below lg and the static column above it;
      `open` is inert at desktop widths, where the classes never apply. */
@@ -277,11 +302,7 @@ function MapScreen() {
                 : undefined
             }
             evacuation={evacuation}
-            onShowEvacuation={
-              evacuation
-                ? () => mapRef.current?.flyTo(evacuation.site.center, 16)
-                : undefined
-            }
+            onShowEvacuation={evacuation ? showEvacuation : undefined}
           >
             <CityReading
               footprint={footprint}
@@ -389,6 +410,7 @@ function MapScreen() {
             onFocusClear={() =>
               navigate({ to: "/", search: {}, replace: true })
             }
+            guide={guide}
             rain={rainGrid?.cells}
             showRain={showRain}
             newsPins={newsPins}

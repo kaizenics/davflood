@@ -12,6 +12,11 @@ import type { Theme } from "./tokens";
 export const SOURCE_HAZARD = "hazard";
 export const SOURCE_RAIN = "rain";
 export const RAIN_LAYER_ID = "rain-cells";
+export const SOURCE_GUIDE = "guide";
+export const GUIDE_LAYER_IDS = {
+  casing: "guide-casing",
+  line: "guide-line",
+} as const;
 
 export const LAYER_IDS = {
 	fillLow: "hazard-fill-low",
@@ -181,6 +186,47 @@ export function hazardLayers(
 	}
 
 	return [...fills, ...chrome];
+}
+
+/**
+ * The line from where you are to where you could go.
+ *
+ * DASHED, and that is the whole design. A solid line between two points on a
+ * map is the universal sign for a route, and this is not one — there is no
+ * road network behind it and no knowledge of which streets are passable. A
+ * dash is what cartography has always used for "direct line, work out the
+ * walking yourself", and it is the only honest way to draw a bearing on a map
+ * that is otherwise full of real geometry.
+ *
+ * A dark casing underneath keeps it legible over yellow fills and satellite
+ * imagery alike.
+ */
+export function guideLayers(theme: Theme = "dark"): LayerSpecification[] {
+  const colors = colorsFor(theme);
+  return [
+    {
+      id: GUIDE_LAYER_IDS.casing,
+      type: "line",
+      source: SOURCE_GUIDE,
+      layout: { "line-cap": "round", "line-join": "round" },
+      paint: {
+        "line-color": colors.abyss,
+        "line-width": 7,
+        "line-opacity": 0.55,
+      },
+    },
+    {
+      id: GUIDE_LAYER_IDS.line,
+      type: "line",
+      source: SOURCE_GUIDE,
+      layout: { "line-cap": "butt", "line-join": "round" },
+      paint: {
+        "line-color": colors.tide,
+        "line-width": 3.5,
+        "line-dasharray": [1.4, 1.2],
+      },
+    },
+  ];
 }
 
 /** Hazard sits under labels but over everything else. */

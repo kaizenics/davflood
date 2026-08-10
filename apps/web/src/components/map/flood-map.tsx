@@ -5,8 +5,10 @@ import {
   HAZARD_FILL_LAYER_IDS,
   LAYER_IDS,
   RAIN_LAYER_ID,
+  SOURCE_GUIDE,
   SOURCE_HAZARD,
   SOURCE_RAIN,
+  guideLayers,
   hazardLayers,
   rainLayers,
 } from "@davflood/hazard/layers";
@@ -65,6 +67,16 @@ export type FloodMapHandle = {
   resetCamera: () => void;
   /** animate=false for slider drags, true for preset jumps */
   setPitch: (pitch: number, animate?: boolean) => void;
+  /** frame two points at once — used to show a guide line whole */
+  fitTo: (a: LngLat, b: LngLat) => void;
+};
+
+/** A direct line from where you are to somewhere you could go. */
+export type Guide = {
+  from: LngLat;
+  to: LngLat;
+  /** labels the pin at the far end */
+  label: string;
 };
 
 type Props = {
@@ -93,6 +105,8 @@ type Props = {
   focus?: FocusTarget | null;
   /** the pin's dismiss button — usually clears the URL that set `focus` */
   onFocusClear?: () => void;
+  /** dashed line and a pin at the far end; null removes both */
+  guide?: Guide | null;
 };
 
 /**
@@ -202,6 +216,7 @@ export const FloodMap = forwardRef<FloodMapHandle, Props>(function FloodMap(
     onPitchChange,
     focus = null,
     onFocusClear,
+    guide = null,
     rain,
     showRain = false,
     newsPins,
@@ -278,6 +293,27 @@ export const FloodMap = forwardRef<FloodMapHandle, Props>(function FloodMap(
       // jumpTo while the slider is being dragged — easing would lag the thumb
       if (animate) m.easeTo({ pitch, duration: 500 });
       else m.jumpTo({ pitch });
+    },
+    fitTo(a, b) {
+      const m = map.current;
+      if (!m) return;
+      /* Flattened first. A guide line read at a 52° pitch is foreshortened —
+         the far end is small, and the distance between the two ends is not
+         what it looks like. Straight down is the view in which a line between
+         two points means what it appears to mean. */
+      m.fitBounds(
+        [
+          [Math.min(a[0], b[0]), Math.min(a[1], b[1])],
+          [Math.max(a[0], b[0]), Math.max(a[1], b[1])],
+        ],
+        {
+          padding: { top: 90, bottom: 90, left: 70, right: 70 },
+          pitch: 0,
+          bearing: 0,
+          maxZoom: 16.5,
+          duration: prefersReducedMotion() ? 0 : 900,
+        },
+      );
     },
   }));
 
@@ -368,6 +404,19 @@ export const FloodMap = forwardRef<FloodMapHandle, Props>(function FloodMap(
         });
         // re-apply everything that changed while the style was still loading —
         // this also runs after a basemap swap, which resets the whole style
+        /* The guide goes on top of everything, labels included — no `before`
+           anchor. It also survives a hazard rebuild for free, because those
+           re-insert themselves beneath the labels. */
+        m.addSource(SOURCE_GUIDE, {
+          type: "geojson",
+          data: { type: "FeatureCollection", features: [] },
+        });
+        for (const layer of guideLayers(
+          basemapRef.current === "light" ? "light" : "dark",
+        )) {
+          m.addLayer(layer as maplibregl.LayerSpecification);
+        }
+
         applySelection(m, selectedRef.current);
         applyTerrain(m, terrainRef.current);
         applyHazardVisibility(m, showHazardRef.current);
@@ -524,6 +573,54 @@ export const FloodMap = forwardRef<FloodMapHandle, Props>(function FloodMap(
       m.flyTo({ center, zoom: FOCUS_ZOOM, duration: 2200, curve: 1.5 });
     }
   }, [focus, loaded]);
+
+  /**
+   * The guide line and the pin at the far end of it.
+   *
+   * Added above everything, labels included: it is the answer to a question
+   * the user just asked, and a place name crossing it would be the one thing
+   * on the map allowed to obscure that.
+   */
+  const guidePin = useRef<maplibregl.Marker | null>(null);
+  useEffect(() => {
+    const m = map.current;
+    if (!m || !loaded) return;
+
+    const src = m.getSource(SOURCE_GUIDE);
+    const line: GeoJSON.FeatureCollection = guide
+      ? {
+          type: "FeatureCollection",
+          features: [
+            {
+              type: "Feature",
+              properties: {},
+              geometry: {
+                type: "LineString",
+                coordinates: [[...guide.from], [...guide.to]],
+              },
+            },
+          ],
+        }
+      : { type: "FeatureCollection", features: [] };
+
+    if (src && "setData" in src) (src as maplibregl.GeoJSONSource).setData(line);
+
+    guidePin.current?.remove();
+    guidePin.current = null;
+    if (guide) {
+      guidePin.current = new maplibregl.Marker({
+        element: createFocusPin({ name: guide.label }),
+        anchor: "bottom",
+      })
+        .setLngLat([...guide.to])
+        .addTo(m);
+    }
+
+    return () => {
+      guidePin.current?.remove();
+      guidePin.current = null;
+    };
+  }, [guide, loaded, layerEpoch]);
 
   /**
    * News markers.
