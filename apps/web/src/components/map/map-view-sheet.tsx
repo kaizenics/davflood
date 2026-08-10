@@ -1,56 +1,25 @@
 import { X } from "lucide-react";
 import { useEffect } from "react";
 
-import { MapLayers } from "@/components/map/map-layers";
-import { PitchControl } from "@/components/map/pitch-control";
+import {
+  MapViewControls,
+  type MapViewProps,
+} from "@/components/map/map-view-controls";
 
-type Props = {
+type Props = MapViewProps & {
   open: boolean;
   onClose: () => void;
-  basemap: "map" | "satellite";
-  onBasemapChange: (b: "map" | "satellite") => void;
-  showHazard: boolean;
-  onShowHazardChange: (v: boolean) => void;
-  extrude: boolean;
-  onExtrudeChange: (v: boolean) => void;
-  showRain: boolean;
-  onShowRainChange: (v: boolean) => void;
-  showNews: boolean;
-  onShowNewsChange: (v: boolean) => void;
-  newsCount: number;
-  pitch: number;
-  onPitchChange: (pitch: number, animate: boolean) => void;
 };
 
 /**
  * How the map is drawn, reachable from the map itself — phones only.
  *
- * These controls live in the panel, which on a phone is a collapsed sheet:
- * changing the basemap or the tilt meant opening the panel, scrolling to the
- * drawer, opening that, and adjusting a map you could no longer see. This puts
- * them one tap from the map and keeps the map visible while they change, which
- * is the only way to tell whether the change was the one you wanted.
- *
  * Deliberately short: it stops well above the bottom of the screen so the map
- * stays in view behind it.
+ * stays in view behind it, which is the only way to tell whether a change was
+ * the one you wanted. Desktop gets the same controls from a button in the
+ * bottom-left corner of the map — see map-view-button.tsx.
  */
-export function MapViewSheet({
-  open,
-  onClose,
-  basemap,
-  onBasemapChange,
-  showHazard,
-  onShowHazardChange,
-  extrude,
-  onExtrudeChange,
-  showRain,
-  onShowRainChange,
-  showNews,
-  onShowNewsChange,
-  newsCount,
-  pitch,
-  onPitchChange,
-}: Props) {
+export function MapViewSheet({ open, onClose, ...controls }: Props) {
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
@@ -94,28 +63,7 @@ export function MapViewSheet({
           </button>
         </div>
 
-        <div className="space-y-4">
-          <MapLayers
-            basemap={basemap}
-            onBasemapChange={onBasemapChange}
-            showHazard={showHazard}
-            onShowHazardChange={onShowHazardChange}
-            extrude={extrude}
-            onExtrudeChange={onExtrudeChange}
-            showRain={showRain}
-            onShowRainChange={onShowRainChange}
-            showNews={showNews}
-            onShowNewsChange={onShowNewsChange}
-            newsCount={newsCount}
-          />
-
-          <div>
-            <p className="text-ink-dim mb-2 text-[11px] font-medium">
-              View angle — tilt to read depth in 3D
-            </p>
-            <PitchControl pitch={pitch} onPitchChange={onPitchChange} />
-          </div>
-        </div>
+        <MapViewControls {...controls} />
       </div>
     </div>
   );

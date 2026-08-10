@@ -385,6 +385,22 @@
   text-overflow: ellipsis;
 }
 
+/* The map-view popover rises out of its button. */
+@keyframes nf-viewpop-in {
+  from { opacity: 0; transform: translateY(6px) scale(0.985); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.nf-viewpop {
+  animation: nf-viewpop-in 150ms cubic-bezier(0.16, 1, 0.3, 1);
+  transform-origin: bottom left;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nf-viewpop {
+    animation-duration: 1ms;
+  }
+}
+
 /* The mobile nav drops out of the header rather than appearing. */
 @keyframes nf-menu-in {
   from { opacity: 0; transform: translateY(-6px); }

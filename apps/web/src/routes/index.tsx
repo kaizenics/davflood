@@ -21,7 +21,7 @@ import { nearestSafeGround } from "@davflood/hazard/safe-ground";
 import { CityReading } from "@/components/map/city-reading";
 import { FloodMap, type FloodMapHandle, type Guide } from "@/components/map/flood-map";
 import { MapControls } from "@/components/map/map-controls";
-import { MapViewDrawer } from "@/components/map/map-view-drawer";
+import { MapViewButton } from "@/components/map/map-view-button";
 import { MapViewSheet } from "@/components/map/map-view-sheet";
 import { RainfallPanel } from "@/components/map/rainfall-panel";
 import { ReadingSlot } from "@/components/map/reading-slot";
@@ -60,7 +60,7 @@ function MapScreen() {
   const [scenario, setScenario] = useState<ScenarioYears>(DEFAULT_SCENARIO);
   const [selected, setSelected] = useState<HazardProperties | null>(null);
   const [terrain, setTerrain] = useState(true);
-  const [view, setView] = useState<"map" | "satellite">("map");
+  const [view, setView] = useState<"map" | "satellite">("satellite");
   const { theme } = useTheme();
   // satellite overrides the theme; otherwise the basemap follows it
   const basemap = view === "satellite" ? "satellite" : theme;
@@ -350,29 +350,9 @@ function MapScreen() {
             <FloodNews />
           </div>
 
-          {/* Desktop only: on a phone these live on the map itself, one tap
-              from the thing they change — see MapViewSheet. */}
-          <div className="hidden lg:block">
-            {/* The most useful thing here during a storm, so it sits with the
-              content rather than behind the map-view disclosure. */}
+          {/* The most useful thing here during a storm, so it sits with the
+              content rather than behind a disclosure. */}
           <OfflinePanel />
-
-          <MapViewDrawer
-              basemap={view}
-              onBasemapChange={setView}
-              showHazard={showHazard}
-              onShowHazardChange={setShowHazard}
-              extrude={extrude}
-              onExtrudeChange={setExtrude}
-              showRain={showRain}
-              onShowRainChange={setShowRain}
-              showNews={showNews}
-              onShowNewsChange={setShowNews}
-              newsCount={newsPins.length}
-              pitch={pitch}
-              onPitchChange={setPitchEverywhere}
-            />
-          </div>
 
           {/* The other way in. Hunting for your own barangay by panning a
               city 53 km across is the hard path; this is the easy one, and
@@ -448,13 +428,32 @@ function MapScreen() {
 
         {/* Below the reading, so the two never share an edge. Only while the
             layer it explains is on. */}
-        {showRain && (
-          /* Top-left on a phone, where the reading is down in the sheet;
-             bottom-left from lg up, where the reading has taken that corner. */
-          <div className="absolute top-4 left-4 lg:top-auto lg:bottom-6">
+        {/* Bottom-left, stacked: the reading floats top-left, the camera
+            controls are top-right and the attribution is bottom-right, so this
+            is the corner that is free. On a phone the legend goes back to the
+            top-left, where the reading is down in the sheet. */}
+        <div className="pointer-events-none absolute top-4 left-4 flex flex-col items-start gap-2 lg:top-auto lg:bottom-6">
+          {showRain && (
             <RainLegend grid={rainGrid} theme={basemap === "light" ? "light" : "dark"} />
+          )}
+          <div className="hidden lg:block">
+            <MapViewButton
+              basemap={view}
+              onBasemapChange={setView}
+              showHazard={showHazard}
+              onShowHazardChange={setShowHazard}
+              extrude={extrude}
+              onExtrudeChange={setExtrude}
+              showRain={showRain}
+              onShowRainChange={setShowRain}
+              showNews={showNews}
+              onShowNewsChange={setShowNews}
+              newsCount={newsPins.length}
+              pitch={pitch}
+              onPitchChange={setPitchEverywhere}
+            />
           </div>
-        )}
+        </div>
 
         <div className="absolute top-4 right-4">
           <MapControls

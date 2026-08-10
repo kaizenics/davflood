@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { Moon, Sun } from "lucide-react";
+import { useId } from "react";
 
 import { useTheme } from "@/lib/theme";
 
@@ -31,6 +32,15 @@ export const NAV = [
 ] as const;
 
 export function Wordmark() {
+  /**
+   * The clip needs an id, and the mark is now on screen twice — the header
+   * keeps rendering it while hidden, and the panel renders another. A fixed id
+   * makes both `url(#…)` references resolve to whichever came first in the
+   * document, which is the one inside `display: none`, and the mark drew
+   * clipped to nothing.
+   */
+  const clipId = `nf-mark-${useId()}`;
+
   return (
     <span className="flex items-center gap-2.5">
       <svg
@@ -39,10 +49,10 @@ export function Wordmark() {
         fill="none"
         aria-hidden="true"
       >
-        <clipPath id="nf-mark-cell">
+        <clipPath id={clipId}>
           <rect x="2.5" y="2.5" width="27" height="27" rx="8.5" />
         </clipPath>
-        <g clipPath="url(#nf-mark-cell)">
+        <g clipPath={`url(#${clipId})`}>
           <rect x="2.5" y="2.5" width="27" height="27" className="fill-tide/12" />
           {/* Two periods, drawn past the clip on both sides so the surface
               meets the cell wall instead of tapering to a point at it. */}
