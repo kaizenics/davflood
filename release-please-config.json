@@ -1,0 +1,25 @@
+{
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "packages": {
+    ".": {
+      "release-type": "node",
+      "package-name": "davflood",
+      "changelog-path": "CHANGELOG.md",
+      "include-component-in-tag": false,
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
+      "changelog-sections": [
+        { "type": "feat", "section": "New" },
+        { "type": "fix", "section": "Fixed" },
+        { "type": "perf", "section": "Faster" },
+        { "type": "data", "section": "Data" },
+        { "type": "revert", "section": "Reverted" },
+        { "type": "refactor", "section": "Under the hood", "hidden": true },
+        { "type": "docs", "section": "Docs", "hidden": true },
+        { "type": "chore", "section": "Chores", "hidden": true },
+        { "type": "build", "section": "Build", "hidden": true },
+        { "type": "ci", "section": "CI", "hidden": true }
+      ]
+    }
+  }
+}

@@ -9,6 +9,7 @@ import {
   ThemeToggle,
   Wordmark,
 } from "@/components/site-nav";
+import { currentVersion } from "@/lib/changelog";
 
 /**
  * The navigation for phones.
@@ -91,12 +92,28 @@ export function AppHeader() {
                   </Link>
                 </li>
               ))}
+              {/* Below the five, above the outbound links: it is part of the
+                  site, but it is not one of the five things people came for.
+                  The bar itself has no room for the sidebar's version chip. */}
+              <li>
+                <Link
+                  to="/releases"
+                  onClick={() => setMenuOpen(false)}
+                  className="text-ink-dim hover:text-ink hover:bg-raised/60 border-hairline/60 mt-1 flex items-baseline justify-between gap-3 rounded-xl border-t px-3 py-3 text-[13px] transition"
+                  activeProps={{ className: "!text-ink" }}
+                >
+                  What&apos;s new
+                  <span data-numeric className="text-[11.5px]">
+                    v{currentVersion}
+                  </span>
+                </Link>
+              </li>
               <li>
                 <a
                   href={REPO_URL}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-ink-dim border-hairline/60 mt-1 block border-t px-3 py-3 text-[13px]"
+                  className="text-ink-dim block px-3 py-3 text-[13px]"
                 >
                   Source on GitHub ↗
                 </a>

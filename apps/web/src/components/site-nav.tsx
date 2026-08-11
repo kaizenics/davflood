@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { Moon, Sun } from "lucide-react";
 import { useId } from "react";
 
+import { currentVersion } from "@/lib/changelog";
 import { useTheme } from "@/lib/theme";
 
 /**
@@ -118,6 +119,29 @@ export function GithubLink() {
   );
 }
 
+/**
+ * The build you are looking at, and a way into what changed.
+ *
+ * Here rather than in NAV: the row of links is sized to fit five items in a
+ * 21rem panel on one line, and a sixth wraps it. A version chip is also the
+ * more honest placement — it says which build this is, which is the question
+ * "what's new" is usually standing in for.
+ */
+export function VersionChip() {
+  return (
+    <Link
+      to="/releases"
+      aria-label={`Version ${currentVersion} — what's new`}
+      title="What's new"
+      className="border-hairline text-ink-dim hover:text-ink hover:border-tide rounded-pill shrink-0 border px-2 py-[3px] text-[10.5px] font-semibold transition"
+      activeProps={{ className: "!text-ink !border-tide" }}
+      data-numeric
+    >
+      v{currentVersion}
+    </Link>
+  );
+}
+
 export function ThemeToggle() {
   const { theme, toggle } = useTheme();
   const label =
@@ -148,6 +172,7 @@ function NavBlock() {
         <Link to="/" aria-label="DavFlood — home" className="min-w-0 flex-1">
           <Wordmark />
         </Link>
+        <VersionChip />
         <GithubLink />
         <ThemeToggle />
       </div>
