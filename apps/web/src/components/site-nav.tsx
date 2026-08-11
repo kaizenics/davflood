@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Moon, Sun } from "lucide-react";
+import { Moon, Phone, Sun } from "lucide-react";
 import { useId } from "react";
 
 import { currentVersion } from "@/lib/changelog";
@@ -120,6 +120,36 @@ export function GithubLink() {
 }
 
 /**
+ * The way to the hotlines — deliberately NOT a sixth item in NAV.
+ *
+ * Two reasons, and the second is the real one. The row of links is sized to
+ * fit five items on one line in a 21rem panel. But an emergency number that
+ * looks exactly like "Barangays" and "The data" is an emergency number nobody
+ * finds while panicking: this has to be scannable as *different*, which means
+ * its own row, its own colour, and the word "911" visible without a tap.
+ */
+export function EmergencyLink() {
+  return (
+    <Link
+      to="/emergency"
+      className="border-haz-high/40 bg-haz-high/8 hover:bg-haz-high/14 mt-2.5 flex items-center gap-2 rounded-xl border px-2.5 py-1.5 transition"
+      activeProps={{ className: "!bg-haz-high/16" }}
+    >
+      <Phone className="text-haz-high size-3.5 shrink-0" aria-hidden="true" />
+      <span className="text-ink text-[11.5px] font-semibold">
+        Emergency hotlines
+      </span>
+      <span
+        data-numeric
+        className="text-haz-high ml-auto text-[11.5px] font-bold"
+      >
+        911
+      </span>
+    </Link>
+  );
+}
+
+/**
  * The build you are looking at, and a way into what changed.
  *
  * Here rather than in NAV: the row of links is sized to fit five items in a
@@ -128,16 +158,25 @@ export function GithubLink() {
  * "what's new" is usually standing in for.
  */
 export function VersionChip() {
+  /* Before the first release is cut there is no build number to show — and
+     inventing a "0.0.0" to fill the chip would be a false claim about which
+     build the reader is looking at. The link stays either way: it is the only
+     route into /releases on the shell, and the prerender crawler finds pages
+     by following rendered links. */
+  const label = currentVersion ? `v${currentVersion}` : "What's new";
+
   return (
     <Link
       to="/releases"
-      aria-label={`Version ${currentVersion} — what's new`}
+      aria-label={
+        currentVersion ? `Version ${currentVersion} — what's new` : "What's new"
+      }
       title="What's new"
-      className="border-hairline text-ink-dim hover:text-ink hover:border-tide rounded-pill shrink-0 border px-2 py-[3px] text-[10.5px] font-semibold transition"
+      className="border-hairline text-ink-dim hover:text-ink hover:border-tide rounded-pill shrink-0 border px-2 py-[3px] text-[10.5px] font-semibold whitespace-nowrap transition"
       activeProps={{ className: "!text-ink !border-tide" }}
-      data-numeric
+      data-numeric={currentVersion ? "" : undefined}
     >
-      v{currentVersion}
+      {label}
     </Link>
   );
 }
@@ -194,6 +233,8 @@ function NavBlock() {
           ))}
         </ul>
       </nav>
+
+      <EmergencyLink />
     </div>
   );
 }

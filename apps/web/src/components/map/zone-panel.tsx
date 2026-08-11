@@ -7,7 +7,8 @@ import type { LngLat } from "@davflood/hazard/geo";
 import { formatDistance } from "@davflood/hazard/safe-ground";
 import type { SafeGround } from "@davflood/hazard/safe-ground";
 import { hazardById } from "@davflood/hazard/tiers";
-import { ArrowLeft, MapPin, Navigation } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import { ArrowLeft, MapPin, Navigation, Phone } from "lucide-react";
 
 import { hazardBg, hazardText } from "@/lib/hazard-classes";
 
@@ -168,9 +169,29 @@ export function ZonePanel({
             A public building on ground this scenario does not flood — not a
             designated evacuation centre. Directions open Google Maps
             {at ? " walking from the spot you tapped" : ""}, which does not
-            know which roads are flooded. Follow your barangay&apos;s DRRM
-            instructions.
+            know which roads are flooded.
           </p>
+          {/* The sentence above admits what this app cannot know. This is the
+              link to the people who do — without it, the admission is a dead
+              end at the exact moment somebody needs the next step. */}
+          <Link
+            to="/emergency"
+            className="border-haz-high/40 bg-haz-high/8 hover:bg-haz-high/14 mt-2.5 flex items-center gap-2 rounded-xl border px-2.5 py-1.5 transition"
+          >
+            <Phone
+              className="text-haz-high size-3.5 shrink-0"
+              aria-hidden="true"
+            />
+            <span className="text-ink text-[11px] font-semibold">
+              Hotlines &amp; official centres
+            </span>
+            <span
+              data-numeric
+              className="text-haz-high ml-auto text-[11px] font-bold"
+            >
+              911
+            </span>
+          </Link>
         </div>
       )}
     </section>

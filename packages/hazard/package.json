@@ -22,6 +22,8 @@
 		"./offline": "./src/offline.ts",
 		"./safe-ground": "./src/safe-ground.ts",
 		"./evacuation": "./src/evacuation.ts",
+		"./emergency": "./src/emergency.ts",
+		"./outlook": "./src/outlook.ts",
 		"./news-sources": "./src/news-sources.ts",
 		"./data/*": "./src/data/*"
 	},

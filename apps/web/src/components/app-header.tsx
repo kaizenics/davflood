@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Menu, X } from "lucide-react";
+import { Menu, Phone, X } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import {
@@ -79,6 +79,31 @@ export function AppHeader() {
             className="nf-menu border-hairline bg-abyss/95 absolute inset-x-0 top-full z-40 border-b backdrop-blur-xl"
           >
             <ul className="px-3 py-2">
+              {/* First, above the five. On a phone this menu is the whole
+                  navigation, and the hotlines are the one item somebody might
+                  be opening it for in an emergency. */}
+              <li className="mb-1">
+                <Link
+                  to="/emergency"
+                  onClick={() => setMenuOpen(false)}
+                  className="border-haz-high/40 bg-haz-high/8 flex items-center gap-2.5 rounded-xl border px-3 py-3 transition"
+                  activeProps={{ className: "!bg-haz-high/16" }}
+                >
+                  <Phone
+                    className="text-haz-high size-4 shrink-0"
+                    aria-hidden="true"
+                  />
+                  <span className="text-ink text-[15px] font-semibold">
+                    Emergency hotlines
+                  </span>
+                  <span
+                    data-numeric
+                    className="text-haz-high ml-auto text-[15px] font-bold"
+                  >
+                    911
+                  </span>
+                </Link>
+              </li>
               {NAV.map(({ to, label, exact }) => (
                 <li key={to}>
                   <Link
@@ -103,9 +128,11 @@ export function AppHeader() {
                   activeProps={{ className: "!text-ink" }}
                 >
                   What&apos;s new
-                  <span data-numeric className="text-[11.5px]">
-                    v{currentVersion}
-                  </span>
+                  {currentVersion && (
+                    <span data-numeric className="text-[11.5px]">
+                      v{currentVersion}
+                    </span>
+                  )}
                 </Link>
               </li>
               <li>

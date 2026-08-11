@@ -118,8 +118,14 @@ function parse(markdown: string): Release[] {
 
 export const releases: Release[] = parse(raw);
 
-/** What the version chip in the masthead shows. */
-export const currentVersion: string = releases[0]?.version ?? "0.0.0";
+/**
+ * What the version chip shows — null until a release has actually been cut.
+ *
+ * Not a "0.0.0" default. A version number on a live site is a claim about
+ * which build a reader is looking at, and inventing one to fill the gap makes
+ * that claim false. No release yet means no number, not a fake one.
+ */
+export const currentVersion: string | null = releases[0]?.version ?? null;
 
 /** `2026-08-11` → `11 Aug 2026`, in a fixed locale so SSR and the browser
  *  agree. Prerendering with the machine's locale is how you get hydration

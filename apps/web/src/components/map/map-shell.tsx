@@ -7,6 +7,7 @@ import type { HazardCollection, HazardProperties } from "@davflood/hazard/schema
 import { DEFAULT_SCENARIO, scenarioByYears } from "@davflood/hazard/scenarios";
 import type { ScenarioYears } from "@davflood/hazard/scenarios";
 import { nearestEvacuation } from "@davflood/hazard/evacuation";
+import type { OutlookPlace } from "@davflood/hazard/outlook";
 import { nearestSafeGround } from "@davflood/hazard/safe-ground";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import {
@@ -28,6 +29,7 @@ import { MapViewSheet } from "@/components/map/map-view-sheet";
 import { NewsDialog } from "@/components/map/news-dialog";
 import type { NewsPin } from "@/components/map/news-pin";
 import { OfflinePanel } from "@/components/map/offline-panel";
+import { FloodOutlook } from "@/components/map/flood-outlook";
 import { RainLegend } from "@/components/map/rain-legend";
 import { RainfallPanel } from "@/components/map/rainfall-panel";
 import { ReadingSlot } from "@/components/map/reading-slot";
@@ -164,6 +166,21 @@ export function MapShell({ children }: { children: ReactNode }) {
     [selectedAt, scenario],
   );
 
+  /* What the outlook line is about: the tapped zone when there is one, the
+     city otherwise. Named here rather than inside the component so the
+     component stays a pure renderer of a sentence it did not compose. */
+  const outlookPlace = useMemo<OutlookPlace>(
+    () =>
+      selected
+        ? {
+            kind: "zone",
+            hazard: selected.hazard,
+            barangay: selected.barangay,
+          }
+        : { kind: "city", floodedKm2: footprint.totalKm2 },
+    [selected, footprint.totalKm2],
+  );
+
   /* The pin dropped on our own map, on somewhere to go. Held here rather than
      derived, because it is the answer to a button press — it should not
      appear the moment a zone is tapped, and it should not vanish because the
@@ -241,33 +258,41 @@ export function MapShell({ children }: { children: ReactNode }) {
    * out of the accessibility tree as well as out of sight.
    */
   const reading = (
-    <ReadingSlot
-      zone={selected}
-      at={selectedAt}
-      onClose={() => {
-        setSelected(null);
-        setSelectedAt(null);
-      }}
-      safeGround={safeGround}
-      onShowSafeGround={
-        safeGround ? () => mapRef.current?.flyTo(safeGround.center, 15) : undefined
-      }
-      evacuation={evacuation}
-      onShowEvacuation={evacuation ? showEvacuation : undefined}
-    >
-      <CityReading
-        footprint={footprint}
-        scenario={activeScenario}
-        dimmed={!showHazard}
-      />
-      <p className="text-ink-dim border-hairline/60 flex items-start gap-2.5 border-t px-5 py-3 text-[11.5px] leading-relaxed">
-        <MousePointerClick
-          className="mt-px size-3.5 shrink-0 opacity-70"
-          aria-hidden="true"
+    <>
+      {/* Above the reading, outside the slot: the slot animates its contents
+          on every zone change, and the one line that is about *today* should
+          not slide in and out because the user tapped a different polygon. */}
+      <FloodOutlook place={outlookPlace} scenario={scenario} />
+      <ReadingSlot
+        zone={selected}
+        at={selectedAt}
+        onClose={() => {
+          setSelected(null);
+          setSelectedAt(null);
+        }}
+        safeGround={safeGround}
+        onShowSafeGround={
+          safeGround
+            ? () => mapRef.current?.flyTo(safeGround.center, 15)
+            : undefined
+        }
+        evacuation={evacuation}
+        onShowEvacuation={evacuation ? showEvacuation : undefined}
+      >
+        <CityReading
+          footprint={footprint}
+          scenario={activeScenario}
+          dimmed={!showHazard}
         />
-        Tap a coloured zone for the expected depth at that spot.
-      </p>
-    </ReadingSlot>
+        <p className="text-ink-dim border-hairline/60 flex items-start gap-2.5 border-t px-5 py-3 text-[11.5px] leading-relaxed">
+          <MousePointerClick
+            className="mt-px size-3.5 shrink-0 opacity-70"
+            aria-hidden="true"
+          />
+          Tap a coloured zone for the expected depth at that spot.
+        </p>
+      </ReadingSlot>
+    </>
   );
 
   return (

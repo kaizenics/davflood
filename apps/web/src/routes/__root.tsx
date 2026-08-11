@@ -1,6 +1,11 @@
 /// <reference types="vite/client" />
 import { disclaimer } from "@davflood/hazard/copy";
-import { HeadContent, Scripts, createRootRoute } from "@tanstack/react-router";
+import {
+  HeadContent,
+  Scripts,
+  createRootRoute,
+  useRouter,
+} from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { useEffect } from "react";
 
@@ -38,6 +43,24 @@ export const Route = createRootRoute({
 function RootDocument({ children }: { children: ReactNode }) {
   // once, on the client — see lib/offline.ts
   useEffect(() => registerServiceWorker(), []);
+
+  const router = useRouter();
+
+  /**
+   * Pull the hotlines route into the cache on every visit, whichever page
+   * that visit was for.
+   *
+   * Routes are code-split, and the service worker only ever caches a chunk it
+   * has seen fetched. So /emergency — the one page whose entire reason for
+   * existing is to work in the dark with no signal — would be the one page
+   * that had never been downloaded, unless someone happened to open it on a
+   * clear day. Preloading it costs a few KB once and removes that entirely.
+   */
+  useEffect(() => {
+    void router.preloadRoute({ to: "/emergency" }).catch(() => {
+      // preload is an optimisation; a failure here must never break the page
+    });
+  }, [router]);
 
   return (
     // no `className="dark"` here — THEME_INIT_SCRIPT sets it before paint
