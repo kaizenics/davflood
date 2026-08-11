@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import {
   GithubLink,
   NAV,
+  RELEASES_URL,
   REPO_URL,
   ThemeToggle,
   Wordmark,
@@ -119,23 +120,22 @@ export function AppHeader() {
                   </Link>
                 </li>
               ))}
-              {/* Below the five, above the outbound links: it is part of the
-                  site, but it is not one of the five things people came for.
-                  The bar itself has no room for the sidebar's version chip. */}
+              {/* Below the five, with the other outbound links: the notes
+                  live on GitHub, so this leaves the site. */}
               <li>
-                <Link
-                  to="/releases"
-                  onClick={() => setMenuOpen(false)}
-                  className="text-ink-dim hover:text-ink hover:bg-raised/60 border-hairline/60 mt-1 flex items-baseline justify-between gap-3 rounded-xl border-t px-3 py-3 text-[13px] transition"
-                  activeProps={{ className: "!text-ink" }}
+                <a
+                  href={RELEASES_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-ink-dim border-hairline/60 mt-1 flex items-baseline justify-between gap-3 border-t px-3 py-3 text-[13px]"
                 >
-                  What&apos;s new
+                  What&apos;s new ↗
                   {currentVersion && (
                     <span data-numeric className="text-[11.5px]">
                       v{currentVersion}
                     </span>
                   )}
-                </Link>
+                </a>
               </li>
               <li>
                 <a

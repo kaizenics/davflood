@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Moon, Phone, Sun } from "lucide-react";
+import { ArrowUpRight, Moon, Phone, Sun } from "lucide-react";
 import { useId } from "react";
 
 import { LocaleToggle } from "@/components/locale-controls";
@@ -16,6 +16,8 @@ import { useTheme } from "@/lib/theme";
  */
 
 export const REPO_URL = "https://github.com/kaizenics/davflood";
+/** Where "what's new" actually lives — GitHub publishes it already. */
+export const RELEASES_URL = `${REPO_URL}/releases`;
 
 /**
  * `short` is for the panel, which is 21rem wide.
@@ -153,32 +155,36 @@ export function EmergencyLink() {
 /**
  * The build you are looking at, and a way into what changed.
  *
- * Here rather than in NAV: the row of links is sized to fit five items in a
- * 21rem panel on one line, and a sixth wraps it. A version chip is also the
- * more honest placement — it says which build this is, which is the question
- * "what's new" is usually standing in for.
+ * An outbound link, not a route. GitHub already publishes every release with
+ * its notes, its diff and its tag; a second rendering of the same changelog
+ * on this site was a page to keep in sync that told nobody anything the first
+ * one did not. What the app owes the reader is which build they are on — that
+ * is the chip — and a door to the rest.
+ *
+ * Renders the words "What's new" until a release exists, because inventing a
+ * version number to fill the chip would be a false claim about which build
+ * this is.
  */
 export function VersionChip() {
-  /* Before the first release is cut there is no build number to show — and
-     inventing a "0.0.0" to fill the chip would be a false claim about which
-     build the reader is looking at. The link stays either way: it is the only
-     route into /releases on the shell, and the prerender crawler finds pages
-     by following rendered links. */
   const label = currentVersion ? `v${currentVersion}` : "What's new";
 
   return (
-    <Link
-      to="/releases"
+    <a
+      href={RELEASES_URL}
+      target="_blank"
+      rel="noopener noreferrer"
       aria-label={
-        currentVersion ? `Version ${currentVersion} — what's new` : "What's new"
+        currentVersion
+          ? `Version ${currentVersion} — release notes on GitHub`
+          : "Release notes on GitHub"
       }
-      title="What's new"
-      className="border-hairline text-ink-dim hover:text-ink hover:border-tide rounded-pill shrink-0 border px-2 py-[3px] text-[10.5px] font-semibold whitespace-nowrap transition"
-      activeProps={{ className: "!text-ink !border-tide" }}
+      title="Release notes on GitHub"
+      className="border-hairline text-ink-dim hover:text-ink hover:border-tide rounded-pill flex shrink-0 items-center gap-1 border px-2 py-[3px] text-[10.5px] font-semibold whitespace-nowrap transition"
       data-numeric={currentVersion ? "" : undefined}
     >
       {label}
-    </Link>
+      <ArrowUpRight className="size-3 shrink-0 opacity-60" aria-hidden="true" />
+    </a>
   );
 }
 
