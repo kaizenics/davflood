@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.0](https://github.com/kaizenics/davflood/compare/v1.1.0...v1.2.0) (2026-08-11)
+
+
+### New
+
+* **web:** save your place, and save the numbers to your phone ([675da72](https://github.com/kaizenics/davflood/commit/675da722df4371f7c33900fc4024308bb488d712))
+
 ## [1.1.0](https://github.com/kaizenics/davflood/compare/v1.0.0...v1.1.0) (2026-08-11)
 
 
