@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.1.0](https://github.com/kaizenics/davflood/compare/v1.0.0...v1.1.0) (2026-08-11)
+
+
+### New
+
+* **web:** read the safety copy in Bisaya and Tagalog ([45199cf](https://github.com/kaizenics/davflood/commit/45199cf66dd51aadbe9aba63c87af3e0bb2fa6bc))
+
+
+### Fixed
+
+* **web:** stop the page scrolling out from under the app ([f1ec5e7](https://github.com/kaizenics/davflood/commit/f1ec5e7d02059348262a97ee66abbe6345927f93))
+
 ## 1.0.0 (2026-08-11)
 
 
