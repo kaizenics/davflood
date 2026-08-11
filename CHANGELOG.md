@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.3.0](https://github.com/kaizenics/davflood/compare/v1.2.0...v1.3.0) (2026-08-11)
+
+
+### New
+
+* **news:** say how long ago, down to the minute ([8e8f3ab](https://github.com/kaizenics/davflood/commit/8e8f3abb6ecd4494278da438414d3f55c607c7f1))
+* **web:** offer to save a place from the pin, not the panel ([d5e3996](https://github.com/kaizenics/davflood/commit/d5e399619f0cfa8e2b14900934b3c728058fe4e5))
+* **web:** say how high the tapped ground is ([4fb79a6](https://github.com/kaizenics/davflood/commit/4fb79a6a0b5e309c99b1791632450cb8d3b5d027))
+
 ## [1.2.0](https://github.com/kaizenics/davflood/compare/v1.1.0...v1.2.0) (2026-08-11)
 
 
