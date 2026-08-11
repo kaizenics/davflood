@@ -7,7 +7,8 @@ import type { LngLat } from "@davflood/hazard/geo";
 import { formatDistance } from "@davflood/hazard/safe-ground";
 import type { SafeGround } from "@davflood/hazard/safe-ground";
 import { Link } from "@tanstack/react-router";
-import { ArrowLeft, MapPin, Navigation, Phone } from "lucide-react";
+import { fill } from "@davflood/hazard/strings";
+import { ArrowLeft, MapPin, Mountain, Navigation, Phone } from "lucide-react";
 
 import { DraftNotice } from "@/components/locale-controls";
 import { hazardBg, hazardText } from "@/lib/hazard-classes";
@@ -17,6 +18,8 @@ type Props = {
   zone: HazardProperties;
   /** where the tap landed — the origin every distance here is measured from */
   at?: LngLat | null;
+  /** metres above sea level at `at`; null when the DEM could not answer */
+  elevation?: number | null;
   onClose: () => void;
   /** nearest point outside the modelled footprint, if the tap was inside one */
   safeGround?: SafeGround | null;
@@ -41,6 +44,7 @@ type Props = {
 export function ZonePanel({
   zone,
   at,
+  elevation,
   onClose,
   safeGround,
   onShowSafeGround,
@@ -95,6 +99,30 @@ export function ZonePanel({
         In a {scenario.label} storm · {scenario.annualChance} chance in any
         given year
       </p>
+
+      {/* The one number on this panel a resident can check against what they
+          already know. Somebody who walks this street every day knows roughly
+          how high it sits, and a model that agrees with them earns the right
+          to be believed about the part they cannot see. Absent rather than
+          zero when the DEM has no answer — zero is a real elevation here. */}
+      {elevation !== null && elevation !== undefined && (
+        <div className="border-hairline/60 mt-3 border-t pt-2.5">
+          <p className="text-ink flex items-center gap-1.5 text-[12px] font-medium">
+            <Mountain
+              className="text-ink-dim size-3.5 shrink-0"
+              aria-hidden="true"
+            />
+            <span data-numeric>
+              {elevation < 0.5
+                ? t.elevation.seaLevel
+                : fill(t.elevation.label, { m: Math.round(elevation) })}
+            </span>
+          </p>
+          <p className="text-ink-dim mt-1 text-[10.5px] leading-relaxed">
+            {t.elevation.note}
+          </p>
+        </div>
+      )}
 
       <p className="text-ink-dim mt-3.5 text-[12.5px] leading-relaxed">
         {band.human}

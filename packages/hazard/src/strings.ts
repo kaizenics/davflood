@@ -105,6 +105,13 @@ const EN = {
     },
   },
 
+  elevation: {
+    label: "About {m} m above sea level",
+    seaLevel: "At or below sea level",
+    /** why the number may disagree with what you know about your own street */
+    note: "From the elevation model the 3D view is drawn from. It reads the block, not your doorstep — a raised lot or a high floor is not in it.",
+  },
+
   place: {
     title: "Your place",
     save: "Save this place",
@@ -144,6 +151,7 @@ export type Strings = {
   emergency: Omit<Record<keyof (typeof EN)["emergency"], string>, "roles"> & {
     roles: Record<keyof (typeof EN)["emergency"]["roles"], string>;
   };
+  elevation: Record<keyof (typeof EN)["elevation"], string>;
   place: Record<keyof (typeof EN)["place"], string>;
   vcard: Record<keyof (typeof EN)["vcard"], string>;
   locale: Record<keyof (typeof EN)["locale"], string>;
@@ -228,6 +236,12 @@ const CEB: Strings = {
         "Ang opisina nga nagdumala sa preemptive evacuation ug naghupot sa opisyal nga listahan sa mga evacuation center sa matag barangay.",
     },
   },
+  elevation: {
+    label: "Mga {m} ka metro ibabaw sa lebel sa dagat",
+    seaLevel: "Sama o ubos sa lebel sa dagat",
+    note: "Gikan sa elevation model nga gigamit sa 3D nga panglantaw. Gibasa niini ang tibuok bloke, dili ang imong pultahan — ang gitaas nga lote o taas nga andana wala apil niini.",
+  },
+
   place: {
     title: "Ang imong dapit",
     save: "I-save kini nga dapit",
@@ -334,6 +348,12 @@ const FIL: Strings = {
         "Ang opisinang nagpapatakbo ng preemptive evacuation at may hawak ng opisyal na listahan ng mga evacuation center sa bawat barangay.",
     },
   },
+  elevation: {
+    label: "Mga {m} metro sa ibabaw ng antas ng dagat",
+    seaLevel: "Kapantay o mas mababa sa antas ng dagat",
+    note: "Mula sa elevation model na pinagbabatayan ng 3D na tanawin. Binabasa nito ang buong bloke, hindi ang pintuan mo — hindi kasama rito ang nataasang lote o mataas na palapag.",
+  },
+
   place: {
     title: "Ang lugar mo",
     save: "I-save ang lugar na ito",

@@ -158,6 +158,34 @@ export function MapShell({ children }: { children: ReactNode }) {
      zone's own geometry cannot say, since a zone can be kilometres long. */
   const [selectedAt, setSelectedAt] = useState<LngLat | null>(null);
 
+  /**
+   * Ground height at the tap, read straight off the DEM the 3D view already
+   * loaded — no request, works offline, costs nothing.
+   *
+   * Not derived, because it cannot be: the answer depends on whether the DEM
+   * tiles covering that point have arrived, which is a fact about the network
+   * rather than about the tap. Hence the retry — the first query right after
+   * a tap on ground that has just scrolled into view often lands before the
+   * tiles do, and a permanently blank reading would be wrong rather than
+   * merely late.
+   */
+  const [elevation, setElevation] = useState<number | null>(null);
+  useEffect(() => {
+    if (!selectedAt || !terrain) {
+      setElevation(null);
+      return;
+    }
+
+    const read = () => mapRef.current?.elevationAt(selectedAt) ?? null;
+
+    const first = read();
+    setElevation(first);
+    if (first !== null) return;
+
+    const t = setTimeout(() => setElevation(read()), 600);
+    return () => clearTimeout(t);
+  }, [selectedAt, terrain]);
+
   const safeGround = useMemo(
     () => (selectedAt ? nearestSafeGround(data, selectedAt) : null),
     [data, selectedAt],
@@ -302,7 +330,8 @@ export function MapShell({ children }: { children: ReactNode }) {
           setSelected(null);
           setSelectedAt(null);
         }}
-        safeGround={safeGround}
+        elevation={elevation}
+      safeGround={safeGround}
         onShowSafeGround={
           safeGround
             ? () => mapRef.current?.flyTo(safeGround.center, 15)

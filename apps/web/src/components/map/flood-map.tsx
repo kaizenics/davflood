@@ -76,6 +76,15 @@ export type FloodMapHandle = {
    * full viewport put the destination pin underneath it.
    */
   fitTo: (a: LngLat, b: LngLat, padLeft?: number) => void;
+  /**
+   * Ground height at a point, in true metres above sea level.
+   *
+   * Null when terrain is switched off (there is no DEM attached to query) or
+   * when the tiles covering that point have not arrived yet. Both are real
+   * "we do not know" answers and callers must render them as absence, not as
+   * zero — zero is a legitimate elevation in a coastal city.
+   */
+  elevationAt: (point: LngLat) => number | null;
 };
 
 /** Somewhere you could go, pinned on the map. */
@@ -307,6 +316,17 @@ export const FloodMap = forwardRef<FloodMapHandle, Props>(function FloodMap(
       // jumpTo while the slider is being dragged — easing would lag the thumb
       if (animate) m.easeTo({ pitch, duration: 500 });
       else m.jumpTo({ pitch });
+    },
+    elevationAt(point) {
+      const m = map.current;
+      if (!m) return null;
+      const raw = m.queryTerrainElevation([...point]);
+      if (raw === null || !Number.isFinite(raw)) return null;
+      /* queryTerrainElevation returns the height the RENDERER is using, which
+         is the real one multiplied by the exaggeration that makes the 3D view
+         readable. Reporting that number to a person would overstate their
+         ground by 30%. */
+      return raw / TERRAIN_EXAGGERATION;
     },
     fitTo(a, b, padLeft = 70) {
       const m = map.current;

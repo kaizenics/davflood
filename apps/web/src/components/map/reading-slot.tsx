@@ -13,6 +13,8 @@ type Props = {
   zone: HazardProperties | null;
   /** where the tap landed — passed straight through to the zone reading */
   at?: LngLat | null;
+  /** metres above sea level at `at`, when the DEM could answer */
+  elevation?: number | null;
   onClose: () => void;
   /** passed straight through to the zone reading */
   safeGround?: SafeGround | null;
@@ -37,6 +39,7 @@ type Props = {
 export function ReadingSlot({
   zone,
   at,
+  elevation,
   onClose,
   safeGround,
   onShowSafeGround,
@@ -84,6 +87,7 @@ export function ReadingSlot({
         <ZonePanel
           zone={shown}
           at={at}
+          elevation={elevation}
           onClose={onClose}
           safeGround={safeGround}
           onShowSafeGround={onShowSafeGround}
