@@ -606,6 +606,27 @@
   fill: var(--color-deep);
 }
 
+/* The tap pin's label is a button, so it gets the affordances a label does
+   not: a cursor, a hover state, and a focus ring from the global rule. */
+.nf-pin-save {
+  cursor: pointer;
+  gap: 0.3rem;
+  padding-right: 0.5rem;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
+}
+.nf-pin-save:hover {
+  border-color: var(--color-tide);
+  background: var(--color-raised);
+}
+.nf-pin-save-icon {
+  width: 13px;
+  height: 13px;
+  flex: none;
+  fill: var(--color-tide);
+}
+
 /* The saved place. Outlined rather than filled, so a permanent marker does
    not look like a fresh answer — see home-pin.ts. */
 .nf-pin--home .nf-pin-body {

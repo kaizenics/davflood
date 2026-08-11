@@ -7,12 +7,11 @@ import type { LngLat } from "@davflood/hazard/geo";
 import { formatDistance } from "@davflood/hazard/safe-ground";
 import type { SafeGround } from "@davflood/hazard/safe-ground";
 import { Link } from "@tanstack/react-router";
-import { ArrowLeft, Check, House, MapPin, Navigation, Phone } from "lucide-react";
+import { ArrowLeft, MapPin, Navigation, Phone } from "lucide-react";
 
 import { DraftNotice } from "@/components/locale-controls";
 import { hazardBg, hazardText } from "@/lib/hazard-classes";
 import { useStrings } from "@/lib/locale";
-import { useSavedPlace } from "@/lib/saved-place";
 
 type Props = {
   zone: HazardProperties;
@@ -55,16 +54,6 @@ export function ZonePanel({
      hazard model stay one thing while the copy is three. */
   const t = useStrings();
   const band = t.tiers[zone.hazard];
-
-  /* Saving is offered from here because here is where the tap already
-     happened — `at` is the exact point the depth above was read for, so the
-     saved place and the reading are guaranteed to be the same spot. */
-  const { place, save } = useSavedPlace();
-  const isSaved =
-    !!place &&
-    !!at &&
-    Math.abs(place.center[0] - at[0]) < 1e-6 &&
-    Math.abs(place.center[1] - at[1]) < 1e-6;
 
   return (
     <section
@@ -121,36 +110,6 @@ export function ZonePanel({
             where knowing they are unreviewed words actually matters. */}
         <DraftNotice compact />
       </div>
-
-      {/* Under the reading, above the way out: saving is what turns this from
-          a thing you looked up once into the thing the app opens with. */}
-      {at && (
-        <div className="border-hairline/60 mt-3 border-t pt-3">
-          <button
-            type="button"
-            disabled={isSaved}
-            onClick={() =>
-              save({
-                label: zone.barangay,
-                center: at,
-                barangay: zone.barangay,
-                savedOn: new Date().toISOString().slice(0, 10),
-              })
-            }
-            className="border-hairline text-ink hover:border-tide rounded-pill flex items-center gap-1.5 border px-2.5 py-1 text-[11px] font-semibold transition disabled:opacity-60"
-          >
-            {isSaved ? (
-              <Check className="text-tide size-3.5" aria-hidden="true" />
-            ) : (
-              <House className="size-3.5" aria-hidden="true" />
-            )}
-            {isSaved ? t.place.saved : t.place.save}
-          </button>
-          <p className="text-ink-dim mt-1.5 text-[10.5px] leading-relaxed">
-            {t.place.privacy}
-          </p>
-        </div>
-      )}
 
       {/* The next question after "how deep" is always "which way".
           A straight-line distance is a poor answer to it, but it is a far

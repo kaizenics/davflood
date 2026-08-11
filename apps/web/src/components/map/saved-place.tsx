@@ -102,6 +102,13 @@ export function SavedPlaceCard({
         </p>
       )}
 
+      {/* The privacy line lives here rather than beside the save button: it
+          is about the thing that now exists, and on the button it was a
+          paragraph of reassurance in front of a one-tap action. */}
+      <p className="text-ink-dim mt-2.5 text-[10.5px] leading-relaxed">
+        {t.place.privacy}
+      </p>
+
       <button
         type="button"
         onClick={() => onShow(place)}

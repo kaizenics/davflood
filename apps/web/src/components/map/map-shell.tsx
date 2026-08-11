@@ -38,6 +38,7 @@ import { ReadingSlot } from "@/components/map/reading-slot";
 import { RiverPanel } from "@/components/map/river-panel";
 import { ScenarioToggle } from "@/components/map/scenario-toggle";
 import { SidebarNav } from "@/components/site-nav";
+import { useStrings } from "@/lib/locale";
 import { useSavedPlace } from "@/lib/saved-place";
 import { useNewsPins } from "@/hooks/use-news-pins";
 import { useRainGrid } from "@/hooks/use-rain-grid";
@@ -67,6 +68,7 @@ import { cn } from "@/lib/utils";
 export function MapShell({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const isMap = pathname === "/";
+  const strings = useStrings();
 
   /* The map's own state lives in the URL (see routes/index.tsx), and is read
      here rather than there because here is where the map is. Untyped because
@@ -172,7 +174,15 @@ export function MapShell({ children }: { children: ReactNode }) {
   /* What the outlook line is about: the tapped zone when there is one, the
      city otherwise. Named here rather than inside the component so the
      component stays a pure renderer of a sentence it did not compose. */
-  const { place: savedPlace } = useSavedPlace();
+  const { place: savedPlace, save: savePlace } = useSavedPlace();
+
+  /* The tapped point is already the saved one when the two coordinates match,
+     and offering to save it again would put two pins on one spot. */
+  const tapIsSaved =
+    !!savedPlace &&
+    !!selectedAt &&
+    Math.abs(savedPlace.center[0] - selectedAt[0]) < 1e-6 &&
+    Math.abs(savedPlace.center[1] - selectedAt[1]) < 1e-6;
 
   /* The saved place, read against the scenario currently showing. Null both
      when nothing is saved and when the model leaves that spot dry, and those
@@ -507,6 +517,20 @@ export function MapShell({ children }: { children: ReactNode }) {
                   ? { center: savedPlace.center, label: savedPlace.label }
                   : null
               }
+              tapPoint={
+                selectedAt && selected && !tapIsSaved
+                  ? { center: selectedAt, label: strings.place.save }
+                  : null
+              }
+              onSaveTapPoint={() => {
+                if (!selectedAt || !selected) return;
+                savePlace({
+                  label: selected.barangay,
+                  center: selectedAt,
+                  barangay: selected.barangay,
+                  savedOn: new Date().toISOString().slice(0, 10),
+                });
+              }}
               rain={rainGrid?.cells}
               showRain={showRain}
               newsPins={newsPins}

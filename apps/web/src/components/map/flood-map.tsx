@@ -37,6 +37,7 @@ import {
 import { createFocusPin } from "@/components/map/focus-pin";
 import { createHomePin } from "@/components/map/home-pin";
 import { createNewsPin } from "@/components/map/news-pin";
+import { createTapPin } from "@/components/map/tap-pin";
 import type { NewsPin } from "@/components/map/news-pin";
 
 /** A place the user asked to be taken to, from the barangay list. */
@@ -114,6 +115,9 @@ type Props = {
   guide?: Guide | null;
   /** the saved place, pinned for as long as it is saved */
   savedPlace?: { center: LngLat; label: string } | null;
+  /** the spot just tapped, offering to be kept; null hides the offer */
+  tapPoint?: { center: LngLat; label: string } | null;
+  onSaveTapPoint?: () => void;
 };
 
 /**
@@ -225,6 +229,8 @@ export const FloodMap = forwardRef<FloodMapHandle, Props>(function FloodMap(
     onFocusClear,
     guide = null,
     savedPlace = null,
+    tapPoint = null,
+    onSaveTapPoint,
     rain,
     showRain = false,
     newsPins,
@@ -599,6 +605,45 @@ export const FloodMap = forwardRef<FloodMapHandle, Props>(function FloodMap(
       guidePin.current = null;
     };
   }, [guide, loaded, layerEpoch]);
+
+  /**
+   * The spot just tapped, and the offer to keep it.
+   *
+   * Rebuilt whenever the point or the label changes, because the node is
+   * plain DOM with a closure over the handler — cheaper to recreate than to
+   * reach in and patch, at one marker.
+   *
+   * The handler is read through a ref so that a new callback identity does
+   * not tear down and rebuild the marker on every render of the shell.
+   */
+  const saveTapRef = useRef(onSaveTapPoint);
+  saveTapRef.current = onSaveTapPoint;
+
+  const tapPin = useRef<maplibregl.Marker | null>(null);
+  useEffect(() => {
+    const m = map.current;
+    if (!m || !loaded) return;
+
+    tapPin.current?.remove();
+    tapPin.current = null;
+
+    if (tapPoint) {
+      tapPin.current = new maplibregl.Marker({
+        element: createTapPin({
+          label: tapPoint.label,
+          onSave: () => saveTapRef.current?.(),
+        }),
+        anchor: "bottom",
+      })
+        .setLngLat([...tapPoint.center])
+        .addTo(m);
+    }
+
+    return () => {
+      tapPin.current?.remove();
+      tapPin.current = null;
+    };
+  }, [tapPoint, loaded, layerEpoch]);
 
   /**
    * The saved place.
