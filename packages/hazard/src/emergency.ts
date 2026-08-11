@@ -186,3 +186,70 @@ export const INCOMPLETE_LIST_NOTE =
 export function telHref(number: EmergencyNumber): string {
   return `tel:${number.dial}`;
 }
+
+/** vCard escaping: backslash, comma, semicolon, and literal newlines. */
+function esc(value: string): string {
+  return value
+    .replace(/\\/g, "\\\\")
+    .replace(/;/g, "\\;")
+    .replace(/,/g, "\\,")
+    .replace(/\n/g, "\\n");
+}
+
+/**
+ * The numbers as a contact card, for the phone's own address book.
+ *
+ * The most robust version of this page is the one that is not this page.
+ * An installed PWA still needs a browser, a working screen and enough battery
+ * to render a map; a contact in the address book needs none of that, survives
+ * the app being deleted, and can be found by a neighbour who picked up your
+ * phone. It is also the only form of this data that works on the handset of
+ * someone who has never heard of DavFlood.
+ *
+ * vCard 3.0 rather than 4.0: it is what Android and iOS both import without
+ * argument, which is the only compatibility question that matters here.
+ * CRLF line endings are required by the spec — some parsers are forgiving,
+ * and the ones that are not fail silently, which is the worst outcome.
+ */
+export function emergencyVcard(): string {
+  const cards = EMERGENCY_CONTACTS.map((contact) => {
+    const lines = [
+      "BEGIN:VCARD",
+      "VERSION:3.0",
+      `N:${esc(contact.name)};;;;`,
+      `FN:${esc(contact.name)}`,
+      "ORG:City Government of Davao",
+    ];
+
+    for (const number of contact.numbers) {
+      // fax is in the source data for completeness; nobody dials it in a flood
+      if (number.kind === "fax") continue;
+      const type = number.kind === "emergency" ? "MAIN" : "WORK";
+      lines.push(`TEL;TYPE=${type},VOICE:${esc(number.dial)}`);
+    }
+
+    for (const email of contact.emails) {
+      lines.push(`EMAIL;TYPE=WORK:${esc(email)}`);
+    }
+
+    if (contact.address) {
+      lines.push(`ADR;TYPE=WORK:;;${esc(contact.address)};;;;`);
+    }
+
+    /* The note carries the provenance with the contact. A number sitting in
+       someone's phone for two years with no idea where it came from is a
+       number nobody can check when it stops working. */
+    lines.push(
+      `NOTE:${esc(
+        `${contact.role} ${contact.hours}. From ${contact.source}, checked ${VERIFIED_ON}. Saved from DavFlood.`,
+      )}`,
+    );
+    lines.push("END:VCARD");
+
+    return lines.join("\r\n");
+  });
+
+  return `${cards.join("\r\n")}\r\n`;
+}
+
+export const VCARD_FILENAME = "davao-emergency-numbers.vcf";

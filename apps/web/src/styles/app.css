@@ -606,6 +606,17 @@
   fill: var(--color-deep);
 }
 
+/* The saved place. Outlined rather than filled, so a permanent marker does
+   not look like a fresh answer — see home-pin.ts. */
+.nf-pin--home .nf-pin-body {
+  fill: var(--color-deep);
+  stroke: var(--color-tide);
+  stroke-width: 2;
+}
+.nf-pin-house {
+  fill: var(--color-tide);
+}
+
 .nf-pin-pulse {
   position: absolute;
   bottom: -7px;

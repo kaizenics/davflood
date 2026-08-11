@@ -23,6 +23,7 @@
 		"./safe-ground": "./src/safe-ground.ts",
 		"./evacuation": "./src/evacuation.ts",
 		"./emergency": "./src/emergency.ts",
+		"./place": "./src/place.ts",
 		"./locale": "./src/locale.ts",
 		"./strings": "./src/strings.ts",
 		"./outlook": "./src/outlook.ts",

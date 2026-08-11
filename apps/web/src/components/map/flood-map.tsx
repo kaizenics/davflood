@@ -35,6 +35,7 @@ import {
 } from "react";
 
 import { createFocusPin } from "@/components/map/focus-pin";
+import { createHomePin } from "@/components/map/home-pin";
 import { createNewsPin } from "@/components/map/news-pin";
 import type { NewsPin } from "@/components/map/news-pin";
 
@@ -111,6 +112,8 @@ type Props = {
   onFocusClear?: () => void;
   /** a pin on somewhere to go; null removes it */
   guide?: Guide | null;
+  /** the saved place, pinned for as long as it is saved */
+  savedPlace?: { center: LngLat; label: string } | null;
 };
 
 /**
@@ -221,6 +224,7 @@ export const FloodMap = forwardRef<FloodMapHandle, Props>(function FloodMap(
     focus = null,
     onFocusClear,
     guide = null,
+    savedPlace = null,
     rain,
     showRain = false,
     newsPins,
@@ -595,6 +599,40 @@ export const FloodMap = forwardRef<FloodMapHandle, Props>(function FloodMap(
       guidePin.current = null;
     };
   }, [guide, loaded, layerEpoch]);
+
+  /**
+   * The saved place.
+   *
+   * Independent of `focus` and of the camera: it is on the map because it is
+   * saved, not because anything was pressed. "Show on map" flies the camera
+   * to it and nothing more — the pin was already there.
+   *
+   * `layerEpoch` is in the deps for the same reason the guide pin has it: a
+   * basemap swap rebuilds the whole style, and a marker attached to the old
+   * one goes with it.
+   */
+  const homePin = useRef<maplibregl.Marker | null>(null);
+  useEffect(() => {
+    const m = map.current;
+    if (!m || !loaded) return;
+
+    homePin.current?.remove();
+    homePin.current = null;
+
+    if (savedPlace) {
+      homePin.current = new maplibregl.Marker({
+        element: createHomePin({ name: savedPlace.label }),
+        anchor: "bottom",
+      })
+        .setLngLat([...savedPlace.center])
+        .addTo(m);
+    }
+
+    return () => {
+      homePin.current?.remove();
+      homePin.current = null;
+    };
+  }, [savedPlace, loaded, layerEpoch]);
 
   /**
    * News markers.

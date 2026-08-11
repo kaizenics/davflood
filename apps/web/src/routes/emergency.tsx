@@ -1,12 +1,14 @@
 import {
   EMERGENCY_CONTACTS,
   OFFICIAL_CENTRES,
+  VCARD_FILENAME,
   VERIFIED_ON,
+  emergencyVcard,
   telHref,
 } from "@davflood/hazard/emergency";
 import { fill } from "@davflood/hazard/strings";
 import { createFileRoute } from "@tanstack/react-router";
-import { ArrowUpRight, Building2, Mail, MapPin, Phone } from "lucide-react";
+import { ArrowUpRight, Building2, ContactRound, Mail, MapPin, Phone } from "lucide-react";
 
 import { DraftNotice } from "@/components/locale-controls";
 import { useStrings } from "@/lib/locale";
@@ -28,7 +30,30 @@ export const Route = createFileRoute("/emergency")({
  * past a paragraph to find a number.
  */
 function EmergencyScreen() {
-  const { emergency: t } = useStrings();
+  const strings = useStrings();
+  const t = strings.emergency;
+
+  /**
+   * The numbers, as a file the phone's own address book can swallow.
+   *
+   * Built on click rather than at module scope: it is a string nobody needs
+   * until they ask for it, and an object URL held open for the life of the
+   * page is a leak with no upside. Revoked on the next frame — the download
+   * has already been handed to the browser by then.
+   */
+  const saveContacts = () => {
+    const blob = new Blob([emergencyVcard()], {
+      type: "text/vcard;charset=utf-8",
+    });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = VCARD_FILENAME;
+    document.body.append(link);
+    link.click();
+    link.remove();
+    requestAnimationFrame(() => URL.revokeObjectURL(url));
+  };
 
   return (
     <article className="px-5 py-7">
@@ -62,6 +87,28 @@ function EmergencyScreen() {
           </span>
         </span>
       </a>
+
+      {/* Directly under 911, because it is the same idea carried further:
+          the most reliable version of this page is the one that does not
+          need this page. */}
+      <button
+        type="button"
+        onClick={saveContacts}
+        className="border-hairline hover:border-tide hover:bg-raised/40 mt-3 flex w-full items-center gap-3.5 rounded-2xl border px-4 py-3.5 text-left transition"
+      >
+        <ContactRound
+          className="text-tide size-5 shrink-0"
+          aria-hidden="true"
+        />
+        <span className="min-w-0">
+          <span className="text-ink block text-[13px] leading-snug font-semibold">
+            {strings.vcard.save}
+          </span>
+          <span className="text-ink-dim mt-1 block text-[11px] leading-relaxed">
+            {strings.vcard.blurb}
+          </span>
+        </span>
+      </button>
 
       <section className="mt-10">
         <h2 className="text-ink text-[1.15rem] leading-tight font-semibold tracking-tight">

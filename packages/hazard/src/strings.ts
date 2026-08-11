@@ -105,6 +105,27 @@ const EN = {
     },
   },
 
+  place: {
+    title: "Your place",
+    save: "Save this place",
+    saved: "Saved",
+    forget: "Forget",
+    show: "Show on map",
+    nameIt: "What do you call this place?",
+    namePlaceholder: "Home",
+    /** when the scenario floods it */
+    inFootprint: "In a {years}-year storm, the model puts your place at {depth}.",
+    /** when it does not — the sentence most people are hoping for */
+    dry: "The {years}-year model does not flood your place. That is the model, not a promise: it says nothing about the road you would leave by.",
+    privacy: "Kept on this device only. DavFlood has no accounts and no server to send it to.",
+  },
+
+  vcard: {
+    save: "Save these numbers to your phone",
+    blurb:
+      "Adds Central 911 and the CDRRMO to your contacts. They stay there with no app, no signal and no battery spent opening this page.",
+  },
+
   locale: {
     /** shown wherever draft copy is displayed */
     draftNotice:
@@ -123,6 +144,8 @@ export type Strings = {
   emergency: Omit<Record<keyof (typeof EN)["emergency"], string>, "roles"> & {
     roles: Record<keyof (typeof EN)["emergency"]["roles"], string>;
   };
+  place: Record<keyof (typeof EN)["place"], string>;
+  vcard: Record<keyof (typeof EN)["vcard"], string>;
   locale: Record<keyof (typeof EN)["locale"], string>;
 };
 
@@ -205,6 +228,25 @@ const CEB: Strings = {
         "Ang opisina nga nagdumala sa preemptive evacuation ug naghupot sa opisyal nga listahan sa mga evacuation center sa matag barangay.",
     },
   },
+  place: {
+    title: "Ang imong dapit",
+    save: "I-save kini nga dapit",
+    saved: "Na-save",
+    forget: "Kalimti",
+    show: "Ipakita sa mapa",
+    nameIt: "Unsay tawag nimo niini nga dapit?",
+    namePlaceholder: "Balay",
+    inFootprint: "Sa {years}-ka-tuig nga bagyo, ang modelo nagbutang sa imong dapit sa {depth}.",
+    dry: "Ang {years}-ka-tuig nga modelo wala naglunop sa imong dapit. Modelo kini, dili saad: wala kini nag-ingon bahin sa dalan nga imong agian pagbiya.",
+    privacy: "Gitipigan lamang niini nga device. Ang DavFlood walay account ug walay server nga padad-an niini.",
+  },
+
+  vcard: {
+    save: "I-save kini nga mga numero sa imong telepono",
+    blurb:
+      "Idugang ang Central 911 ug ang CDRRMO sa imong mga kontak. Magpabilin sila didto bisan walay app, walay signal ug walay bateryang magasto sa pag-abli niini nga panid.",
+  },
+
   locale: {
     draftNotice:
       "Kini nga hubad usa ka draft — wala pa masusi sa usa ka tinuod nga mamumulong og Bisaya. Kung importante ang eksakto nga pulong, basaha kini sa English.",
@@ -292,6 +334,25 @@ const FIL: Strings = {
         "Ang opisinang nagpapatakbo ng preemptive evacuation at may hawak ng opisyal na listahan ng mga evacuation center sa bawat barangay.",
     },
   },
+  place: {
+    title: "Ang lugar mo",
+    save: "I-save ang lugar na ito",
+    saved: "Nai-save",
+    forget: "Kalimutan",
+    show: "Ipakita sa mapa",
+    nameIt: "Ano ang tawag mo sa lugar na ito?",
+    namePlaceholder: "Bahay",
+    inFootprint: "Sa {years}-taong bagyo, inilalagay ng modelo ang lugar mo sa {depth}.",
+    dry: "Hindi binabaha ng {years}-taong modelo ang lugar mo. Modelo ito, hindi pangako: wala itong sinasabi tungkol sa daan na dadaanan mo palabas.",
+    privacy: "Nasa device mo lang ito. Walang account ang DavFlood at walang server na pagpapadalhan nito.",
+  },
+
+  vcard: {
+    save: "I-save ang mga numerong ito sa telepono mo",
+    blurb:
+      "Idaragdag ang Central 911 at ang CDRRMO sa iyong mga kontak. Mananatili sila doon kahit walang app, walang signal at walang bateryang gagastusin sa pagbukas ng pahinang ito.",
+  },
+
   locale: {
     draftNotice:
       "Draft pa ang pagsasaling ito — hindi pa nasusuri ng isang katutubong nagsasalita. Kung mahalaga ang eksaktong salita, basahin ito sa English.",

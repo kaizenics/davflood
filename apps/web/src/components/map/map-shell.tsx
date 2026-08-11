@@ -8,6 +8,7 @@ import { DEFAULT_SCENARIO, scenarioByYears } from "@davflood/hazard/scenarios";
 import type { ScenarioYears } from "@davflood/hazard/scenarios";
 import { nearestEvacuation } from "@davflood/hazard/evacuation";
 import type { OutlookPlace } from "@davflood/hazard/outlook";
+import { zoneAt } from "@davflood/hazard/place";
 import { nearestSafeGround } from "@davflood/hazard/safe-ground";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import {
@@ -31,11 +32,13 @@ import type { NewsPin } from "@/components/map/news-pin";
 import { OfflinePanel } from "@/components/map/offline-panel";
 import { FloodOutlook } from "@/components/map/flood-outlook";
 import { RainLegend } from "@/components/map/rain-legend";
+import { SavedPlaceCard } from "@/components/map/saved-place";
 import { RainfallPanel } from "@/components/map/rainfall-panel";
 import { ReadingSlot } from "@/components/map/reading-slot";
 import { RiverPanel } from "@/components/map/river-panel";
 import { ScenarioToggle } from "@/components/map/scenario-toggle";
 import { SidebarNav } from "@/components/site-nav";
+import { useSavedPlace } from "@/lib/saved-place";
 import { useNewsPins } from "@/hooks/use-news-pins";
 import { useRainGrid } from "@/hooks/use-rain-grid";
 import { useBottomSheet } from "@/lib/bottom-sheet";
@@ -169,17 +172,36 @@ export function MapShell({ children }: { children: ReactNode }) {
   /* What the outlook line is about: the tapped zone when there is one, the
      city otherwise. Named here rather than inside the component so the
      component stays a pure renderer of a sentence it did not compose. */
-  const outlookPlace = useMemo<OutlookPlace>(
-    () =>
-      selected
-        ? {
-            kind: "zone",
-            hazard: selected.hazard,
-            barangay: selected.barangay,
-          }
-        : { kind: "city", floodedKm2: footprint.totalKm2 },
-    [selected, footprint.totalKm2],
+  const { place: savedPlace } = useSavedPlace();
+
+  /* The saved place, read against the scenario currently showing. Null both
+     when nothing is saved and when the model leaves that spot dry, and those
+     two mean different things — see the card, which says so. */
+  const savedZone = useMemo(
+    () => (savedPlace ? zoneAt(data, savedPlace.center) : null),
+    [data, savedPlace],
   );
+
+  const outlookPlace = useMemo<OutlookPlace>(() => {
+    /* Precedence is "what is the reader looking at right now": a tapped zone
+       beats a saved one, because they just asked about it. The saved place
+       only speaks when nothing else is. */
+    if (selected) {
+      return {
+        kind: "zone",
+        hazard: selected.hazard,
+        barangay: selected.barangay,
+      };
+    }
+    if (savedPlace && savedZone) {
+      return {
+        kind: "zone",
+        hazard: savedZone.hazard,
+        barangay: savedPlace.label,
+      };
+    }
+    return { kind: "city", floodedKm2: footprint.totalKm2 };
+  }, [selected, savedPlace, savedZone, footprint.totalKm2]);
 
   /* The pin dropped on our own map, on somewhere to go. Held here rather than
      derived, because it is the answer to a button press — it should not
@@ -395,6 +417,15 @@ export function MapShell({ children }: { children: ReactNode }) {
                   Below lg only — from lg up the same slot floats over the map. */}
               <div className="lg:hidden">{reading}</div>
 
+              {/* Above the forecast panels: the model's answer about your own
+                  house outranks the city-wide weather. Renders nothing until
+                  something is saved. */}
+              <SavedPlaceCard
+                data={data}
+                scenario={scenario}
+                onShow={(p) => mapRef.current?.flyTo(p.center, 15)}
+              />
+
               <div className="px-5 py-3.5">
                 <RainfallPanel />
               </div>
@@ -471,6 +502,11 @@ export function MapShell({ children }: { children: ReactNode }) {
                 navigate({ to: "/", search: {}, replace: true })
               }
               guide={guide}
+              savedPlace={
+                savedPlace
+                  ? { center: savedPlace.center, label: savedPlace.label }
+                  : null
+              }
               rain={rainGrid?.cells}
               showRain={showRain}
               newsPins={newsPins}
