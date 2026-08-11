@@ -1,6 +1,8 @@
+import { describeAge } from "@davflood/hazard/news";
 import { Link } from "@tanstack/react-router";
 import { ChevronRight, ExternalLink, Newspaper } from "lucide-react";
 
+import { useNow } from "@/hooks/use-now";
 import { useNewsFile } from "@/hooks/use-news-pins";
 
 /** The panel is a summary; the rest live on /news. */
@@ -23,6 +25,13 @@ export function FloodNews() {
   // shares its query with the map pins, so the list and the pins can never
   // disagree about what was reported
   const { data } = useNewsFile();
+
+  /* "how long ago" rather than a calendar date. During a storm the question
+     behind every one of these headlines is "is this about what is happening
+     right now", and 2026-08-08 makes the reader do that subtraction. Null
+     until mount, so prerender and hydration agree — see use-now.ts. */
+  const now = useNow();
+  const age = (iso: string) => (now ? describeAge(iso, now) : "");
 
   const items = data?.items ?? [];
   if (items.length === 0) return null;
@@ -55,7 +64,8 @@ export function FloodNews() {
                   />
                 </span>
                 <span className="text-ink-dim mt-0.5 block text-[10.5px]">
-                  {item.source} · {item.date}
+                  {item.source}
+                  {age(item.date) && ` · ${age(item.date)}`}
                 </span>
               </span>
             </a>

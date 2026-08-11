@@ -175,9 +175,10 @@ async function googleNewsPage(query: string): Promise<NewsItem[]> {
         title,
         url: tag("link"),
         source: source || "Google News",
-        date: Number.isNaN(when.getTime())
-          ? ""
-          : when.toISOString().slice(0, 10),
+        /* Full timestamp, not just the day. RSS publishes a real time and
+           throwing it away cost the reader the one thing that tells them
+           whether a report is about the storm happening now. */
+        date: Number.isNaN(when.getTime()) ? "" : when.toISOString(),
       };
     })
     .filter((i) => i.title && i.url && i.date && keep(i.title));
@@ -250,7 +251,7 @@ async function readFeed(name: string, url: string): Promise<NewsItem[]> {
           title,
           url: link,
           source: name,
-          date: when.toISOString().slice(0, 10),
+          date: when.toISOString(),
           ...(imageFrom(block) ? { image: imageFrom(block)! } : {}),
         });
       }

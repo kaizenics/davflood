@@ -107,15 +107,57 @@ export function locateHeadline(
   return null;
 }
 
+/**
+ * Does this stamp carry a clock, or only a calendar?
+ *
+ * The distinction is the whole point of the two branches below. RSS gives a
+ * real publication time; some aggregators give a bare date. Saying "4 hours
+ * ago" about a value that only ever meant "the 8th" invents precision the
+ * publisher never claimed, and on an app that is careful about what it does
+ * not know, that is not a rounding error.
+ */
+function hasClock(iso: string): boolean {
+  return /\d{2}:\d{2}/.test(iso);
+}
+
 /** How old, in whole days. */
 export function ageInDays(iso: string, now = new Date()): number {
-  const then = new Date(`${iso}T00:00:00Z`);
+  const then = new Date(hasClock(iso) ? iso : `${iso}T00:00:00Z`);
   if (Number.isNaN(then.getTime())) return Number.POSITIVE_INFINITY;
   return Math.max(0, Math.floor((now.getTime() - then.getTime()) / 86_400_000));
 }
 
-/** "today", "3 days ago", "5 weeks ago" — a pin has to say how old it is. */
+function plural(n: number, unit: string): string {
+  return `${n} ${unit}${n === 1 ? "" : "s"} ago`;
+}
+
+/**
+ * "just now", "3 minutes ago", "yesterday", "5 weeks ago".
+ *
+ * Down to seconds when the publisher gave a time, and no finer than a day
+ * when they did not — see hasClock. A reader deciding whether a report is
+ * still describing the current storm needs the difference between "an hour
+ * ago" and "on Tuesday", and a bare date cannot tell them.
+ */
 export function describeAge(iso: string, now = new Date()): string {
+  if (hasClock(iso)) {
+    const then = new Date(iso);
+    if (Number.isNaN(then.getTime())) return "";
+
+    /* Clamp at zero. A publisher's clock running ahead of the reader's would
+       otherwise produce "in 3 minutes", which reads as a bug in a feed of
+       things that have already happened. */
+    const seconds = Math.max(0, Math.floor((now.getTime() - then.getTime()) / 1000));
+    if (seconds < 10) return "just now";
+    if (seconds < 60) return plural(seconds, "second");
+
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return plural(minutes, "minute");
+
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return plural(hours, "hour");
+  }
+
   const days = ageInDays(iso, now);
   if (!Number.isFinite(days)) return "";
   if (days === 0) return "today";
@@ -123,6 +165,11 @@ export function describeAge(iso: string, now = new Date()): string {
   if (days < 14) return `${days} days ago`;
   if (days < 60) return `${Math.round(days / 7)} weeks ago`;
   return `${Math.round(days / 30)} months ago`;
+}
+
+/** The calendar part, for wherever the exact day is wanted alongside the age. */
+export function newsDay(iso: string): string {
+  return iso.slice(0, 10);
 }
 
 /**

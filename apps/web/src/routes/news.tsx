@@ -1,8 +1,9 @@
-import { describeAge } from "@davflood/hazard/news";
+import { describeAge, newsDay } from "@davflood/hazard/news";
 import type { NewsItem } from "@davflood/hazard/news";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { ExternalLink, MapPin, Newspaper } from "lucide-react";
 
+import { useNow } from "@/hooks/use-now";
 import { useMounted } from "@/lib/query";
 
 import { useNewsFile } from "@/hooks/use-news-pins";
@@ -91,6 +92,12 @@ function NewsScreen() {
 }
 
 function Report({ item }: { item: NewsItem }) {
+  /* Ticks every 30s so "4 minutes ago" does not quietly become a lie while
+     the page sits open during a storm — see use-now.ts. Per row rather than
+     hoisted: the interval is shared by React's scheduler anyway, and the
+     alternative is threading a clock through a presentational component. */
+  const now = useNow();
+
   return (
     <li className="py-3.5">
       <div className="flex gap-3">
@@ -135,7 +142,8 @@ function Report({ item }: { item: NewsItem }) {
           </a>
 
           <p className="text-ink-dim mt-1.5 text-[11px]">
-            {item.source} · {item.date} · {describeAge(item.date)}
+            {item.source} · {newsDay(item.date)}
+            {now && ` · ${describeAge(item.date, now)}`}
           </p>
 
           {/* The bridge back to the map, which is right there — the report
