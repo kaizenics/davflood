@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { Moon, Phone, Sun } from "lucide-react";
 import { useId } from "react";
 
+import { LocaleToggle } from "@/components/locale-controls";
 import { currentVersion } from "@/lib/changelog";
 import { useTheme } from "@/lib/theme";
 
@@ -212,6 +213,7 @@ function NavBlock() {
           <Wordmark />
         </Link>
         <VersionChip />
+        <LocaleToggle />
         <GithubLink />
         <ThemeToggle />
       </div>

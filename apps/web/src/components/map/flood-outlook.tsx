@@ -6,7 +6,10 @@ import type { ScenarioYears } from "@davflood/hazard/scenarios";
 import { useQuery } from "@tanstack/react-query";
 import { CloudRain } from "lucide-react";
 
+import { DraftNotice } from "@/components/locale-controls";
+
 import { useRainfall } from "@/hooks/use-rainfall";
+import { useLocale } from "@/lib/locale";
 import { gcTime, useMounted } from "@/lib/query";
 
 /**
@@ -44,6 +47,7 @@ type Props = {
 };
 
 export function FloodOutlook({ place, scenario }: Props) {
+  const { locale, isDraft } = useLocale();
   const { data: rain } = useRainfall();
 
   /* The same query the river panel runs, so on the map route this is a cache
@@ -64,7 +68,9 @@ export function FloodOutlook({ place, scenario }: Props) {
      answer arrives on the render after — see routes/news.tsx. */
   const mounted = useMounted();
 
-  const outlook = mounted ? floodOutlook({ rain, river, place, scenario }) : null;
+  const outlook = mounted
+    ? floodOutlook({ rain, river, place, scenario, locale })
+    : null;
   if (!outlook) return null;
 
   const tone = TONE[outlook.tone];
@@ -88,6 +94,14 @@ export function FloodOutlook({ place, scenario }: Props) {
       <p className="text-ink-dim mt-1.5 pl-[26px] text-[10.5px] leading-relaxed">
         {outlook.caveat}
       </p>
+      {/* The compact badge, not the full notice: this box is four lines in a
+          21rem column and a paragraph about translation quality would be
+          longer than the warning it sits under. */}
+      {isDraft && (
+        <div className="pl-[26px]">
+          <DraftNotice compact />
+        </div>
+      )}
     </aside>
   );
 }

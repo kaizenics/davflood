@@ -1,7 +1,10 @@
+import type { Locale } from "./locale";
 import { rainBand } from "./rainfall";
 import type { Rainfall } from "./rainfall";
 import type { River } from "./river";
 import type { ScenarioYears } from "./scenarios";
+import { STRINGS, fill } from "./strings";
+import type { Strings } from "./strings";
 import { hazardById } from "./tiers";
 import type { HazardId } from "./tiers";
 
@@ -66,31 +69,28 @@ function rainWindow(rain: Rainfall | null | undefined): RainWindow | null {
  * announcing light rain is a line people stop reading, and it has to still be
  * being read on the day it matters.
  */
-function rainClause(w: RainWindow): { text: string; heavy: boolean } | null {
+function rainClause(
+  w: RainWindow,
+  t: Strings["outlook"],
+): { text: string; heavy: boolean } | null {
   const todayBand = rainBand(w.todayMm);
   const tomorrowBand = rainBand(w.tomorrowMm);
 
   if (todayBand === "heavy") {
-    return {
-      text: `Heavy rain forecast today — ${Math.round(w.todayMm)} mm`,
-      heavy: true,
-    };
+    return { text: fill(t.heavyToday, { mm: Math.round(w.todayMm) }), heavy: true };
   }
   if (tomorrowBand === "heavy") {
     return {
-      text: `Heavy rain forecast tomorrow — ${Math.round(w.tomorrowMm)} mm`,
+      text: fill(t.heavyTomorrow, { mm: Math.round(w.tomorrowMm) }),
       heavy: true,
     };
   }
   if (todayBand === "moderate") {
-    return {
-      text: `Rain forecast today — ${Math.round(w.todayMm)} mm`,
-      heavy: false,
-    };
+    return { text: fill(t.rainToday, { mm: Math.round(w.todayMm) }), heavy: false };
   }
   if (tomorrowBand === "moderate") {
     return {
-      text: `Rain forecast tomorrow — ${Math.round(w.tomorrowMm)} mm`,
+      text: fill(t.rainTomorrow, { mm: Math.round(w.tomorrowMm) }),
       heavy: false,
     };
   }
@@ -102,17 +102,29 @@ export type OutlookPlace =
   | { kind: "zone"; hazard: HazardId; barangay: string | null }
   | { kind: "city"; floodedKm2: number };
 
-function placeClause(place: OutlookPlace, scenario: ScenarioYears): string {
+function placeClause(
+  place: OutlookPlace,
+  scenario: ScenarioYears,
+  t: Strings["outlook"],
+  tiers: Strings["tiers"],
+): string {
   if (place.kind === "zone") {
-    const tier = hazardById[place.hazard];
-    const where = place.barangay
-      ? `${place.barangay}`
-      : "the spot you tapped";
-    /* "models … as" rather than "floods to": the depth is a modelled band for
-       a storm of a given size, and the verb has to carry that. */
-    return `the ${scenario}-year model puts ${where} at ${tier.depthShort} (${tier.summary.toLowerCase().replace(/\.$/, "")})`;
+    const where = place.barangay ?? t.tapped;
+    /* "the model puts X at" rather than "X floods to": the depth is a
+       modelled band for a storm of a given size, and the verb has to carry
+       that in every language. depthShort is a number and a unit, so it is the
+       one part that does not get translated. */
+    return fill(t.zone, {
+      years: scenario,
+      where,
+      depth: hazardById[place.hazard].depthShort,
+      summary: tiers[place.hazard].summary.toLowerCase().replace(/\.$/, ""),
+    });
   }
-  return `the ${scenario}-year model floods about ${place.floodedKm2.toFixed(0)} km² of the city`;
+  return fill(t.city, {
+    years: scenario,
+    km2: place.floodedKm2.toFixed(0),
+  });
 }
 
 /**
@@ -120,14 +132,13 @@ function placeClause(place: OutlookPlace, scenario: ScenarioYears): string {
  * "running about as it usually does" is not news, and printing it every day
  * is how a line becomes wallpaper.
  */
-function riverClause(river: River | null | undefined): string | null {
+function riverClause(
+  river: River | null | undefined,
+  t: Strings["outlook"],
+): string | null {
   const id = river?.level.id;
-  if (id === "very-high" || id === "high") {
-    return "the Davao River is forecast to run high";
-  }
-  if (id === "elevated") {
-    return "the Davao River is forecast to run above normal";
-  }
+  if (id === "very-high" || id === "high") return t.riverHigh;
+  if (id === "elevated") return t.riverAbove;
   return null;
 }
 
@@ -143,15 +154,21 @@ export function floodOutlook({
   river,
   place,
   scenario,
+  locale = "en",
 }: {
   rain: Rainfall | null | undefined;
   river: River | null | undefined;
   place: OutlookPlace;
   scenario: ScenarioYears;
+  /** defaults to the source language, so non-UI callers need not care */
+  locale?: Locale;
 }): Outlook | null {
+  const strings = STRINGS[locale];
+  const t = strings.outlook;
+
   const w = rainWindow(rain);
-  const weather = w ? rainClause(w) : null;
-  const flow = riverClause(river);
+  const weather = w ? rainClause(w, t) : null;
+  const flow = riverClause(river, t);
 
   // no weather news and no river news: the map alone is the honest answer
   if (!weather && !flow) return null;
@@ -166,12 +183,12 @@ export function floodOutlook({
 
   // at least one part is present — the early return above guarantees it
   const parts = [weather?.text, flow].filter((p): p is string => Boolean(p));
-  const sentence = `${parts.join(", and ")}, while ${placeClause(place, scenario)}.`;
+  const sentence =
+    parts.join(t.and) + placeClause(place, scenario, t, strings.tiers);
 
   return {
     tone,
     sentence: sentence.charAt(0).toUpperCase() + sentence.slice(1),
-    caveat:
-      "Forecast rainfall and modelled hazard — not a measurement of water on the ground. For live warnings follow PAGASA and your barangay.",
+    caveat: t.caveat,
   };
 }

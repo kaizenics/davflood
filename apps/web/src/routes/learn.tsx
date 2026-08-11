@@ -1,10 +1,11 @@
-import { disclaimer } from "@davflood/hazard/copy";
 import { chanceOver, scenarios } from "@davflood/hazard/scenarios";
 import { hazardTiers } from "@davflood/hazard/tiers";
 import { createFileRoute } from "@tanstack/react-router";
 import { TriangleAlert } from "lucide-react";
 
+import { DraftNotice } from "@/components/locale-controls";
 import { hazardBg, hazardBorder, hazardText } from "@/lib/hazard-classes";
+import { useStrings } from "@/lib/locale";
 
 export const Route = createFileRoute("/learn")({
   component: LearnScreen,
@@ -20,6 +21,11 @@ const HORIZONS = [1, 10, 30, 50];
  * nothing in here sets a width or a `sm:` breakpoint.
  */
 function LearnScreen() {
+  /* The bands are the page. Their wording is the thing worth translating
+     first, and the thing worth warning about when the translation is a
+     draft — see components/locale-controls.tsx. */
+  const t = useStrings();
+
   return (
     <article className="px-5 py-7">
       <header>
@@ -33,6 +39,7 @@ function LearnScreen() {
           A colour is only useful if you know what it costs you. Here is each
           hazard level in metres, in furniture, and in decisions.
         </p>
+        <DraftNotice />
       </header>
 
       {/* hazard tiers — a colour rule per tier, not a tinted card per tier */}
@@ -57,16 +64,18 @@ function LearnScreen() {
               </span>
             </div>
 
-            <p className="text-ink mt-2 text-[14px] font-medium">{tier.name}</p>
+            <p className="text-ink mt-2 text-[14px] font-medium">
+              {t.tiers[tier.id].name}
+            </p>
             <p className="text-ink-dim mt-2.5 text-[13.5px] leading-relaxed">
-              {tier.human}
+              {t.tiers[tier.id].human}
             </p>
 
             <p
               className={`mt-3.5 border-l-2 pl-3.5 text-[13.5px] leading-relaxed ${hazardBorder[tier.id]}`}
             >
               <span className="text-ink font-semibold">What to do. </span>
-              <span className="text-ink-dim">{tier.action}</span>
+              <span className="text-ink-dim">{t.tiers[tier.id].action}</span>
             </p>
           </section>
         ))}
@@ -142,11 +151,11 @@ function LearnScreen() {
             aria-hidden="true"
           />
           <span className="text-ink text-[14px] leading-snug font-semibold">
-            {disclaimer.short}
+            {t.disclaimer.short}
           </span>
         </p>
         <p className="text-ink-dim mt-2 text-[13px] leading-relaxed">
-          {disclaimer.long}
+          {t.disclaimer.long}
         </p>
       </aside>
     </article>

@@ -1,8 +1,10 @@
-import { dataSources, disclaimer, mapAttribution } from "@davflood/hazard/copy";
+import { dataSources, mapAttribution } from "@davflood/hazard/copy";
 import { createFileRoute } from "@tanstack/react-router";
 import { ArrowUpRight, Construction } from "lucide-react";
 
+import { DraftNotice } from "@/components/locale-controls";
 import { DATA_IS_PLACEHOLDER } from "@/lib/hazard-source";
+import { useStrings } from "@/lib/locale";
 
 export const Route = createFileRoute("/about")({
   component: AboutScreen,
@@ -17,6 +19,8 @@ export const Route = createFileRoute("/about")({
  * would put two columns of text inside it on a wide screen.
  */
 function AboutScreen() {
+  const t = useStrings();
+
   return (
     <article className="px-5 py-7">
       {DATA_IS_PLACEHOLDER && (
@@ -44,14 +48,15 @@ function AboutScreen() {
           About
         </p>
         <h1 className="text-ink mt-2.5 text-[1.7rem] leading-[1.15] font-semibold tracking-tight text-balance">
-          {disclaimer.short}
+          {t.disclaimer.short}
         </h1>
         <p className="text-ink-dim mt-3.5 text-[14.5px] leading-relaxed">
-          {disclaimer.long}
+          {t.disclaimer.long}
         </p>
         <p className="text-ink-dim mt-3 text-[13.5px] leading-relaxed">
-          {disclaimer.independence}
+          {t.disclaimer.independence}
         </p>
+        <DraftNotice />
       </header>
 
       <section className="mt-10">

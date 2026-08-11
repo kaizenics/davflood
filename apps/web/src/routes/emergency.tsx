@@ -1,12 +1,15 @@
 import {
   EMERGENCY_CONTACTS,
-  INCOMPLETE_LIST_NOTE,
   OFFICIAL_CENTRES,
   VERIFIED_ON,
   telHref,
 } from "@davflood/hazard/emergency";
+import { fill } from "@davflood/hazard/strings";
 import { createFileRoute } from "@tanstack/react-router";
 import { ArrowUpRight, Building2, Mail, MapPin, Phone } from "lucide-react";
+
+import { DraftNotice } from "@/components/locale-controls";
+import { useStrings } from "@/lib/locale";
 
 export const Route = createFileRoute("/emergency")({
   component: EmergencyScreen,
@@ -25,19 +28,21 @@ export const Route = createFileRoute("/emergency")({
  * past a paragraph to find a number.
  */
 function EmergencyScreen() {
+  const { emergency: t } = useStrings();
+
   return (
     <article className="px-5 py-7">
       <header>
         <p className="text-haz-high text-[10.5px] font-semibold tracking-[0.16em] uppercase">
-          Emergency
+          {t.kicker}
         </p>
         <h1 className="text-ink mt-2.5 text-[1.7rem] leading-[1.15] font-semibold tracking-tight text-balance">
-          Who to call in Davao City
+          {t.title}
         </h1>
         <p className="text-ink-dim mt-3.5 text-[14.5px] leading-relaxed">
-          If water is rising where you are, stop reading and dial 911. The rest
-          of this page is for before and after.
+          {t.intro}
         </p>
+        <DraftNotice />
       </header>
 
       {/* The 911 tile, apart from and above the directory: it is the one
@@ -53,14 +58,14 @@ function EmergencyScreen() {
             911
           </span>
           <span className="text-ink-dim mt-1 block text-[12px] leading-snug">
-            Central 911 — fire, medical, rescue. Answers 24 hours.
+            {t.dialBlurb}
           </span>
         </span>
       </a>
 
       <section className="mt-10">
         <h2 className="text-ink text-[1.15rem] leading-tight font-semibold tracking-tight">
-          Offices
+          {t.offices}
         </h2>
 
         <ul className="mt-4 flex flex-col gap-5">
@@ -73,7 +78,7 @@ function EmergencyScreen() {
                 {contact.name}
               </h3>
               <p className="text-ink-dim mt-1.5 text-[12.5px] leading-relaxed">
-                {contact.role}
+                {t.roles[contact.id as keyof typeof t.roles] ?? contact.role}
               </p>
 
               <ul className="mt-3 flex flex-col gap-1.5">
@@ -148,7 +153,7 @@ function EmergencyScreen() {
                 rel="noopener noreferrer"
                 className="text-ink-dim hover:text-tide mt-3 inline-flex items-center gap-1 text-[10.5px] transition"
               >
-                Published by the City Government of Davao
+                {t.publishedBy}
                 <ArrowUpRight className="size-3" aria-hidden="true" />
               </a>
             </li>
@@ -158,14 +163,14 @@ function EmergencyScreen() {
 
       <section className="mt-10">
         <h2 className="text-ink text-[1.15rem] leading-tight font-semibold tracking-tight">
-          Evacuation centres
+          {t.centres}
         </h2>
 
         {/* The gap, stated before the list rather than after it. A reader who
             takes this list as complete and stops looking is the failure mode
             this whole page exists to prevent. */}
         <p className="border-haz-med/45 bg-haz-med/10 text-ink mt-3 rounded-2xl border px-3.5 py-3 text-[12.5px] leading-relaxed">
-          {INCOMPLETE_LIST_NOTE}
+          {t.incompleteList}
         </p>
 
         <ul className="mt-4 flex flex-col gap-3">
@@ -186,12 +191,12 @@ function EmergencyScreen() {
                 {centre.capacity !== null && (
                   <>
                     {" · "}
-                    <span data-numeric>{centre.capacity}</span> persons
+                    <span data-numeric>{centre.capacity}</span> {t.persons}
                   </>
                 )}
               </p>
               <p className="text-ink-dim mt-1.5 pl-6 text-[11.5px] leading-relaxed">
-                Built to serve {centre.serves.join(", ")}.
+                {fill(t.serves, { list: centre.serves.join(", ") })}
               </p>
               <a
                 href={centre.source}
@@ -199,7 +204,7 @@ function EmergencyScreen() {
                 rel="noopener noreferrer"
                 className="text-ink-dim hover:text-tide mt-2.5 ml-6 inline-flex items-center gap-1 text-[10.5px] transition"
               >
-                Announced {centre.announced}
+                {fill(t.announced, { date: centre.announced })}
                 <ArrowUpRight className="size-3" aria-hidden="true" />
               </a>
             </li>
@@ -208,13 +213,7 @@ function EmergencyScreen() {
       </section>
 
       <footer className="border-hairline/60 text-ink-dim mt-10 border-t pt-4 text-[11.5px] leading-relaxed">
-        <p>
-          Every number and address on this page was transcribed from a page
-          published by the City Government of Davao and last checked on{" "}
-          <span data-numeric>{VERIFIED_ON}</span>. Nothing here is supplied by
-          DavFlood — if a number has changed, the city&apos;s own page is right
-          and this one is wrong. Tell us and we will fix it.
-        </p>
+        <p>{fill(t.sourceNote, { date: VERIFIED_ON })}</p>
       </footer>
     </article>
   );

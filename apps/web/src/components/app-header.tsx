@@ -9,6 +9,7 @@ import {
   ThemeToggle,
   Wordmark,
 } from "@/components/site-nav";
+import { LocaleToggle } from "@/components/locale-controls";
 import { currentVersion } from "@/lib/changelog";
 
 /**
@@ -44,6 +45,7 @@ export function AppHeader() {
           <Wordmark />
         </Link>
 
+        <LocaleToggle />
         <GithubLink />
         <ThemeToggle />
 

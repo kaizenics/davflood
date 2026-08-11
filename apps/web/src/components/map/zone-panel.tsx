@@ -6,11 +6,12 @@ import type { NearestSite } from "@davflood/hazard/evacuation";
 import type { LngLat } from "@davflood/hazard/geo";
 import { formatDistance } from "@davflood/hazard/safe-ground";
 import type { SafeGround } from "@davflood/hazard/safe-ground";
-import { hazardById } from "@davflood/hazard/tiers";
 import { Link } from "@tanstack/react-router";
 import { ArrowLeft, MapPin, Navigation, Phone } from "lucide-react";
 
+import { DraftNotice } from "@/components/locale-controls";
 import { hazardBg, hazardText } from "@/lib/hazard-classes";
+import { useStrings } from "@/lib/locale";
 
 type Props = {
   zone: HazardProperties;
@@ -46,8 +47,12 @@ export function ZonePanel({
   evacuation,
   onShowEvacuation,
 }: Props) {
-  const tier = hazardById[zone.hazard];
   const scenario = scenarioByYears[zone.scenario];
+
+  /* The colours, the depths and the ordering come from the tier; the WORDS
+     come from the reader's language. Keeping them apart is what lets the
+     hazard model stay one thing while the copy is three. */
+  const band = useStrings().tiers[zone.hazard];
 
   return (
     <section
@@ -82,7 +87,7 @@ export function ZonePanel({
       <p
         className={`${hazardText[zone.hazard]} mt-1.5 text-[12.5px] font-semibold`}
       >
-        {tier.summary.replace(/\.$/, "")} · {tier.name}
+        {band.summary.replace(/\.$/, "")} · {band.name}
       </p>
 
       <p className="text-ink-dim mt-1 text-[11px]">
@@ -91,14 +96,18 @@ export function ZonePanel({
       </p>
 
       <p className="text-ink-dim mt-3.5 text-[12.5px] leading-relaxed">
-        {tier.human}
+        {band.human}
       </p>
 
       <div className="border-hairline/60 mt-3.5 border-t pt-3">
         <p className="text-ink text-[12.5px] leading-relaxed">
           <span className="text-ink font-semibold">What to do: </span>
-          {tier.action}
+          {band.action}
         </p>
+        {/* Right under the advice, not at the foot of the panel: this is the
+            one block where a reader acts on the words, so it is the one block
+            where knowing they are unreviewed words actually matters. */}
+        <DraftNotice compact />
       </div>
 
       {/* The next question after "how deep" is always "which way".
