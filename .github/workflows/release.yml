@@ -1,24 +1,11 @@
-# Cuts a release from the commit history.
-#
-# Every commit here is already Conventional Commits ("feat(web): …"), so the
-# version number and the changelog are things that can be *derived* rather
-# than maintained by hand. release-please reads the commits since the last
-# tag, opens a PR that bumps the version and writes CHANGELOG.md, and — when
-# that PR is merged — tags the commit and publishes a GitHub Release.
-#
-# Nothing is published to a registry: this repo is private packages and one
-# static site. The output is the tag, the release notes, and CHANGELOG.md,
-# which is what /releases on the site renders.
+
 name: Release
 
 on:
   push:
-    # `master` is the GitHub default branch; `main` is here because the local
-    # history uses it too, and a release workflow that silently does nothing
-    # on the branch you actually push to is worse than no workflow.
+   
     branches: [master, main]
 
-# The default GITHUB_TOKEN is enough — no PAT, no secrets to rotate.
 permissions:
   contents: write
   pull-requests: write
@@ -31,6 +18,5 @@ jobs:
         with:
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
-          # Release off whichever branch triggered this, so the workflow does
-          # not have to be edited if the default branch is renamed.
+      
           target-branch: ${{ github.ref_name }}

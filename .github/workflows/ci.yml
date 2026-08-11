@@ -22,17 +22,16 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-     
           node-version: 22
           cache: pnpm
 
       - run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm build
 
       - name: Types
         run: pnpm check-types
 
       - name: Map style
         run: pnpm validate:style
-
-      - name: Build
-        run: pnpm build
