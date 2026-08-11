@@ -81,9 +81,23 @@
     border-color: var(--color-hairline);
   }
 
+  /**
+   * The document never scrolls. The panel does.
+   *
+   * This is an app shell: one viewport-sized frame with its own scrolling
+   * column inside it (see map-shell.tsx). It used to be `height: 100%`, which
+   * is NOT the same number as the `h-dvh` on that frame — 100% resolves
+   * against the small viewport, 100dvh grows as the browser's URL bar
+   * retracts. The frame was therefore taller than the body on exactly the
+   * pages long enough to scroll, and with no overflow rule here that spilled
+   * onto the viewport: the whole app slid up and left an empty band of page
+   * background below it. Matching the unit removes the mismatch; `hidden`
+   * makes it impossible to reintroduce from anywhere else.
+   */
   html,
   body {
-    height: 100%;
+    height: 100dvh;
+    overflow: hidden;
   }
 
   body {
