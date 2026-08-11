@@ -1,4 +1,5 @@
 import type { NearestSite } from "@davflood/hazard/evacuation";
+import type { LngLat } from "@davflood/hazard/geo";
 import type { SafeGround } from "@davflood/hazard/safe-ground";
 import type { HazardProperties } from "@davflood/hazard/schema";
 import { type ReactNode, useEffect, useState } from "react";
@@ -10,6 +11,8 @@ const EXIT_MS = 130;
 
 type Props = {
   zone: HazardProperties | null;
+  /** where the tap landed — passed straight through to the zone reading */
+  at?: LngLat | null;
   onClose: () => void;
   /** passed straight through to the zone reading */
   safeGround?: SafeGround | null;
@@ -33,6 +36,7 @@ type Props = {
  */
 export function ReadingSlot({
   zone,
+  at,
   onClose,
   safeGround,
   onShowSafeGround,
@@ -79,6 +83,7 @@ export function ReadingSlot({
       {shown ? (
         <ZonePanel
           zone={shown}
+          at={at}
           onClose={onClose}
           safeGround={safeGround}
           onShowSafeGround={onShowSafeGround}

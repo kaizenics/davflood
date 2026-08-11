@@ -5,10 +5,8 @@ import {
   HAZARD_FILL_LAYER_IDS,
   LAYER_IDS,
   RAIN_LAYER_ID,
-  SOURCE_GUIDE,
   SOURCE_HAZARD,
   SOURCE_RAIN,
-  guideLayers,
   hazardLayers,
   rainLayers,
 } from "@davflood/hazard/layers";
@@ -68,7 +66,8 @@ export type FloodMapHandle = {
   /** animate=false for slider drags, true for preset jumps */
   setPitch: (pitch: number, animate?: boolean) => void;
   /**
-   * Frame two points at once — used to show a guide line whole.
+   * Frame two points at once — the tap and the place being offered, so both
+   * are on screen when the pin drops.
    *
    * `padLeft` is how much of the map's left edge is covered by something the
    * map cannot see: from lg up the reading floats there, and framing into the
@@ -77,9 +76,8 @@ export type FloodMapHandle = {
   fitTo: (a: LngLat, b: LngLat, padLeft?: number) => void;
 };
 
-/** A direct line from where you are to somewhere you could go. */
+/** Somewhere you could go, pinned on the map. */
 export type Guide = {
-  from: LngLat;
   to: LngLat;
   /** labels the pin at the far end */
   label: string;
@@ -111,7 +109,7 @@ type Props = {
   focus?: FocusTarget | null;
   /** the pin's dismiss button — usually clears the URL that set `focus` */
   onFocusClear?: () => void;
-  /** dashed line and a pin at the far end; null removes both */
+  /** a pin on somewhere to go; null removes it */
   guide?: Guide | null;
 };
 
@@ -303,10 +301,10 @@ export const FloodMap = forwardRef<FloodMapHandle, Props>(function FloodMap(
     fitTo(a, b, padLeft = 70) {
       const m = map.current;
       if (!m) return;
-      /* Flattened first. A guide line read at a 52° pitch is foreshortened —
-         the far end is small, and the distance between the two ends is not
-         what it looks like. Straight down is the view in which a line between
-         two points means what it appears to mean. */
+      /* Flattened first. At a 52° pitch the far point is foreshortened — it
+         sits small and high in frame, and how far away it is is not what it
+         looks like. Straight down is the view in which the gap between two
+         points means what it appears to mean. */
       m.fitBounds(
         [
           [Math.min(a[0], b[0]), Math.min(a[1], b[1])],
@@ -410,19 +408,6 @@ export const FloodMap = forwardRef<FloodMapHandle, Props>(function FloodMap(
         });
         // re-apply everything that changed while the style was still loading —
         // this also runs after a basemap swap, which resets the whole style
-        /* The guide goes on top of everything, labels included — no `before`
-           anchor. It also survives a hazard rebuild for free, because those
-           re-insert themselves beneath the labels. */
-        m.addSource(SOURCE_GUIDE, {
-          type: "geojson",
-          data: { type: "FeatureCollection", features: [] },
-        });
-        for (const layer of guideLayers(
-          basemapRef.current === "light" ? "light" : "dark",
-        )) {
-          m.addLayer(layer as maplibregl.LayerSpecification);
-        }
-
         applySelection(m, selectedRef.current);
         applyTerrain(m, terrainRef.current);
         applyHazardVisibility(m, showHazardRef.current);
@@ -581,35 +566,18 @@ export const FloodMap = forwardRef<FloodMapHandle, Props>(function FloodMap(
   }, [focus, loaded]);
 
   /**
-   * The guide line and the pin at the far end of it.
+   * The pin on somewhere to go.
    *
-   * Added above everything, labels included: it is the answer to a question
-   * the user just asked, and a place name crossing it would be the one thing
-   * on the map allowed to obscure that.
+   * A pin and nothing else. There used to be a dashed line from the tap to
+   * here, and a straight line between two points on a map reads as a route no
+   * matter how it is dashed — this app has no road network behind it, so the
+   * honest drawing is the destination alone and a hand-off to a maps app for
+   * the walking.
    */
   const guidePin = useRef<maplibregl.Marker | null>(null);
   useEffect(() => {
     const m = map.current;
     if (!m || !loaded) return;
-
-    const src = m.getSource(SOURCE_GUIDE);
-    const line: GeoJSON.FeatureCollection = guide
-      ? {
-          type: "FeatureCollection",
-          features: [
-            {
-              type: "Feature",
-              properties: {},
-              geometry: {
-                type: "LineString",
-                coordinates: [[...guide.from], [...guide.to]],
-              },
-            },
-          ],
-        }
-      : { type: "FeatureCollection", features: [] };
-
-    if (src && "setData" in src) (src as maplibregl.GeoJSONSource).setData(line);
 
     guidePin.current?.remove();
     guidePin.current = null;

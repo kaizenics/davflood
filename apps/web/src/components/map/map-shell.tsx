@@ -164,10 +164,10 @@ export function MapShell({ children }: { children: ReactNode }) {
     [selectedAt, scenario],
   );
 
-  /* The dashed line drawn on our own map, from the tap to somewhere to go.
-     Held here rather than derived, because it is the answer to a button press
-     — it should not appear the moment a zone is tapped, and it should not
-     vanish because the reading animated. */
+  /* The pin dropped on our own map, on somewhere to go. Held here rather than
+     derived, because it is the answer to a button press — it should not
+     appear the moment a zone is tapped, and it should not vanish because the
+     reading animated. */
   const [guide, setGuide] = useState<Guide | null>(null);
 
   /* The panel is a drag-to-open sheet below lg and the static column above it;
@@ -177,12 +177,11 @@ export function MapShell({ children }: { children: ReactNode }) {
   const showEvacuation = () => {
     if (!selectedAt || !evacuation) return;
     setGuide({
-      from: selectedAt,
       to: evacuation.site.center,
       label: evacuation.site.name,
     });
     /* Keep the framing clear of the floating reading, which from lg up sits
-       over the left edge of the map the line is being drawn on. */
+       over the left edge of the map the pin is being dropped on. */
     const cardWidth = window.innerWidth >= 1024 ? 380 : 70;
     mapRef.current?.fitTo(selectedAt, evacuation.site.center, cardWidth);
     // on a phone the sheet is over the map it just drew on
@@ -244,6 +243,7 @@ export function MapShell({ children }: { children: ReactNode }) {
   const reading = (
     <ReadingSlot
       zone={selected}
+      at={selectedAt}
       onClose={() => {
         setSelected(null);
         setSelectedAt(null);

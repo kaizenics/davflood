@@ -96,9 +96,17 @@ export function nearestEvacuation(
  * a confident line through a flooded street. Google Maps will route badly
  * during a flood too, but it is not the one claiming to know about floods, and
  * the button says as much.
+ *
+ * `from` is the point that was TAPPED, not the phone's location, and passing
+ * it matters: the reading, the distance and the site being offered are all
+ * about that spot, so a route starting anywhere else answers a question
+ * nobody asked. Someone checking on a relative's barangay from across the
+ * city is the normal case, not the edge one. Omitting `from` falls back to
+ * Google's own idea of where the user is.
  */
-export function directionsUrl(to: LngLat): string {
-  return `https://www.google.com/maps/dir/?api=1&destination=${to[1]},${to[0]}&travelmode=walking`;
+export function directionsUrl(to: LngLat, from?: LngLat | null): string {
+  const origin = from ? `&origin=${from[1]},${from[0]}` : "";
+  return `https://www.google.com/maps/dir/?api=1${origin}&destination=${to[1]},${to[0]}&travelmode=walking`;
 }
 
 export { EVACUATION_SITES };

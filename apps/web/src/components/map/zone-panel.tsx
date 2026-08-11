@@ -3,6 +3,7 @@ import type { HazardProperties } from "@davflood/hazard/schema";
 import { scenarioByYears } from "@davflood/hazard/scenarios";
 import { directionsUrl } from "@davflood/hazard/evacuation";
 import type { NearestSite } from "@davflood/hazard/evacuation";
+import type { LngLat } from "@davflood/hazard/geo";
 import { formatDistance } from "@davflood/hazard/safe-ground";
 import type { SafeGround } from "@davflood/hazard/safe-ground";
 import { hazardById } from "@davflood/hazard/tiers";
@@ -12,6 +13,8 @@ import { hazardBg, hazardText } from "@/lib/hazard-classes";
 
 type Props = {
   zone: HazardProperties;
+  /** where the tap landed — the origin every distance here is measured from */
+  at?: LngLat | null;
   onClose: () => void;
   /** nearest point outside the modelled footprint, if the tap was inside one */
   safeGround?: SafeGround | null;
@@ -35,6 +38,7 @@ type Props = {
  */
 export function ZonePanel({
   zone,
+  at,
   onClose,
   safeGround,
   onShowSafeGround,
@@ -150,7 +154,7 @@ export function ZonePanel({
               </button>
             )}
             <a
-              href={directionsUrl(evacuation.site.center)}
+              href={directionsUrl(evacuation.site.center, at)}
               target="_blank"
               rel="noopener noreferrer"
               className="bg-tide text-abyss rounded-pill flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-semibold transition hover:opacity-90"
@@ -162,9 +166,10 @@ export function ZonePanel({
 
           <p className="text-ink-dim mt-2.5 text-[10.5px] leading-relaxed">
             A public building on ground this scenario does not flood — not a
-            designated evacuation centre. Directions open Google Maps, which
-            does not know which roads are flooded. Follow your barangay&apos;s
-            DRRM instructions.
+            designated evacuation centre. Directions open Google Maps
+            {at ? " walking from the spot you tapped" : ""}, which does not
+            know which roads are flooded. Follow your barangay&apos;s DRRM
+            instructions.
           </p>
         </div>
       )}
