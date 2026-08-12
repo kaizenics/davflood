@@ -61,6 +61,43 @@ const DEPTH_HEIGHT: ExpressionSpecification = [
 ];
 
 /**
+ * Flattens the volumes as you zoom out, and this is a correctness fix rather
+ * than a taste one.
+ *
+ * A 66 m volume is a few pixels tall at street zoom and a large fraction of a
+ * polygon's own width at city zoom — so zoomed out, every zone drew its
+ * footprint AND a roof displaced from it by the projection, joined by a wall.
+ * Across the ~10k polygons of the 100-year set that read as the whole hazard
+ * layer being doubled, and it got worse the further out you went, because the
+ * height is in metres and the polygons shrink while it does not.
+ *
+ * Multiplying the height by zero below z12 collapses each volume onto its own
+ * footprint, which is exactly a flat fill — the same picture the flat mode
+ * draws, with no layer swap and no seam at the boundary. By z14, where a
+ * polygon is comfortably larger than its own height, the volumes are back at
+ * full height.
+ *
+ * The default camera sits at z10.2, so the map opens flat and grows into 3D
+ * as you approach a street — which is also the order in which the two
+ * readings are useful.
+ */
+const FADED_DEPTH_HEIGHT: ExpressionSpecification = [
+	/* The interpolate has to be the OUTERMOST expression, and the height has
+	   to be one of its stops. The style spec allows `zoom` only as the direct
+	   input of a top-level step/interpolate, so multiplying a zoom ramp by the
+	   depth expression — the obvious way to write this — is rejected outright
+	   rather than merely discouraged. Interpolating from 0 up to the
+	   data-driven height says the same thing in the shape the spec accepts. */
+	"interpolate",
+	["linear"],
+	["zoom"],
+	12,
+	0,
+	14,
+	DEPTH_HEIGHT,
+];
+
+/**
  * The hazard layers, ordered low → medium → high so the most severe zone is
  * always the one drawn on top and therefore the one a tap resolves to.
  *
@@ -93,7 +130,7 @@ export function hazardLayers(
 					filter: ["==", ["get", "hazard"], id],
 					paint: {
 						"fill-extrusion-color": hazardColor[id],
-						"fill-extrusion-height": DEPTH_HEIGHT,
+						"fill-extrusion-height": FADED_DEPTH_HEIGHT,
 						"fill-extrusion-base": 0,
 						// the vertical gradient is what sells the volume — the
 						// walls shade darker toward the ground for free
