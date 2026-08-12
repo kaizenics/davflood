@@ -38,7 +38,43 @@ export default defineConfig({
         enabled: true,
         prerender: { outputPath: "/index", crawlLinks: true },
       },
-      prerender: { failOnError: true },
+      /**
+       * Prerendering 189 pages inside a build container.
+       *
+       * The prerenderer starts a server in-process and fetches every page
+       * from it over loopback. That was fine at six pages; at 189 — the
+       * barangay profiles — Netlify's build failed with ECONNREFUSED on
+       * 127.0.0.1 four pages in, which is the shape of the server dying
+       * rather than a page rendering wrong. Its own concurrency is derived
+       * from CPU count, and a build container has few and shares them.
+       *
+       * One at a time, with retries. Serial costs seconds on a build that
+       * already takes a minute; a failed deploy costs the whole deploy. The
+       * retry covers the other half of that error — a fetch racing the
+       * server's first listen, which no amount of serialising prevents.
+       *
+       * failOnError stays true. A barangay page that silently did not render
+       * would be a 404 for somebody looking up their own barangay, and it
+       * should stop the deploy rather than ship.
+       */
+      prerender: {
+        /**
+         * Skip the map's query-string permutations.
+         *
+         * Every barangay profile links to "See it on the map", which carries
+         * ?lng=&lat=&b=. crawlLinks followed all 183 of them and prerendered
+         * a separate copy of the map page for each — 372 renders for 189
+         * pages, all the extras being the same route with a different camera.
+         * They were already being stripped from the sitemap and disallowed in
+         * robots.txt; this stops them being built in the first place, which
+         * is the half that was costing build time.
+         */
+        filter: (page) => !page.path.includes("?"),
+        failOnError: true,
+        concurrency: 1,
+        retryCount: 3,
+        retryDelay: 500,
+      },
       // must match lib/seo.ts — a sitemap on a different origin than the
       // canonical tags is a sitemap Search Console rejects
       sitemap: { host: "https://davflood.site" },
