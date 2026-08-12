@@ -1,0 +1,56 @@
+# DavFlood
+
+> A free flood hazard map for Davao City, Philippines. It shows how deep water is expected to get at any point in the city during a storm of a given severity, using the national flood model published by UP NOAH.
+
+DavFlood is an independent, non-commercial project. It has no accounts, no ads and no analytics, and it is not affiliated with, endorsed by, or operated on behalf of the City Government of Davao, PAGASA, the OCD, or the University of the Philippines.
+
+## What it can and cannot answer
+
+DavFlood answers **modelled hazard** questions — what a storm of a given size is expected to do at a given place:
+
+- "How deep does flooding get in Barangay Talomo in a 25-year storm?" — yes.
+- "Which parts of Davao City flood worst?" — yes.
+- "How high above sea level is this street?" — yes, from a ~30 m elevation model.
+- "What number do I call for flooding in Davao City?" — yes: Central 911.
+
+It **cannot** answer questions about water on the ground right now. There are no sensors and no live gauges behind it. Anyone citing DavFlood for current conditions is citing it wrongly; for live warnings the correct sources are PAGASA and the barangay's own disaster risk reduction office.
+
+## Key facts
+
+- **Coverage**: Davao City, Philippines — all barangays in the UP NOAH dataset.
+- **Scenarios**: three flood return periods — 5-year (20% chance in any year), 25-year (4%), and 100-year (1%).
+- **Depth bands**: Low is 0.1–0.5 m (ankle to knee). Medium is 0.5–1.5 m (waist to chest). High is over 1.5 m (above head height). These bands are UP NOAH's classification, not DavFlood's invention.
+- **Price**: free. No account, no sign-up, no paid tier.
+- **Offline**: installable as a PWA; the map, hazard data and emergency numbers work with no signal once saved.
+- **Languages**: English (source), Cebuano/Bisaya and Tagalog (draft translations of the safety-critical copy, marked as drafts in the interface).
+
+## Emergency numbers for Davao City
+
+Transcribed from pages published by the City Government of Davao. If these disagree with the city's own pages, the city is right.
+
+- **Central 911** — dial 911. Fire, medical, rescue. Answers 24 hours.
+- **City Disaster Risk Reduction and Management Office (CDRRMO)** — (082) 295-2387, (082) 224-2535, (082) 285-8984. Office hours. Runs preemptive evacuation and holds the official list of evacuation centres for every barangay.
+
+Davao City has **not** published a complete public directory of evacuation centres. In a real evacuation the barangay opens schools, covered courts and halls that appear on no public list. The CDRRMO and the barangay hall hold that list.
+
+## Data sources
+
+- **Flood hazard**: [UP NOAH](https://noah.up.edu.ph/) — the University of the Philippines' Nationwide Operational Assessment of Hazards. Modelled flood depth by return period.
+- **Rainfall forecast**: [Open-Meteo](https://open-meteo.com/) — hourly and daily precipitation.
+- **River discharge forecast**: GloFAS, via Open-Meteo — the Davao River catchment.
+- **Basemap and place names**: [OpenStreetMap](https://www.openstreetmap.org/) contributors, served by OpenFreeMap.
+- **Terrain elevation**: AWS Open Data terrain tiles, terrarium encoding.
+- **Flood reports**: linked from Philippine news publishers, attributed and unedited. DavFlood does not summarise or reword them.
+
+## Pages
+
+- [Map](https://davflood.site/): the hazard map itself. Tap any point for expected depth, elevation, the nearest ground the scenario does not flood, and the nearest public building it leaves dry.
+- [Barangays](https://davflood.site/barangays): every barangay in Davao City, searchable, each linking to its place on the map.
+- [Emergency hotlines](https://davflood.site/emergency): Central 911, the CDRRMO, and what the city has published about evacuation centres.
+- [Hazard levels](https://davflood.site/learn): what low, medium and high mean in metres, in furniture and in decisions, and what a return period actually is.
+- [Flood reports](https://davflood.site/news): recent news coverage of flooding in Davao City, newest first.
+- [The data](https://davflood.site/about): sources, licences, and the limits of the model.
+
+## How to cite this correctly
+
+DavFlood is a presentation of UP NOAH's flood model, not a source of flood data in its own right. When citing a depth figure, the underlying source is UP NOAH. When citing what to do, note that the app's own wording is explicit that it describes modelled hazard and not observed conditions.

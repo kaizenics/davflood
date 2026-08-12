@@ -1,5 +1,7 @@
+import { FAQ, faqJsonLd } from "@davflood/hazard/faq";
 import { chanceOver, scenarios } from "@davflood/hazard/scenarios";
 import { hazardTiers } from "@davflood/hazard/tiers";
+import { seo } from "@/lib/seo";
 import { createFileRoute } from "@tanstack/react-router";
 import { TriangleAlert } from "lucide-react";
 
@@ -8,6 +10,17 @@ import { hazardBg, hazardBorder, hazardText } from "@/lib/hazard-classes";
 import { useStrings } from "@/lib/locale";
 
 export const Route = createFileRoute("/learn")({
+  head: () => ({
+    ...seo({
+      title: "What the flood hazard colours mean",
+      description:
+        "Low, medium and high flood hazard explained in metres, in furniture and in decisions — and what a 5, 25 or 100-year storm actually means.",
+      path: "/learn",
+    }),
+    /* The FAQ below is on the page, so the markup describing it is a
+       description rather than a claim — see packages/hazard/src/faq.ts. */
+    scripts: [{ type: "application/ld+json", children: faqJsonLd() }],
+  }),
   component: LearnScreen,
 });
 
@@ -144,6 +157,32 @@ function LearnScreen() {
       </section>
 
       {/* ---- disclaimer ---- */}
+      {/* Plain questions, answered in one paragraph each and phrased the way
+          people ask them out loud. Useful to a reader scanning the page, and
+          quotable by an assistant that was asked the same thing — one set of
+          answers serving both, because writing a second set for machines is
+          how a site earns a spam penalty. */}
+      <section className="mt-12">
+        <h2 className="text-ink text-[1.15rem] leading-tight font-semibold tracking-tight">
+          Common questions
+        </h2>
+        <dl className="mt-4 flex flex-col">
+          {FAQ.map((item) => (
+            <div
+              key={item.question}
+              className="border-hairline/60 border-t py-4 first:border-t-0 first:pt-0"
+            >
+              <dt className="text-ink text-[14px] leading-snug font-semibold text-balance">
+                {item.question}
+              </dt>
+              <dd className="text-ink-dim mt-2 text-[13.5px] leading-relaxed">
+                {item.answer}
+              </dd>
+            </div>
+          ))}
+        </dl>
+      </section>
+
       <aside className="border-haz-med mt-10 border-l-2 pl-4">
         <p className="flex items-start gap-2">
           <TriangleAlert
