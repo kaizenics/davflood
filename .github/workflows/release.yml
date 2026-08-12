@@ -12,6 +12,17 @@ jobs:
   release-please:
     runs-on: ubuntu-latest
     steps:
+      # Needed before anything touches git or gh. The previous version called
+      # `gh pr merge` with no checkout, and gh works out which repository it is
+      # talking about from the git remote — with no .git it failed outright
+      # ("not a git repository"), which is what broke run #17.
+      #
+      # Full history, because the squash merge below needs the branch's real
+      # ancestry rather than a shallow tip.
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
       # 1. Read the commits since the last tag, work out the next version, and
       #    open (or update) the release PR carrying the bump and the changelog.
       - uses: googleapis/release-please-action@v4
@@ -23,35 +34,61 @@ jobs:
           # not need editing if the default branch is renamed
           target-branch: ${{ github.ref_name }}
 
-      # 2. Merge it immediately. Squash, because the PR is one logical change
-      #    however many times release-please amended it — and the squash
-      #    subject is the PR title, which is the "chore(main): release X.Y.Z"
-      #    string step 3 looks for.
-      - name: Merge the release PR
+      # 2. Land it, authored by the maintainer.
+      #
+      #    Done with git rather than `gh pr merge` for one reason: GitHub's
+      #    squash merge attributes the commit to the PR's AUTHOR, and the PR is
+      #    opened by github-actions[bot]. Every release commit therefore landed
+      #    under the bot's name. Squashing locally lets --author say who is
+      #    actually responsible for the release, with the bot credited as
+      #    co-author for the work it genuinely did.
+      #
+      #    Consequence worth knowing: the PR ends up "closed" rather than
+      #    "merged", because the commit reaches the branch by push instead of
+      #    through GitHub's merge button. The code is identical either way.
+      - name: Merge the release PR as the maintainer
         if: ${{ steps.open.outputs.pr }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR: ${{ fromJson(steps.open.outputs.pr).number }}
+          AUTHOR_NAME: Niko
+          AUTHOR_EMAIL: nicosejohnsoriano@gmail.com
         run: |
-          gh pr merge --squash --delete-branch \
-            "${{ fromJson(steps.open.outputs.pr).number }}"
+          set -euo pipefail
+
+          # asked of the API rather than read from the action's output, so a
+          # change to the action's output shape cannot silently break this
+          BRANCH=$(gh pr view "$PR" --json headRefName -q .headRefName)
+          TITLE=$(gh pr view "$PR" --json title -q .title)
+
+          git config user.name "$AUTHOR_NAME"
+          git config user.email "$AUTHOR_EMAIL"
+
+          git fetch origin "$BRANCH"
+          git merge --squash "origin/$BRANCH"
+          git commit \
+            --author="$AUTHOR_NAME <$AUTHOR_EMAIL>" \
+            -m "$TITLE" \
+            -m "Co-authored-by: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>"
+
+          git push origin "HEAD:${{ github.ref_name }}"
+
+          gh pr close "$PR" --delete-branch \
+            --comment "Squashed onto \`${{ github.ref_name }}\` by the release workflow, authored by the maintainer with github-actions credited as co-author."
 
       # 3. Run it AGAIN, and this is the step the whole thing turns on.
       #
       #    A push made with GITHUB_TOKEN does not trigger workflows. GitHub
       #    does that deliberately, to stop a workflow re-triggering itself
-      #    forever. It means the merge above will NOT start this workflow a
+      #    forever. It means the push above will NOT start this workflow a
       #    second time — so without this step the version bump lands on the
       #    branch and the tag and the GitHub Release are never created. The
-      #    repo would sit at "1.4.1 in package.json, 1.3.0 on the releases
+      #    repo would sit at "1.5.0 in package.json, 1.4.1 on the releases
       #    page" with nothing obviously broken to explain why.
       #
       #    Running the action a second time in the same job does what that
       #    missing run would have: it sees the release commit now on the
       #    branch and publishes the tag and the release notes.
-      #
-      #    The alternative is a personal access token, which makes the merge
-      #    trigger workflows normally. That is a secret to store and rotate,
-      #    and this needs neither.
       - name: Tag and publish the release
         if: ${{ steps.open.outputs.pr }}
         uses: googleapis/release-please-action@v4
