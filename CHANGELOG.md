@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.5.0](https://github.com/kaizenics/davflood/compare/v1.4.1...v1.5.0) (2026-08-12)
+
+
+### New
+
+* **web:** a page for every barangay in Davao City ([9b7ebcf](https://github.com/kaizenics/davflood/commit/9b7ebcf34a1ae3dd63af6ec75934402ed45918ea))
+* **web:** open flat, and let the reader ask for depth ([11ecbd0](https://github.com/kaizenics/davflood/commit/11ecbd01f7d57ad083a38a9c71f5b6702680d1a6))
+* **web:** open on the worst case, not the middle one ([2111f8d](https://github.com/kaizenics/davflood/commit/2111f8d36e39b5d463ad19b7416f4495f466d6ae))
+* **web:** show the tapped spot in all three storms at once ([31cb6fa](https://github.com/kaizenics/davflood/commit/31cb6fa898f014133fba3642a45288dd3cf406f9))
+
+
+### Fixed
+
+* **ci:** check out before merging, and land releases under the maintainer ([e5588b2](https://github.com/kaizenics/davflood/commit/e5588b247defd0419b8a544fcf7618f9db4fbc8f))
+* **web:** let the map show through the hazard fills ([72f30cf](https://github.com/kaizenics/davflood/commit/72f30cf5ce276ff22b4f9fbdee447a0d4d741d30))
+* **web:** make the hazard bands read again over satellite ([5918190](https://github.com/kaizenics/davflood/commit/59181903d0e4989c71434884d872cf715577f855))
+* **web:** stop the hazard layer doubling when you zoom out ([f789668](https://github.com/kaizenics/davflood/commit/f78966814264a7562a468ab9f091778199411f92))
+
 ## [1.4.1](https://github.com/kaizenics/davflood/compare/v1.5.1...v1.4.1) (2026-08-12)
 
 
