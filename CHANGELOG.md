@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.5.2](https://github.com/kaizenics/davflood/compare/v1.5.1...v1.5.2) (2026-08-12)
+
+
+### Fixed
+
+* add canonical redirect to consolidate search engine ranking ([b472d56](https://github.com/kaizenics/davflood/commit/b472d56d5f59408fbb674d0c6a04a2f08a16faab))
+* update redirect URL to include 'www' for canonical domain ([b5484d7](https://github.com/kaizenics/davflood/commit/b5484d79d93ca8081c3813eabc2fc9fb6e44d0d7))
+
 ## [1.5.1](https://github.com/kaizenics/davflood/compare/v1.5.0...v1.5.1) (2026-08-12)
 
 
