@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.1](https://github.com/kaizenics/davflood/compare/v1.4.0...v1.4.1) (2026-08-12)
+
+
+### Fixed
+
+* **web:** draw a house on the save button, not a smudge ([b3b03ad](https://github.com/kaizenics/davflood/commit/b3b03adf9913884354919621ed2b2d59747249bb))
+
 ## [1.4.0](https://github.com/kaizenics/davflood/compare/v1.3.0...v1.4.0) (2026-08-12)
 
 
