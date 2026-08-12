@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.5.1](https://github.com/kaizenics/davflood/compare/v1.5.0...v1.5.1) (2026-08-12)
+
+
+### Fixed
+
+* **ci:** check out before merging, and land releases under the maintainer ([e5588b2](https://github.com/kaizenics/davflood/commit/e5588b247defd0419b8a544fcf7618f9db4fbc8f))
+
 ## [1.5.0](https://github.com/kaizenics/davflood/compare/v1.4.1...v1.5.0) (2026-08-12)
 
 
