@@ -217,10 +217,16 @@ function rebuildHazardLayers(
  * satellite.
  */
 function fillOpacityFor(basemap: BasemapKind): number {
-  // imagery is bright and busy; light cartography is bright but flat
-  if (basemap === "satellite") return 0.55;
-  if (basemap === "light") return 0.5;
-  return 0.45;
+  /* Lighter than it was — 0.55/0.5/0.45 became 0.38/0.34/0.3.
+     At the 100-year footprint, which is now what the map opens on, the old
+     values painted whole districts a solid red that hid the streets, the
+     rivers and the coastline underneath. A hazard fill has to be read
+     AGAINST the ground it describes: "is that my street" is most of what
+     someone is doing when they look at this, and they cannot do it through
+     opaque paint. The ramp itself is unchanged, so the legend still matches. */
+  if (basemap === "satellite") return 0.38;
+  if (basemap === "light") return 0.34;
+  return 0.3;
 }
 
 export const FloodMap = forwardRef<FloodMapHandle, Props>(function FloodMap(
