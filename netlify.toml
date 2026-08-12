@@ -37,7 +37,7 @@
 # rather than treating the two as competing copies of the same site.
 [[redirects]]
   from = "https://davflood.kaizenics.dev/*"
-  to = "https://davflood.site/:splat"
+  to = "https://www.davflood.site/:splat"
   status = 301
   force = true
 
