@@ -22,6 +22,7 @@
 		"./offline": "./src/offline.ts",
 		"./safe-ground": "./src/safe-ground.ts",
 		"./evacuation": "./src/evacuation.ts",
+		"./faq": "./src/faq.ts",
 		"./emergency": "./src/emergency.ts",
 		"./place": "./src/place.ts",
 		"./locale": "./src/locale.ts",
@@ -34,7 +35,8 @@
 		"check-types": "tsc --noEmit",
 		"validate:style": "tsx scripts/validate-style.ts",
 		"build:noah": "tsx scripts/build-noah-data.ts",
-		"build:admin": "tsx scripts/build-admin-data.ts"
+		"build:admin": "tsx scripts/build-admin-data.ts",
+		"build:og": "tsx scripts/build-og-image.ts"
 	},
 	"dependencies": {
 		"@maplibre/maplibre-gl-style-spec": "24.8.5",
