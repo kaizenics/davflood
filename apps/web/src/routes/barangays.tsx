@@ -5,11 +5,18 @@ import {
   barangays,
   searchBarangays,
 } from "@davflood/hazard/barangays";
+import { seo } from "@/lib/seo";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Building2, ChevronRight, Leaf, Search, X } from "lucide-react";
 import { useMemo, useState } from "react";
 
 export const Route = createFileRoute("/barangays")({
+  head: () => seo({
+    title: "Flood risk by barangay",
+    description:
+      "Search every barangay in Davao City and see the modelled flood depth for each one — Talomo, Matina, Buhangin, Bunawan, Toril and the rest.",
+    path: "/barangays",
+  }),
   component: BarangaysScreen,
 });
 

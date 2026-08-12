@@ -1,4 +1,5 @@
 import { dataSources, mapAttribution } from "@davflood/hazard/copy";
+import { seo } from "@/lib/seo";
 import { createFileRoute } from "@tanstack/react-router";
 import { ArrowUpRight, Construction } from "lucide-react";
 
@@ -7,6 +8,12 @@ import { DATA_IS_PLACEHOLDER } from "@/lib/hazard-source";
 import { useStrings } from "@/lib/locale";
 
 export const Route = createFileRoute("/about")({
+  head: () => seo({
+    title: "Where the flood data comes from",
+    description:
+      "DavFlood shows modelled flood hazard from UP NOAH, with rainfall from Open-Meteo and river forecasts from GloFAS. Independent, free, no accounts.",
+    path: "/about",
+  }),
   component: AboutScreen,
 });
 

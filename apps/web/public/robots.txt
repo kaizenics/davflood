@@ -1,0 +1,72 @@
+# DavFlood — https://davflood.site
+#
+# Everything here is public safety information about Davao City, and all of it
+# is welcome in search AND in AI answers. Someone asking an assistant "how
+# deep does it flood in Matina" should be able to get a sourced answer, so the
+# AI crawlers below are allowed on purpose rather than by omission.
+
+User-agent: *
+Allow: /
+
+# The map's state lives in query parameters (?lng=&lat=&b=) and every
+# combination renders the same page. Crawling them would multiply one URL into
+# thousands of near-identical ones; the canonical tag says the same thing and
+# this saves the crawl budget for the six pages that matter.
+Disallow: /*?
+
+# Served to the app, not to readers.
+Disallow: /flood-news.json
+Disallow: /pages.json
+Disallow: /sw.js
+
+# ---------------------------------------------------------------------------
+# AI search and answer engines.
+#
+# Listed explicitly, not because a wildcard Allow would fail, but because the
+# next person to edit this file should have to make a deliberate decision to
+# remove one. Blocking these does not merely stop training — it stops the
+# assistant being able to CITE this site, which for a flood map is the
+# difference between a Dabawenyo getting a sourced answer and a guess.
+# ---------------------------------------------------------------------------
+
+# OpenAI — ChatGPT search and browsing
+User-agent: GPTBot
+Allow: /
+User-agent: ChatGPT-User
+Allow: /
+User-agent: OAI-SearchBot
+Allow: /
+
+# Anthropic — Claude
+User-agent: ClaudeBot
+Allow: /
+User-agent: Claude-User
+Allow: /
+User-agent: anthropic-ai
+Allow: /
+
+# Perplexity
+User-agent: PerplexityBot
+Allow: /
+User-agent: Perplexity-User
+Allow: /
+
+# Google Gemini and AI Overviews (separate from Googlebot)
+User-agent: Google-Extended
+Allow: /
+
+# Microsoft Copilot
+User-agent: Bingbot
+Allow: /
+
+# Apple Intelligence / Siri
+User-agent: Applebot-Extended
+Allow: /
+
+# Common Crawl is a bulk training corpus rather than a search-and-cite bot, so
+# allowing it buys no citations. Left allowed anyway: this data is public,
+# published under open licences, and the whole point is that it spreads.
+User-agent: CCBot
+Allow: /
+
+Sitemap: https://davflood.site/sitemap.xml

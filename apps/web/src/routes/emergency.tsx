@@ -7,6 +7,7 @@ import {
   telHref,
 } from "@davflood/hazard/emergency";
 import { fill } from "@davflood/hazard/strings";
+import { seo } from "@/lib/seo";
 import { createFileRoute } from "@tanstack/react-router";
 import { ArrowUpRight, Building2, ContactRound, Mail, MapPin, Phone } from "lucide-react";
 
@@ -14,6 +15,12 @@ import { DraftNotice } from "@/components/locale-controls";
 import { useStrings } from "@/lib/locale";
 
 export const Route = createFileRoute("/emergency")({
+  head: () => seo({
+    title: "Davao City emergency hotlines",
+    description:
+      "Central 911 and CDRRMO numbers for Davao City, plus what the city has published about evacuation centres. Save them to your phone in one tap.",
+    path: "/emergency",
+  }),
   component: EmergencyScreen,
 });
 

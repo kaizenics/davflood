@@ -15,11 +15,23 @@ import raw from "../../../../CHANGELOG.md?raw";
  */
 
 /** `## [1.2.0](…) (2026-08-11)` — the link is absent on the first release. */
-const VERSION = /^##+\s+\[?v?([\d.]+(?:-[\w.]+)?)\]?(?:\([^)]*\))?\s*\(\d{4}-\d{2}-\d{2}\)/m;
+const VERSION =
+  /^##+\s+\[?v?([\d.]+(?:-[\w.]+)?)\]?(?:\([^)]*\))?\s*\((\d{4}-\d{2}-\d{2})\)/m;
+
+const MATCH = raw.match(VERSION);
 
 /**
  * Null until a release has actually been cut — never a "0.0.0" default. A
  * version number on a live site is a claim about which build a reader is
  * looking at, and inventing one to fill the chip makes that claim false.
  */
-export const currentVersion: string | null = raw.match(VERSION)?.[1] ?? null;
+export const currentVersion: string | null = MATCH?.[1] ?? null;
+
+/**
+ * When this build was released, ISO date.
+ *
+ * Used as `dateModified` in the site's structured data. A freshness signal
+ * that has to be remembered is a freshness signal that goes stale, so it
+ * comes from the release the reader is actually looking at.
+ */
+export const currentVersionDate: string | null = MATCH?.[2] ?? null;

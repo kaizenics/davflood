@@ -12,6 +12,7 @@ import { useEffect } from "react";
 import { AppHeader } from "@/components/app-header";
 import { MapShell } from "@/components/map/map-shell";
 import { registerServiceWorker } from "@/lib/offline";
+import { seo, siteJsonLd } from "@/lib/seo";
 import { THEME_INIT_SCRIPT } from "@/lib/theme";
 import appCss from "@/styles/app.css?url";
 
@@ -23,10 +24,17 @@ export const Route = createRootRoute({
         name: "viewport",
         content: "width=device-width, initial-scale=1, viewport-fit=cover",
       },
-      { title: "DavFlood — flood hazard map for Davao City" },
-      { name: "description", content: disclaimer.short },
       { name: "theme-color", content: "#060a0e" },
       { name: "color-scheme", content: "dark" },
+
+      /* The defaults. Every route overrides title/description/canonical with
+         its own seo() call — these are what an unmatched path would get, and
+         what a crawler sees if a route ever forgets. */
+      ...seo({
+        title: "Flood hazard map for Davao City",
+        description: disclaimer.long.slice(0, 155),
+        path: "/",
+      }).meta,
     ],
     links: [
       { rel: "stylesheet", href: appCss },
@@ -34,6 +42,20 @@ export const Route = createRootRoute({
       { rel: "apple-touch-icon", href: "/icon-192.png" },
       // installable, so it can be opened from a home screen with no signal
       { rel: "manifest", href: "/manifest.webmanifest" },
+
+      /* Every third-party host the app reaches on a cold start. preconnect
+         opens the TCP and TLS handshake while the HTML is still parsing;
+         on a phone on mobile data during a storm that is a real fraction of
+         time-to-first-tile. */
+      { rel: "preconnect", href: "https://tiles.openfreemap.org", crossOrigin: "anonymous" },
+      { rel: "preconnect", href: "https://s3.amazonaws.com" },
+      { rel: "dns-prefetch", href: "https://api.open-meteo.com" },
+    ],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: siteJsonLd(),
+      },
     ],
   }),
   shellComponent: RootDocument,

@@ -39,7 +39,30 @@ export default defineConfig({
         prerender: { outputPath: "/index", crawlLinks: true },
       },
       prerender: { failOnError: true },
-      sitemap: { host: "https://app.davflood.app" },
+      // must match lib/seo.ts — a sitemap on a different origin than the
+      // canonical tags is a sitemap Search Console rejects
+      sitemap: { host: "https://davflood.site" },
+
+      /**
+       * Declared so the sitemap is a statement of intent rather than a
+       * by-product of what the crawler happened to reach.
+       *
+       * "/" is here because the SPA shell config marks it excluded — it is
+       * the shell as well as a page — and a sitemap missing the homepage is
+       * missing the single most important URL on the site.
+       *
+       * Priorities are relative, and ordered by what a stranger arriving in a
+       * storm needs: the map, then the numbers to ring, then the reference.
+       */
+      pages: [
+        { path: "/", sitemap: { exclude: false, priority: 1.0, changefreq: "weekly" } },
+        { path: "/emergency", sitemap: { priority: 0.9, changefreq: "monthly" } },
+        { path: "/barangays", sitemap: { priority: 0.8, changefreq: "monthly" } },
+        { path: "/learn", sitemap: { priority: 0.7, changefreq: "monthly" } },
+        // the only page whose content genuinely changes on its own
+        { path: "/news", sitemap: { priority: 0.6, changefreq: "daily" } },
+        { path: "/about", sitemap: { priority: 0.5, changefreq: "monthly" } },
+      ],
     }),
     react(),
   ],

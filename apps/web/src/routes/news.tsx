@@ -5,10 +5,17 @@ import { ExternalLink, MapPin, Newspaper } from "lucide-react";
 
 import { useNow } from "@/hooks/use-now";
 import { useMounted } from "@/lib/query";
+import { seo } from "@/lib/seo";
 
 import { useNewsFile } from "@/hooks/use-news-pins";
 
 export const Route = createFileRoute("/news")({
+  head: () => seo({
+    title: "Davao City flood reports",
+    description:
+      "Recent news coverage of flooding in Davao City, newest first, with the barangay each report names. Sourced from Philippine publishers.",
+    path: "/news",
+  }),
   component: NewsScreen,
 });
 
