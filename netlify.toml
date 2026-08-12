@@ -23,6 +23,24 @@
   # inlined instead of being looked for at runtime
   node_bundler = "esbuild"
 
+# One canonical home, everything else points at it.
+#
+# FIRST, because Netlify applies the first matching rule and the SPA catch-all
+# below matches every path on every host — put this after it and it never
+# fires. `force` is the other half: a redirect is skipped when a real file
+# exists at that path, and this site is 189 real files, so without it only
+# unknown paths would redirect and /about would serve a second copy of the
+# site under the wrong domain.
+#
+# 301 rather than 302 on purpose. It is permanent, and it tells search engines
+# to consolidate any ranking the old host picked up onto the canonical one
+# rather than treating the two as competing copies of the same site.
+[[redirects]]
+  from = "https://davflood.kaizenics.dev/*"
+  to = "https://davflood.site/:splat"
+  status = 301
+  force = true
+
 # Prerendered routes are real files and are served as such. Anything else is
 # the SPA shell, which is what index.html is built to be — without this, an
 # unknown path gets Netlify's 404 instead of the app's.
