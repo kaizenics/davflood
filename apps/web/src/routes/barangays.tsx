@@ -5,10 +5,30 @@ import {
   barangays,
   searchBarangays,
 } from "@davflood/hazard/barangays";
+import { profileFor, slugify } from "@davflood/hazard/barangay";
+import { barangayBySlug } from "@davflood/hazard/barangay";
 import { seo } from "@/lib/seo";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { Link, createFileRoute } from "@tanstack/react-router";
+import { hazardById } from "@davflood/hazard/tiers";
 import { Building2, ChevronRight, Leaf, Search, X } from "lucide-react";
 import { useMemo, useState } from "react";
+
+/**
+ * The worst the model does to this barangay, in three words.
+ *
+ * Shown on every row because a list of 183 names is a list of 183 identical
+ * rows otherwise — and the whole reason someone opens this page is to find
+ * out which of them is the one they should worry about.
+ */
+function worstLabel(name: string): string {
+  const b = barangayBySlug(slugify(name));
+  if (!b) return "";
+  const profile = profileFor(b);
+  if (profile.dryInEveryScenario) return "not flooded in any scenario";
+  const worst = profile.scenarios[profile.scenarios.length - 1];
+  if (!worst?.worst) return "";
+  return `up to ${hazardById[worst.worst].depthShort} at the 100-year`;
+}
 
 export const Route = createFileRoute("/barangays")({
   head: () => seo({
@@ -30,7 +50,6 @@ export const Route = createFileRoute("/barangays")({
  * routes/about.tsx for why nothing here sets a width or a `sm:` breakpoint.
  */
 function BarangaysScreen() {
-  const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const results = useMemo(() => searchBarangays(query), [query]);
 
@@ -77,18 +96,14 @@ function BarangaysScreen() {
           <ul>
             {results.map((b) => (
               <li key={b.name}>
-                <button
-                  type="button"
-                  onClick={() =>
-                    navigate({
-                      to: "/",
-                      search: {
-                        lng: b.center[0],
-                        lat: b.center[1],
-                        b: b.name,
-                      },
-                    })
-                  }
+                {/* A link, not a button. It was a navigate() call, which
+                    meant the row could not be opened in a new tab, could not
+                    be copied, and — the reason this mattered — was invisible
+                    to the prerender crawler, so 183 pages existed and nothing
+                    on the site pointed at them. */}
+                <Link
+                  to="/barangay/$slug"
+                  params={{ slug: slugify(b.name) }}
                   className="border-hairline/60 hover:bg-raised/40 -mx-2 flex w-[calc(100%+1rem)] items-center gap-3 border-b px-2 py-3 text-left transition"
                 >
                   <span className="border-hairline bg-raised/60 flex size-8 shrink-0 items-center justify-center rounded-full border">
@@ -102,17 +117,16 @@ function BarangaysScreen() {
                     <span className="text-ink block text-[14px] font-semibold">
                       {b.name}
                     </span>
-                    {b.poblacion && (
-                      <span className="text-ink-dim block text-[10.5px]">
-                        Poblacion
-                      </span>
-                    )}
+                    <span className="text-ink-dim block text-[10.5px]">
+                      {b.poblacion ? "Poblacion · " : ""}
+                      {worstLabel(b.name)}
+                    </span>
                   </span>
                   <ChevronRight
                     className="text-ink-dim size-4 shrink-0"
                     aria-hidden="true"
                   />
-                </button>
+                </Link>
               </li>
             ))}
           </ul>

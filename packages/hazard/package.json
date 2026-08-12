@@ -8,6 +8,8 @@
 		"./tokens": "./src/tokens.ts",
 		"./geo": "./src/geo.ts",
 		"./barangays": "./src/barangays.ts",
+		"./barangay-profiles": "./src/barangay-profiles.ts",
+		"./barangay": "./src/barangay.ts",
 		"./scenarios": "./src/scenarios.ts",
 		"./copy": "./src/copy.ts",
 		"./footprint": "./src/footprint.ts",
@@ -36,7 +38,8 @@
 		"validate:style": "tsx scripts/validate-style.ts",
 		"build:noah": "tsx scripts/build-noah-data.ts",
 		"build:admin": "tsx scripts/build-admin-data.ts",
-		"build:og": "tsx scripts/build-og-image.ts"
+		"build:og": "tsx scripts/build-og-image.ts",
+		"build:profiles": "tsx scripts/build-barangay-profiles.ts"
 	},
 	"dependencies": {
 		"@maplibre/maplibre-gl-style-spec": "24.8.5",
