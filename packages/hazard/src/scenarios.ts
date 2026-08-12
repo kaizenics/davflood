@@ -38,7 +38,23 @@ export const scenarios: Scenario[] = [
 	},
 ];
 
-export const DEFAULT_SCENARIO: ScenarioYears = 25;
+/**
+ * The map opens on the worst case.
+ *
+ * A hazard map's default is an editorial decision, not a technical one. It
+ * was the 25-year, on the reasoning that the likely storm is the useful one
+ * for everyday planning. But somebody who opens a flood map once — which is
+ * most people, and almost everybody who opens it during a storm — should see
+ * the full extent of what the model says can happen, not a middle case they
+ * have to know to switch away from. Seeing your street dry at the 25-year and
+ * never touching the toggle is the failure this avoids.
+ *
+ * It costs more to load: the 100-year footprint is 3.9 MB of GeoJSON against
+ * 0.9 for the 25-year, because a bigger flood is a more detailed polygon set.
+ * Gzipped over the wire that is 0.57 MB against 0.14 — real on mobile data,
+ * but paid once and cached, and the offline pack already carries all three.
+ */
+export const DEFAULT_SCENARIO: ScenarioYears = 100;
 
 export const scenarioByYears: Record<ScenarioYears, Scenario> = {
 	5: scenarios[0]!,

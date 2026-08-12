@@ -16,9 +16,10 @@ import url100 from "@davflood/hazard/data/davao-100.json?url";
  * produced an 8.7 MB chunk (1.0 MB gzipped) loaded before the map could
  * render — and every scenario paid for the two nobody was looking at.
  *
- * So they are fetched per scenario and cached. First paint now needs one file
- * (~2 MB for the 25-year default), and switching scenarios pulls the next one
- * once. This is the change that seam was written for.
+ * So they are fetched per scenario and cached. First paint needs one file —
+ * 0.57 MB gzipped for the 100-year the map opens on (see DEFAULT_SCENARIO for
+ * why the worst case is the default) — and switching scenarios pulls the next
+ * one once. This is the change that seam was written for.
  *
  * Trade-off worth naming: the hazard layer now needs one network round-trip
  * on a cold cache, where the bundled version did not. On the web that was
