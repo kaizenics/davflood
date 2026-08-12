@@ -217,16 +217,26 @@ function rebuildHazardLayers(
  * satellite.
  */
 function fillOpacityFor(basemap: BasemapKind): number {
-  /* Lighter than it was — 0.55/0.5/0.45 became 0.38/0.34/0.3.
-     At the 100-year footprint, which is now what the map opens on, the old
-     values painted whole districts a solid red that hid the streets, the
-     rivers and the coastline underneath. A hazard fill has to be read
-     AGAINST the ground it describes: "is that my street" is most of what
-     someone is doing when they look at this, and they cannot do it through
-     opaque paint. The ramp itself is unchanged, so the legend still matches. */
-  if (basemap === "satellite") return 0.38;
-  if (basemap === "light") return 0.34;
-  return 0.3;
+  /**
+   * Tuned twice, and the second pass is the one that matters.
+   *
+   * These were briefly 0.38/0.34/0.3, chasing a "solid red" complaint. That
+   * complaint was really about the EXTRUDED opacity — the volumes render at
+   * fillOpacity + 0.3, so 0.55 became 0.85 and the city disappeared under it.
+   * Once the map defaulted to flat, cutting the fill as well subtracted the
+   * same problem twice and the bands went too faint to tell apart over
+   * satellite imagery, which is busy, dark and full of greens and browns that
+   * a washed-out yellow simply dissolves into.
+   *
+   * A hazard band that cannot be told from its neighbour is not a lighter
+   * map, it is a broken legend. These sit above the original values: the
+   * three colours read clearly against imagery, and the streets and coastline
+   * still show through, because flat paint at 0.6 is a very different thing
+   * from a leaning volume at 0.85.
+   */
+  if (basemap === "satellite") return 0.62;
+  if (basemap === "light") return 0.58;
+  return 0.55;
 }
 
 export const FloodMap = forwardRef<FloodMapHandle, Props>(function FloodMap(

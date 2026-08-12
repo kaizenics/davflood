@@ -201,17 +201,37 @@ export function hazardLayers(
 					hazardColor.high,
 					colors.inkDim,
 				],
-				"line-width": ["interpolate", ["linear"], ["zoom"], 12, 0.4, 16, 1.6],
+				/* Visible from the opening view, not only at street zoom.
+				   The stroke used to fade in from z11 because an outline
+				   around every one of thousands of polygons read as noise —
+				   true when the fills were opaque enough to carry the shape
+				   on their own. Over satellite imagery they are not: a band
+				   edge is where one wash of colour meets another against a
+				   background of greens and browns, and the eye needs the
+				   line to find it. Each outline is its own band's colour, so
+				   it sharpens the boundary rather than drawing a grid over
+				   the city. */
+				"line-width": [
+					"interpolate",
+					["linear"],
+					["zoom"],
+					9,
+					0.5,
+					13,
+					0.9,
+					16,
+					1.6,
+				],
 				"line-opacity": [
 					"interpolate",
 					["linear"],
 					["zoom"],
-					11,
-					0,
+					9,
+					0.5,
 					13,
-					0.45,
+					0.7,
 					15,
-					0.85,
+					0.9,
 				],
 			},
 		});
