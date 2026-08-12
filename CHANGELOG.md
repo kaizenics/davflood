@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.4.0](https://github.com/kaizenics/davflood/compare/v1.3.0...v1.4.0) (2026-08-12)
+
+
+### New
+
+* **web:** a share card, generated from the palette ([2ad196e](https://github.com/kaizenics/davflood/commit/2ad196e5a9846832cf9f7faf7e4c9bb7a2771f7f))
+* **web:** answer the questions people actually ask, once ([ae33215](https://github.com/kaizenics/davflood/commit/ae33215aac212952fb09cb329bcad9d030447b7c))
+* **web:** describe every page to search engines properly ([2d30612](https://github.com/kaizenics/davflood/commit/2d30612d2a3d2722934d9963f948a22a8be81d58))
+
 ## [1.3.0](https://github.com/kaizenics/davflood/compare/v1.2.0...v1.3.0) (2026-08-11)
 
 
