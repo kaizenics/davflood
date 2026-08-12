@@ -90,9 +90,13 @@ export function MapShell({ children }: { children: ReactNode }) {
   // satellite overrides the theme; otherwise the basemap follows it
   const basemap = view === "satellite" ? "satellite" : theme;
   const [showHazard, setShowHazard] = useState(true);
-  // depth extrusion on by default — it is the app's "3D" and degrades to a
-  // flat-looking top face when the camera is not pitched
-  const [extrude, setExtrude] = useState(true);
+  /* Flat by default, 3D on request.
+     The extruded volumes answer "how deep" beautifully at street zoom and get
+     in the way everywhere else: at city zoom they lean across the streets
+     they describe, and the map opens at z10.2 on the 100-year footprint,
+     which is the densest set there is. A first-time reader should meet the
+     footprint — where floods — before the depth of it. */
+  const [extrude, setExtrude] = useState(false);
   // mirrors the camera; updated by slider, presets AND drag gestures alike
   const [pitch, setPitch] = useState<number>(CAMERA.pitch);
 
