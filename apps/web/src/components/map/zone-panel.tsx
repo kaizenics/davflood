@@ -10,6 +10,7 @@ import { Link } from "@tanstack/react-router";
 import { fill } from "@davflood/hazard/strings";
 import { ArrowLeft, MapPin, Mountain, Navigation, Phone } from "lucide-react";
 
+import { ScenarioCompare } from "@/components/map/scenario-compare";
 import { DraftNotice } from "@/components/locale-controls";
 import { hazardBg, hazardText } from "@/lib/hazard-classes";
 import { useStrings } from "@/lib/locale";
@@ -123,6 +124,10 @@ export function ZonePanel({
           </p>
         </div>
       )}
+
+      {/* Before the prose, because it is the comparison the reader came for
+          and the paragraph below is elaboration on one row of it. */}
+      {at && <ScenarioCompare at={at} active={zone.scenario} />}
 
       <p className="text-ink-dim mt-3.5 text-[12.5px] leading-relaxed">
         {band.human}
