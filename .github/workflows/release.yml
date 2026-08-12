@@ -1,9 +1,7 @@
-
 name: Release
 
 on:
   push:
-   
     branches: [master, main]
 
 permissions:
@@ -14,9 +12,50 @@ jobs:
   release-please:
     runs-on: ubuntu-latest
     steps:
+      # 1. Read the commits since the last tag, work out the next version, and
+      #    open (or update) the release PR carrying the bump and the changelog.
       - uses: googleapis/release-please-action@v4
+        id: open
         with:
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
-      
+          # release off whichever branch triggered this, so the workflow does
+          # not need editing if the default branch is renamed
+          target-branch: ${{ github.ref_name }}
+
+      # 2. Merge it immediately. Squash, because the PR is one logical change
+      #    however many times release-please amended it — and the squash
+      #    subject is the PR title, which is the "chore(main): release X.Y.Z"
+      #    string step 3 looks for.
+      - name: Merge the release PR
+        if: ${{ steps.open.outputs.pr }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr merge --squash --delete-branch \
+            "${{ fromJson(steps.open.outputs.pr).number }}"
+
+      # 3. Run it AGAIN, and this is the step the whole thing turns on.
+      #
+      #    A push made with GITHUB_TOKEN does not trigger workflows. GitHub
+      #    does that deliberately, to stop a workflow re-triggering itself
+      #    forever. It means the merge above will NOT start this workflow a
+      #    second time — so without this step the version bump lands on the
+      #    branch and the tag and the GitHub Release are never created. The
+      #    repo would sit at "1.4.1 in package.json, 1.3.0 on the releases
+      #    page" with nothing obviously broken to explain why.
+      #
+      #    Running the action a second time in the same job does what that
+      #    missing run would have: it sees the release commit now on the
+      #    branch and publishes the tag and the release notes.
+      #
+      #    The alternative is a personal access token, which makes the merge
+      #    trigger workflows normally. That is a secret to store and rotate,
+      #    and this needs neither.
+      - name: Tag and publish the release
+        if: ${{ steps.open.outputs.pr }}
+        uses: googleapis/release-please-action@v4
+        with:
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
           target-branch: ${{ github.ref_name }}
