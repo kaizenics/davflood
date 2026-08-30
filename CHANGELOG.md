@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.6.0](https://github.com/kaizenics/davflood/compare/v1.5.2...v1.6.0) (2026-08-30)
+
+
+### New
+
+* enhance news filtering and handling for barangay-level reporting ([c031086](https://github.com/kaizenics/davflood/commit/c031086f602e9fb07fd1cdbb0a2f95dcf56aca76))
+* refactor news handler and add cron job for news fetching ([c992ab3](https://github.com/kaizenics/davflood/commit/c992ab37742b224210a4d2ba3c685e6d7e820225))
+
+
+### Fixed
+
+* configure Vercel hosting so the deployed site is not a 404 ([b5dabe1](https://github.com/kaizenics/davflood/commit/b5dabe18ac72908846b1ff1eff6189eb11a3e866))
+* update cron schedule for news fetching to run daily ([989a0c1](https://github.com/kaizenics/davflood/commit/989a0c123539f582c441f13f2bb080ae42ebbfac))
+
 ## [1.5.2](https://github.com/kaizenics/davflood/compare/v1.5.1...v1.5.2) (2026-08-12)
 
 
