@@ -1,0 +1,20 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+
+  "framework": null,
+  "buildCommand": "pnpm build",
+  "outputDirectory": "apps/web/dist/client",
+
+  "trailingSlash": false,
+
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [{ "type": "host", "value": "davflood.kaizenics.dev" }],
+      "destination": "https://www.davflood.site/:path*",
+      "permanent": true
+    }
+  ],
+
+  "rewrites": [{ "source": "/((?!api/).*)", "destination": "/index.html" }]
+}

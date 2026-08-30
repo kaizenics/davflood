@@ -10,8 +10,14 @@
   "scripts": {
     "dev": "pnpm -F web dev",
     "build": "pnpm -F web build",
-    "check-types": "pnpm -r check-types",
+    "check-types": "tsc -p api && pnpm -r check-types",
     "validate:style": "pnpm -F @davflood/hazard validate:style"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "@davflood/hazard": "workspace:*"
   },
   "devDependencies": {
     "@davflood/config": "workspace:*",

@@ -59,11 +59,12 @@ summarised — an app that paraphrases a flood report has invented a source.
 ## Workspaces
 
 ```
+api/
+  news.ts     the one server-side thing — /api/news, a Vercel function
 apps/
   web         the app — TanStack Start (SPA + prerender), MapLibre GL
 packages/
   hazard      domain: hazard tiers, geography, barangays, map style, weather, data
-  netlify     the one server-side thing — /api/news
   config      shared tsconfig base
 ```
 
@@ -113,7 +114,7 @@ pnpm --filter @davflood/hazard exec tsx scripts/build-flood-news.ts apps/web/pub
 ```
 
 Seeds or repairs the committed file by hand. The deployed site does not need it: `/api/news`
-([packages/netlify/functions/news.mts](packages/netlify/functions/news.mts)) fetches the same
+([api/news.ts](api/news.ts)) fetches the same
 sources when someone asks, behind a half-hour CDN cache, so nothing has to be committed to keep
 the news current.
 
@@ -141,6 +142,20 @@ pnpm build          # -> apps/web/dist/client
 
 `dist/client/index.html` is both the `/` document and the SPA fallback; `/about`, `/learn` and
 `/barangays` are prerendered to real HTML. Point any static host at `dist/client`.
+
+The host is Vercel, configured entirely by [vercel.json](vercel.json) — nothing is set in the
+dashboard, so the deployment is reviewable in the diff. Three things it has to say, none of
+which Vercel can infer from a monorepo whose build output is not where a framework would put it:
+
+- `outputDirectory` — the build lands in `apps/web/dist/client`, not `public/` or `dist/`.
+  Without this, a build that succeeds still deploys an empty site and every URL 404s.
+- the SPA rewrite — prerendered routes are real files and are served as such, because Vercel
+  checks the filesystem (functions included) before it applies rewrites. Anything else falls
+  through to `index.html`, which is what the shell is built to be. `/api/` is excluded from the
+  pattern so the function cannot be shadowed by the fallback.
+- the canonical redirect — `davflood.kaizenics.dev` is permanently redirected to
+  `www.davflood.site`, so search engines consolidate ranking onto one host rather than treating
+  the two as competing copies.
 
 A visit costs about 500 KB over the wire — the shell plus one scenario's polygons. Basemap
 tiles, terrain, imagery and weather all come from third parties the browser talks to directly,

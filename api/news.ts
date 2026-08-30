@@ -1,5 +1,3 @@
-import type { Config, Context } from "@netlify/functions";
-
 import { collectNews, mergeNews } from "@davflood/hazard/news-sources";
 
 /**
@@ -11,7 +9,7 @@ import { collectNews, mergeNews } from "@davflood/hazard/news-sources";
  * the question was only whether that something writes to git every half hour
  * or answers a request. This answers a request.
  *
- * The CDN is what makes that affordable. `s-maxage` means Netlify's edge
+ * The CDN is what makes that affordable. `s-maxage` means Vercel's edge
  * serves one cached copy to everybody for half an hour and only one visitor
  * in that window actually reaches this code — so the sources see roughly the
  * same traffic a cron job would have sent them, and the repository stays
@@ -23,7 +21,7 @@ import { collectNews, mergeNews } from "@davflood/hazard/news-sources";
  * back of the two-month window is the CLI's job, and the file it produces is
  * what this merges on top of.
  */
-export default async (req: Request, _context: Context) => {
+export default async function handler(req: Request) {
   // Concurrently: the seed is a fetch of our own origin and has no reason to
   // spend any of the budget the sources need.
   const [seed, collected] = await Promise.all([
@@ -47,12 +45,15 @@ export default async (req: Request, _context: Context) => {
       headers: {
         // the browser re-asks often; the edge is what actually holds it
         "cache-control": "public, max-age=60",
-        "netlify-cdn-cache-control":
-          "public, s-maxage=1800, stale-while-revalidate=3600, durable",
+        // Vercel's edge reads this one and strips it from the response, so
+        // the browser is left with the short max-age above rather than
+        // caching a half-hour copy of its own.
+        "vercel-cdn-cache-control":
+          "public, s-maxage=1800, stale-while-revalidate=3600",
       },
     },
   );
-};
+}
 
 /**
  * The committed file, used as the floor.
@@ -60,7 +61,7 @@ export default async (req: Request, _context: Context) => {
  * It carries the two-month history the shallow fetch above cannot reach, and
  * it is why a cold start still returns a full list rather than today's four
  * headlines. Fetched from the deployed site rather than read from disk: a
- * bundled function has no reliable path to the publish directory.
+ * bundled function has no reliable path to the static output directory.
  */
 async function loadSeed(req: Request) {
   try {
@@ -74,7 +75,3 @@ async function loadSeed(req: Request) {
     return [];
   }
 }
-
-export const config: Config = {
-  path: "/api/news",
-};
