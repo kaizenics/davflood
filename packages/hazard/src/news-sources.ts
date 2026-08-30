@@ -63,7 +63,10 @@ const ELSEWHERE = [
 /** Without one of these it is not about flooding. */
 const FLOOD_WORDS = ["flood", "flash flood", "baha", "inundat", "submerged", "overflow"];
 
-function keep(title: string): boolean {
+function keep(
+  title: string,
+  opts: { allowBarangayOnly?: boolean } = {},
+): boolean {
   const t = title.toLowerCase();
   if (!FLOOD_WORDS.some((w) => t.includes(w))) return false;
   // an explicit "Davao City" beats the elsewhere list
@@ -77,7 +80,7 @@ function keep(title: string): boolean {
    * requiring it threw away precisely the barangay-level reporting the pins
    * exist to show.
    */
-  return locateHeadline(title) !== null;
+  return opts.allowBarangayOnly === true && locateHeadline(title) !== null;
 }
 
 /**
@@ -133,14 +136,21 @@ async function fromGoogleNews(opts: CollectOptions): Promise<NewsItem[]> {
    * from the hazard data and only the scheduled job has that on disk.
    */
   for (const name of opts.floodProne ?? []) {
-    out.push(...(await googleNewsPage(`(flood OR flooding OR baha) "${name}" Davao`)));
+    out.push(
+      ...(await googleNewsPage(`(flood OR flooding OR baha) "${name}" Davao`, {
+        allowBarangayOnly: true,
+      })),
+    );
     await new Promise((r) => setTimeout(r, 800));
   }
 
   return out;
 }
 
-async function googleNewsPage(query: string): Promise<NewsItem[]> {
+async function googleNewsPage(
+  query: string,
+  opts: { allowBarangayOnly?: boolean } = {},
+): Promise<NewsItem[]> {
   const q = encodeURIComponent(query);
   const res = await get(
     `https://news.google.com/rss/search?q=${q}&hl=en-PH&gl=PH&ceid=PH:en`,
@@ -181,7 +191,7 @@ async function googleNewsPage(query: string): Promise<NewsItem[]> {
         date: Number.isNaN(when.getTime()) ? "" : when.toISOString(),
       };
     })
-    .filter((i) => i.title && i.url && i.date && keep(i.title));
+    .filter((i) => i.title && i.url && i.date && keep(i.title, opts));
 }
 
 function escapeRe(s: string): string {
@@ -218,47 +228,63 @@ async function fromLocalFeeds(): Promise<NewsItem[]> {
   const perFeed = await Promise.allSettled(
     LOCAL_FEEDS.map(([name, url]) => readFeed(name, url)),
   );
-  return perFeed.flatMap((r) => (r.status === "fulfilled" ? r.value : []));
+  const out: NewsItem[] = [];
+  let failures = 0;
+  perFeed.forEach((result, i) => {
+    if (result.status === "fulfilled") {
+      out.push(...result.value);
+      return;
+    }
+
+    failures++;
+    const name = LOCAL_FEEDS[i]?.[0] ?? "feed";
+    console.warn(
+      `  ${name}: ${result.reason instanceof Error ? result.reason.message : result.reason}`,
+    );
+  });
+
+  if (failures === LOCAL_FEEDS.length) throw new Error("all local feeds failed");
+
+  return out;
 }
 
 async function readFeed(name: string, url: string): Promise<NewsItem[]> {
   const out: NewsItem[] = [];
-  {
-    try {
-      const res = await get(url, { redirect: "follow" });
-      if (!res.ok) throw new Error(`http ${res.status}`);
-      const xml = await res.text();
+  const res = await get(url, { redirect: "follow" });
+  if (!res.ok) throw new Error(`http ${res.status}`);
+  const xml = await res.text();
 
-      for (const m of xml.matchAll(/<item>([\s\S]*?)<\/item>/g)) {
-        const block = m[1] ?? "";
-        const cdata = (s: string) =>
-          s.replace(/^<!\[CDATA\[/, "").replace(/\]\]>$/, "").trim();
-        const tag = (n: string) => {
-          const hit = block.match(
-            new RegExp(`<${n}(?:\\s[^>]*)?>([\\s\\S]*?)</${n}>`),
-          );
-          return hit?.[1] ? cdata(hit[1]) : "";
-        };
+  for (const m of xml.matchAll(/<item>([\s\S]*?)<\/item>/g)) {
+    const block = m[1] ?? "";
+    const cdata = (s: string) =>
+      s.replace(/^<!\[CDATA\[/, "").replace(/\]\]>$/, "").trim();
+    const tag = (n: string) => {
+      const hit = block.match(
+        new RegExp(`<${n}(?:\\s[^>]*)?>([\\s\\S]*?)</${n}>`),
+      );
+      return hit?.[1] ? cdata(hit[1]) : "";
+    };
 
-        const title = decodeEntities(tag("title")).replace(/\s+/g, " ").trim();
-        const link = tag("link");
-        if (!title || !link || !keep(title)) continue;
+    const title = decodeEntities(tag("title")).replace(/\s+/g, " ").trim();
+    const link = tag("link");
+        if (
+          !title ||
+          !link ||
+          !keep(title, { allowBarangayOnly: name !== "Inquirer" })
+        ) {
+          continue;
+        }
 
-        const when = new Date(tag("pubDate"));
-        if (Number.isNaN(when.getTime())) continue;
+    const when = new Date(tag("pubDate"));
+    if (Number.isNaN(when.getTime())) continue;
 
-        out.push({
-          title,
-          url: link,
-          source: name,
-          date: when.toISOString(),
-          ...(imageFrom(block) ? { image: imageFrom(block)! } : {}),
-        });
-      }
-    } catch (err) {
-      // one dead feed is not worth failing the run over
-      console.warn(`  ${name}: ${err instanceof Error ? err.message : err}`);
-    }
+    out.push({
+      title,
+      url: link,
+      source: name,
+      date: when.toISOString(),
+      ...(imageFrom(block) ? { image: imageFrom(block)! } : {}),
+    });
   }
 
   return out;
