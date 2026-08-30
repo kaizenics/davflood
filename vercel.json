@@ -4,6 +4,7 @@
   "framework": null,
   "buildCommand": "pnpm build",
   "outputDirectory": "apps/web/dist/client",
+  "crons": [{ "path": "/api/news", "schedule": "*/30 * * * *" }],
 
   "trailingSlash": false,
 

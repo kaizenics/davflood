@@ -21,7 +21,7 @@ import { collectNews, mergeNews } from "@davflood/hazard/news-sources";
  * back of the two-month window is the CLI's job, and the file it produces is
  * what this merges on top of.
  */
-export default async function handler(req: Request) {
+export async function GET(req: Request) {
   // Concurrently: the seed is a fetch of our own origin and has no reason to
   // spend any of the budget the sources need.
   const [seed, collected] = await Promise.all([
@@ -54,6 +54,8 @@ export default async function handler(req: Request) {
     },
   );
 }
+
+export default { fetch: GET };
 
 /**
  * The committed file, used as the floor.
