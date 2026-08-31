@@ -108,6 +108,8 @@ export type RiverDay = {
 
 export type River = {
   today: number;
+  /** ISO date used for the current reading */
+  todayDate: string;
   /** today's flow as a multiple of the five-year median */
   timesNormal: number;
   level: RiverLevel;
@@ -121,7 +123,9 @@ export function riverUrl(): string {
     latitude: String(RIVER_GAUGE.lat),
     longitude: String(RIVER_GAUGE.lng),
     daily: "river_discharge",
+    past_days: "6",
     forecast_days: "7",
+    timezone: "Asia/Manila",
   });
   return `${ENDPOINT}?${params.toString()}`;
 }
@@ -140,8 +144,14 @@ export function parseRiver(raw: unknown): River {
     days.push({ date, discharge });
   }
 
-  const today = days[0]?.discharge ?? 0;
-  const rest = days.slice(1);
+  const todayIso = dateInManila();
+  const todayIndex = days.findIndex((day) => day.date === todayIso);
+  // Keep the parser useful for fixtures and graceful if the provider ever
+  // omits today's date: the old response shape began with today.
+  const currentIndex = todayIndex >= 0 ? todayIndex : 0;
+  const current = days[currentIndex];
+  const today = current?.discharge ?? 0;
+  const rest = days.slice(currentIndex + 1);
   const peak = rest.reduce<RiverDay | null>(
     (best, day) => (!best || day.discharge > best.discharge ? day : best),
     null,
@@ -149,12 +159,25 @@ export function parseRiver(raw: unknown): River {
 
   return {
     today,
+    todayDate: current?.date ?? todayIso,
     timesNormal: today / RIVER_NORMAL.p50,
     level: riverLevel(today),
     days,
     // only interesting if it is meaningfully above today
     peak: peak && peak.discharge > today * 1.15 ? peak : null,
   };
+}
+
+function dateInManila(now = new Date()): string {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "Asia/Manila",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(now);
+  const value = (type: Intl.DateTimeFormatPartTypes) =>
+    parts.find((part) => part.type === type)?.value ?? "";
+  return `${value("year")}-${value("month")}-${value("day")}`;
 }
 
 export async function fetchRiver(signal?: AbortSignal): Promise<River> {

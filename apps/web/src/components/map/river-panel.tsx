@@ -1,10 +1,13 @@
 import { RIVER_GAUGE, RIVER_NORMAL } from "@davflood/hazard/river";
 import type { River } from "@davflood/hazard/river";
+import { colorsFor } from "@davflood/hazard/tokens";
 import { Waves } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { gcTime, useMounted } from "@/lib/query";
 
 import { fetchRiver } from "@davflood/hazard/river";
+import { RiverTrendChart } from "@/components/ui/river-trend-chart";
+import { useTheme } from "@/lib/theme";
 
 /**
  * The river, forecast from rainfall over the whole catchment.
@@ -19,10 +22,15 @@ import { fetchRiver } from "@davflood/hazard/river";
  * neither of them supports.
  */
 export function RiverPanel() {
+  const { theme } = useTheme();
+  const palette = colorsFor(theme);
   const { data, isLoading, isError } = useQuery<River>({
     // client-only, like every fetch here — see use-news-pins.ts
     enabled: typeof window !== "undefined",
-    queryKey: ["river", "davao"],
+    // v2 adds six historical days and an explicit todayDate. Keeping it
+    // separate prevents an older in-memory forecast-only response from being
+    // rendered with the history-aware chart.
+    queryKey: ["river", "davao", "history-v2"],
     queryFn: ({ signal }) => fetchRiver(signal),
     // GloFAS is a daily model; polling faster returns the same number
     staleTime: 6 * 60 * 60 * 1000,
@@ -84,6 +92,22 @@ export function RiverPanel() {
               ? ` Forecast to peak around ${data.peak.discharge.toFixed(0)} m³/s on ${weekday(data.peak.date)}.`
               : ""}
           </p>
+
+          <section aria-labelledby="river-trend-heading">
+            <div className="mt-3 flex items-center justify-between gap-3">
+              <h3 id="river-trend-heading" className="text-ink text-[11.5px] font-semibold">
+                Recent flow and outlook
+              </h3>
+              <div className="text-ink-dim flex items-center gap-2 text-[9.5px]">
+                <span className="flex items-center gap-1"><i className="bg-tide block h-0.5 w-3" />Recent</span>
+                <span className="flex items-center gap-1"><i className="border-ink-dim block w-3 border-t border-dashed" />Forecast</span>
+              </div>
+            </div>
+            <RiverTrendChart river={data} palette={palette} />
+            <p className="text-ink-dim -mt-1 text-[9.5px]">
+              Dashed horizontal line marks the elevated-flow threshold ({RIVER_NORMAL.p90.toFixed(0)} m³/s).
+            </p>
+          </section>
 
           <p className="text-ink-dim mt-2 text-[10px] leading-relaxed">
             Modelled flow in the river channel {RIVER_GAUGE.where}, against its{" "}
