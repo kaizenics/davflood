@@ -1,14 +1,17 @@
 import { CAMERA, DAVAO_BBOX } from "@davflood/hazard/geo";
 import type { LngLat } from "@davflood/hazard/geo";
 import {
+  BARANGAY_LAYER_IDS,
   BOUNDARY_LAYER_IDS,
   HAZARD_BEFORE_ID,
   HAZARD_FILL_LAYER_IDS,
   LAYER_IDS,
   RAIN_LAYER_ID,
+  SOURCE_BARANGAYS,
   SOURCE_BOUNDARY,
   SOURCE_HAZARD,
   SOURCE_RAIN,
+  barangayLayers,
   boundaryLayers,
   hazardLayers,
   rainLayers,
@@ -28,6 +31,10 @@ import { colors } from "@davflood/hazard/tokens";
    the bundle and cheap next to the round-trip it saves. The hazard files go
    through `?url` because they are megabytes; this one is not. */
 import cityBoundary from "@davflood/hazard/data/davao-boundary.json";
+/* 176 KB for 117 outlines. Same reasoning as the city boundary above: small
+   enough to bundle, and bundling means the barangay you searched for is
+   outlined even when the network has gone. */
+import barangayOutlines from "@davflood/hazard/data/davao-barangays.json";
 // maplibre-gl v6 ships named exports only — there is no default export
 import * as maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
@@ -219,7 +226,8 @@ function rebuildHazardLayers(
 }
 
 /**
- * (Re)creates the city outline on top of the current style.
+ * (Re)creates the reference geometry — city outline and barangay boundaries —
+ * on top of the current style.
  *
  * Separate from the hazard rebuild rather than folded into it, because the
  * two are re-added at the same anchor and the LAST one added wins the top
@@ -227,15 +235,60 @@ function rebuildHazardLayers(
  * an extruded hazard volume drawn over it swallows it whole. Every caller
  * that rebuilds the hazard layers therefore calls this straight afterwards.
  */
-function rebuildBoundaryLayers(m: maplibregl.Map, basemap: BasemapKind) {
+function rebuildBoundaryLayers(
+  m: maplibregl.Map,
+  basemap: BasemapKind,
+  focusedBarangay: string | null,
+) {
   if (!m.getSource(SOURCE_BOUNDARY)) return;
-  for (const id of BOUNDARY_LAYER_IDS) {
+  const theme = basemap === "light" ? "light" : "dark";
+  const ids = [...Object.values(BARANGAY_LAYER_IDS), ...BOUNDARY_LAYER_IDS];
+  for (const id of ids) {
     if (m.getLayer(id)) m.removeLayer(id);
   }
+
   const before = m.getLayer(HAZARD_BEFORE_ID) ? HAZARD_BEFORE_ID : undefined;
-  for (const layer of boundaryLayers(basemap === "light" ? "light" : "dark")) {
+  // barangays first: the city edge is the stronger line and must win where
+  // the two run together, which along the city's own border is everywhere
+  for (const layer of [...barangayLayers(theme), ...boundaryLayers(theme)]) {
     m.addLayer(layer as maplibregl.LayerSpecification, before);
   }
+  applyBarangayFocus(m, focusedBarangay);
+}
+
+/** Picks one barangay out by name; null clears it. */
+function applyBarangayFocus(m: maplibregl.Map, name: string | null) {
+  for (const id of [BARANGAY_LAYER_IDS.focusFill, BARANGAY_LAYER_IDS.focusLine]) {
+    if (m.getLayer(id)) m.setFilter(id, ["==", ["get", "name"], name ?? ""]);
+  }
+}
+
+/**
+ * The outline of a named barangay, or null when OSM has no boundary for it.
+ *
+ * Null is the common case for a third of the city and is not a failure: those
+ * barangays exist in OSM as a single point. Callers fall back to the centroid
+ * they already had.
+ */
+function outlineBounds(name: string): [[number, number], [number, number]] | null {
+  const feature = (
+    barangayOutlines as GeoJSON.FeatureCollection
+  ).features.find((f) => f.properties?.name === name);
+  if (!feature || feature.geometry?.type !== "Polygon") return null;
+
+  let w = Infinity;
+  let s = Infinity;
+  let e = -Infinity;
+  let n = -Infinity;
+  for (const point of feature.geometry.coordinates[0] ?? []) {
+    const x = point[0] ?? 0;
+    const y = point[1] ?? 0;
+    if (x < w) w = x;
+    if (x > e) e = x;
+    if (y < s) s = y;
+    if (y > n) n = y;
+  }
+  return Number.isFinite(w) ? [[w, s], [e, n]] : null;
 }
 
 /**
@@ -324,6 +377,9 @@ export const FloodMap = forwardRef<FloodMapHandle, Props>(function FloodMap(
   const rainRef = useRef(rain);
   const showRainRef = useRef(showRain);
   const onOpenNewsRef = useRef(onOpenNews);
+  // read by initLayers, so a barangay highlighted before the style finished
+  // parsing survives the style reload a basemap swap causes
+  const focusRef = useRef(focus);
 
   useEffect(() => {
     onSelectRef.current = onSelect;
@@ -338,6 +394,7 @@ export const FloodMap = forwardRef<FloodMapHandle, Props>(function FloodMap(
     rainRef.current = rain;
     showRainRef.current = showRain;
     onOpenNewsRef.current = onOpenNews;
+    focusRef.current = focus;
   });
 
   useImperativeHandle(ref, () => ({
@@ -488,7 +545,11 @@ export const FloodMap = forwardRef<FloodMapHandle, Props>(function FloodMap(
           type: "geojson",
           data: cityBoundary as GeoJSON.Feature,
         });
-        rebuildBoundaryLayers(m, basemapRef.current);
+        m.addSource(SOURCE_BARANGAYS, {
+          type: "geojson",
+          data: barangayOutlines as GeoJSON.FeatureCollection,
+        });
+        rebuildBoundaryLayers(m, basemapRef.current, focusRef.current?.name ?? null);
 
         // re-apply everything that changed while the style was still loading —
         // this also runs after a basemap swap, which resets the whole style
@@ -597,6 +658,7 @@ export const FloodMap = forwardRef<FloodMapHandle, Props>(function FloodMap(
     if (map.current) applyRainVisibility(map.current, showRain);
   }, [showRain, layerEpoch]);
 
+
   /* flat <-> extruded: different layer types, so remove and re-add. A basemap
      swap does not come through here — setStyle refires style.load, and
      initLayers rebuilds with the current refs. */
@@ -605,7 +667,7 @@ export const FloodMap = forwardRef<FloodMapHandle, Props>(function FloodMap(
     if (!m || !m.getSource(SOURCE_HAZARD)) return;
     rebuildHazardLayers(m, { basemap, extrude });
     // the hazard layers just took the top slot back — see rebuildBoundaryLayers
-    rebuildBoundaryLayers(m, basemap);
+    rebuildBoundaryLayers(m, basemap, focus?.name ?? null);
     applySelection(m, selectedZoneId);
     applyHazardVisibility(m, showHazard);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -629,6 +691,7 @@ export const FloodMap = forwardRef<FloodMapHandle, Props>(function FloodMap(
 
     pin.current?.remove();
     pin.current = null;
+    applyBarangayFocus(m, focus?.name ?? null);
     if (!focus) return;
 
     const center: [number, number] = [...focus.center];
@@ -642,9 +705,33 @@ export const FloodMap = forwardRef<FloodMapHandle, Props>(function FloodMap(
       .setLngLat(center)
       .addTo(m);
 
-    // Pitch and bearing are deliberately left alone: the user may have set
-    // them, and this is a "go here", not a "reset the view".
-    if (prefersReducedMotion()) {
+    /**
+     * Frame the whole barangay when we know its shape.
+     *
+     * FOCUS_ZOOM was a compromise for having only a centroid: one zoom for
+     * every barangay, from a few downtown blocks to the tens of square
+     * kilometres of Marilog, chosen so that a centroid a few hundred metres
+     * off would still leave the pin on screen. Where an outline exists that
+     * guess is unnecessary — the camera can frame the actual area, and the
+     * reader sees where the barangay ends rather than inferring it from how
+     * far the pin is from the middle.
+     *
+     * The 66 barangays OSM has only as a point still take the old path, which
+     * is why it stays. Pitch and bearing are left alone in both: the user may
+     * have set them, and this is "go here", not "reset the view".
+     */
+    const bounds = focus.name ? outlineBounds(focus.name) : null;
+    const instant = prefersReducedMotion();
+
+    if (bounds) {
+      m.fitBounds(bounds, {
+        padding: { top: 80, bottom: 80, left: 70, right: 70 },
+        // a small barangay must not be zoomed past the point where the hazard
+        // polygons inside it stop being legible
+        maxZoom: 15.5,
+        duration: instant ? 0 : 1600,
+      });
+    } else if (instant) {
       m.jumpTo({ center, zoom: FOCUS_ZOOM });
     } else {
       m.flyTo({ center, zoom: FOCUS_ZOOM, duration: 2200, curve: 1.5 });

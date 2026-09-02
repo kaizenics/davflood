@@ -306,6 +306,73 @@ export function rainLayers(theme: Theme = "dark"): LayerSpecification[] {
   ];
 }
 
+/* ---------------- the barangay outlines ---------------- */
+
+export const SOURCE_BARANGAYS = "barangays";
+
+export const BARANGAY_LAYER_IDS = {
+	outline: "barangay-outline",
+	focusFill: "barangay-focus-fill",
+	focusLine: "barangay-focus-line",
+} as const;
+
+/**
+ * Barangay boundaries, for the 117 of 183 that OpenStreetMap actually has.
+ *
+ * Two jobs, and they need very different weights.
+ *
+ * The faint always-on outline is orientation: "which barangay am I looking
+ * at" is the question every local asks of a city map, and the hazard polygons
+ * cross those lines constantly. It fades in from z11 and never gets strong,
+ * because 117 outlines drawn firmly over the whole city is the same noise
+ * problem the hazard outlines were tuned away from — at the overview it would
+ * compete with the thing people came to read.
+ *
+ * The focus pair is the answer to "show me Talomo": one barangay picked out
+ * by name, with a wash and a firm edge. It carries no hazard meaning and so
+ * uses the brand accent rather than anything on the hazard ramp — a barangay
+ * being selected must never look like a barangay being warned about.
+ */
+export function barangayLayers(theme: Theme = "dark"): LayerSpecification[] {
+	const colors = colorsFor(theme);
+
+	return [
+		{
+			id: BARANGAY_LAYER_IDS.outline,
+			type: "line",
+			source: SOURCE_BARANGAYS,
+			minzoom: 11,
+			paint: {
+				"line-color": colors.inkDim,
+				"line-width": ["interpolate", ["linear"], ["zoom"], 11, 0.4, 16, 1.1],
+				// never above a third: this is context, and the hazard bands and
+				// the city boundary both have to stay louder than it
+				"line-opacity": ["interpolate", ["linear"], ["zoom"], 11, 0, 13, 0.28, 16, 0.34],
+			},
+		},
+		{
+			id: BARANGAY_LAYER_IDS.focusFill,
+			type: "fill",
+			source: SOURCE_BARANGAYS,
+			// empty string never matches, so nothing is picked out until asked
+			filter: ["==", ["get", "name"], ""],
+			paint: { "fill-color": colors.tide, "fill-opacity": 0.1 },
+		},
+		{
+			id: BARANGAY_LAYER_IDS.focusLine,
+			type: "line",
+			source: SOURCE_BARANGAYS,
+			filter: ["==", ["get", "name"], ""],
+			layout: { "line-cap": "round", "line-join": "round" },
+			paint: {
+				"line-color": colors.tide,
+				"line-width": ["interpolate", ["linear"], ["zoom"], 10, 1.4, 16, 2.6],
+				"line-opacity": 0.9,
+			},
+		},
+	];
+}
+
 /* ---------------- the city outline ---------------- */
 
 export const SOURCE_BOUNDARY = "city-boundary";
