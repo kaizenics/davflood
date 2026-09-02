@@ -1,33 +1,20 @@
 import { CAMERA, DAVAO_BBOX } from "@davflood/hazard/geo";
 import type { LngLat } from "@davflood/hazard/geo";
 import {
-  BARANGAY_LAYER_IDS,
-  BOUNDARY_LAYER_IDS,
-  LANDSLIDE_LAYER_IDS,
   HAZARD_BEFORE_ID,
   HAZARD_FILL_LAYER_IDS,
-  LAYER_IDS,
-  RAIN_LAYER_ID,
   SOURCE_BARANGAYS,
-  SOURCE_LANDSLIDE,
   SOURCE_BOUNDARY,
   SOURCE_HAZARD,
+  SOURCE_LANDSLIDE,
   SOURCE_RAIN,
-  barangayLayers,
-  boundaryLayers,
-  hazardLayers,
   landslideLayers,
   rainLayers,
 } from "@davflood/hazard/layers";
-import { representativePoint, ringsContain } from "@davflood/hazard/safe-ground";
 import { asHazardProperties } from "@davflood/hazard/schema";
 import type { HazardProperties } from "@davflood/hazard/schema";
 import type { ScenarioYears } from "@davflood/hazard/scenarios";
-import {
-  SOURCE_TERRAIN,
-  TERRAIN_EXAGGERATION,
-  buildBaseStyle,
-} from "@davflood/hazard/style";
+import { TERRAIN_EXAGGERATION, buildBaseStyle } from "@davflood/hazard/style";
 import type { BasemapKind } from "@davflood/hazard/style";
 import { colors } from "@davflood/hazard/tokens";
 /* Imported, not fetched: ~48 KB of outline, which is small enough to sit in
@@ -51,6 +38,22 @@ import {
   useState,
 } from "react";
 
+import {
+  applyBarangayFocus,
+  applyHazardVisibility,
+  applyLandslideVisibility,
+  applyRainVisibility,
+  applySelection,
+  applyTerrain,
+  originOf,
+  outlineBounds,
+  rebuildBoundaryLayers,
+  rebuildHazardLayers,
+} from "@/components/map/map-ops";
+import {
+  useMapMarker,
+  useMapMarkers,
+} from "@/components/map/use-map-marker";
 import { createFocusPin } from "@/components/map/focus-pin";
 import { createHomePin } from "@/components/map/home-pin";
 import { createNewsPin } from "@/components/map/news-pin";
@@ -149,190 +152,6 @@ type Props = {
   onSaveTapPoint?: () => void;
 };
 
-/**
- * Both helpers no-op until the layer/source they touch exists. maplibre-gl
- * throws when asked about a missing layer, and the hazard layers only appear
- * once the style has loaded — so every caller tolerates being early rather
- * than assuming it is late.
- */
-function applySelection(m: maplibregl.Map, zoneId: string | null) {
-  if (!m.getLayer(LAYER_IDS.selected)) return;
-  m.setFilter(LAYER_IDS.selected, ["==", ["get", "zone_id"], zoneId ?? ""]);
-}
-
-function applyTerrain(m: maplibregl.Map, enabled: boolean) {
-  if (!m.getSource(SOURCE_TERRAIN)) return;
-  m.setTerrain(
-    enabled
-      ? { source: SOURCE_TERRAIN, exaggeration: TERRAIN_EXAGGERATION }
-      : null,
-  );
-}
-
-/** All hazard layers, including the outline and selection rings. */
-const ALL_HAZARD_LAYERS = Object.values(LAYER_IDS);
-
-/**
- * Where to measure the way out from.
- *
- * Normally the point under the cursor. But a tap on an extruded zone lands on
- * the side of a volume, and the ground beneath the cursor can be outside the
- * footprint entirely — so when it is, fall back to a point known to be inside
- * the zone the tap actually selected.
- */
-function originOf(feature: maplibregl.MapGeoJSONFeature, at: LngLat): LngLat {
-  const geometry = feature.geometry;
-  if (geometry?.type !== "Polygon") return at;
-  const rings = geometry.coordinates;
-  if (ringsContain(rings, at[0], at[1])) return at;
-  return representativePoint(rings) ?? at;
-}
-
-function applyRainVisibility(m: maplibregl.Map, visible: boolean) {
-  if (!m.getLayer(RAIN_LAYER_ID)) return;
-  m.setLayoutProperty(RAIN_LAYER_ID, "visibility", visible ? "visible" : "none");
-}
-
-function applyLandslideVisibility(m: maplibregl.Map, visible: boolean) {
-  for (const id of LANDSLIDE_LAYER_IDS) {
-    if (m.getLayer(id)) {
-      m.setLayoutProperty(id, "visibility", visible ? "visible" : "none");
-    }
-  }
-}
-
-function applyHazardVisibility(m: maplibregl.Map, visible: boolean) {
-  for (const id of ALL_HAZARD_LAYERS) {
-    if (m.getLayer(id)) {
-      m.setLayoutProperty(id, "visibility", visible ? "visible" : "none");
-    }
-  }
-}
-
-/**
- * (Re)creates the hazard layers on top of the current style.
- *
- * Used both on style.load and when the flat/extruded mode flips — the two
- * modes are different layer TYPES (fill vs fill-extrusion), and maplibre
- * cannot morph a layer's type in place, so the honest operation is
- * remove-and-re-add. The source, and therefore the loaded data, is untouched.
- */
-function rebuildHazardLayers(
-  m: maplibregl.Map,
-  opts: { basemap: BasemapKind; extrude: boolean },
-) {
-  for (const id of ALL_HAZARD_LAYERS) {
-    if (m.getLayer(id)) m.removeLayer(id);
-  }
-  const layers = hazardLayers({
-    fillOpacity: fillOpacityFor(opts.basemap),
-    // the ramp must match the legend; satellite keeps the dark ramp, which is
-    // what reads over imagery
-    theme: opts.basemap === "light" ? "light" : "dark",
-    extrude: opts.extrude,
-  });
-  // labels stay on top when they exist; `place-town` may be absent in
-  // satellite mode
-  const before = m.getLayer(HAZARD_BEFORE_ID) ? HAZARD_BEFORE_ID : undefined;
-  for (const layer of layers) {
-    m.addLayer(layer as maplibregl.LayerSpecification, before);
-  }
-}
-
-/**
- * (Re)creates the reference geometry — city outline and barangay boundaries —
- * on top of the current style.
- *
- * Separate from the hazard rebuild rather than folded into it, because the
- * two are re-added at the same anchor and the LAST one added wins the top
- * slot. The boundary has to be the last one: it is a 1-2 px dashed line and
- * an extruded hazard volume drawn over it swallows it whole. Every caller
- * that rebuilds the hazard layers therefore calls this straight afterwards.
- */
-function rebuildBoundaryLayers(
-  m: maplibregl.Map,
-  basemap: BasemapKind,
-  focusedBarangay: string | null,
-) {
-  if (!m.getSource(SOURCE_BOUNDARY)) return;
-  const theme = basemap === "light" ? "light" : "dark";
-  const ids = [...Object.values(BARANGAY_LAYER_IDS), ...BOUNDARY_LAYER_IDS];
-  for (const id of ids) {
-    if (m.getLayer(id)) m.removeLayer(id);
-  }
-
-  const before = m.getLayer(HAZARD_BEFORE_ID) ? HAZARD_BEFORE_ID : undefined;
-  // barangays first: the city edge is the stronger line and must win where
-  // the two run together, which along the city's own border is everywhere
-  for (const layer of [...barangayLayers(theme), ...boundaryLayers(theme)]) {
-    m.addLayer(layer as maplibregl.LayerSpecification, before);
-  }
-  applyBarangayFocus(m, focusedBarangay);
-}
-
-/** Picks one barangay out by name; null clears it. */
-function applyBarangayFocus(m: maplibregl.Map, name: string | null) {
-  for (const id of [BARANGAY_LAYER_IDS.focusFill, BARANGAY_LAYER_IDS.focusLine]) {
-    if (m.getLayer(id)) m.setFilter(id, ["==", ["get", "name"], name ?? ""]);
-  }
-}
-
-/**
- * The outline of a named barangay, or null when OSM has no boundary for it.
- *
- * Null is the common case for a third of the city and is not a failure: those
- * barangays exist in OSM as a single point. Callers fall back to the centroid
- * they already had.
- */
-function outlineBounds(name: string): [[number, number], [number, number]] | null {
-  const feature = (
-    barangayOutlines as GeoJSON.FeatureCollection
-  ).features.find((f) => f.properties?.name === name);
-  if (!feature || feature.geometry?.type !== "Polygon") return null;
-
-  let w = Infinity;
-  let s = Infinity;
-  let e = -Infinity;
-  let n = -Infinity;
-  for (const point of feature.geometry.coordinates[0] ?? []) {
-    const x = point[0] ?? 0;
-    const y = point[1] ?? 0;
-    if (x < w) w = x;
-    if (x > e) e = x;
-    if (y < s) s = y;
-    if (y > n) n = y;
-  }
-  return Number.isFinite(w) ? [[w, s], [e, n]] : null;
-}
-
-/**
- * Aerial imagery is bright and busy, so a 45% fill that reads well over dark
- * cartography disappears over it. Push the fills harder when the basemap is
- * satellite.
- */
-function fillOpacityFor(basemap: BasemapKind): number {
-  /**
-   * Tuned twice, and the second pass is the one that matters.
-   *
-   * These were briefly 0.38/0.34/0.3, chasing a "solid red" complaint. That
-   * complaint was really about the EXTRUDED opacity — the volumes render at
-   * fillOpacity + 0.3, so 0.55 became 0.85 and the city disappeared under it.
-   * Once the map defaulted to flat, cutting the fill as well subtracted the
-   * same problem twice and the bands went too faint to tell apart over
-   * satellite imagery, which is busy, dark and full of greens and browns that
-   * a washed-out yellow simply dissolves into.
-   *
-   * A hazard band that cannot be told from its neighbour is not a lighter
-   * map, it is a broken legend. These sit above the original values: the
-   * three colours read clearly against imagery, and the streets and coastline
-   * still show through, because flat paint at 0.6 is a very different thing
-   * from a leaning volume at 0.85.
-   */
-  if (basemap === "satellite") return 0.62;
-  if (basemap === "light") return 0.58;
-  return 0.55;
-}
-
 export const FloodMap = forwardRef<FloodMapHandle, Props>(function FloodMap(
   {
     scenario,
@@ -362,7 +181,6 @@ export const FloodMap = forwardRef<FloodMapHandle, Props>(function FloodMap(
 ) {
   const container = useRef<HTMLDivElement | null>(null);
   const map = useRef<maplibregl.Map | null>(null);
-  const pin = useRef<maplibregl.Marker | null>(null);
   const [failure, setFailure] = useState<string | null>(null);
   const [loaded, setLoaded] = useState(false);
   /**
@@ -652,8 +470,10 @@ export const FloodMap = forwardRef<FloodMapHandle, Props>(function FloodMap(
     map.current = m;
     return () => {
       clearTimeout(watchdog);
-      pin.current?.remove();
-      pin.current = null;
+      /* No marker teardown here any more: each useMapMarker owns its own and
+         removes it on unmount. `m.remove()` would take them with it anyway,
+         but a ref the component no longer creates is a ref that quietly
+         stops being cleared. */
       m.remove();
       map.current = null;
     };
@@ -731,7 +551,7 @@ export const FloodMap = forwardRef<FloodMapHandle, Props>(function FloodMap(
   }, [extrude]);
 
   /**
-   * Fly to the requested place and pin it.
+   * Pin the requested place, and fly to it in the effect below.
    *
    * Gated on `loaded`, not just on the map existing. A camera command issued
    * before the style has parsed is silently discarded by maplibre, and the
@@ -742,41 +562,50 @@ export const FloodMap = forwardRef<FloodMapHandle, Props>(function FloodMap(
    * Markers survive a style reload (they are DOM, not style), so a basemap
    * swap leaves the pin where it is.
    */
+  useMapMarker(
+    map,
+    loaded,
+    focus
+      ? {
+          at: focus.center,
+          element: () =>
+            createFocusPin({
+              name: focus.name,
+              onClear: () => onFocusClearRef.current?.(),
+            }),
+        }
+      : null,
+    [focus, loaded],
+  );
+
+  /**
+   * …and take the camera there, with the barangay picked out behind it.
+   *
+   * Separate from the pin above because they are two different jobs that
+   * happen to share a trigger: one is a marker's lifecycle, the other is a
+   * one-shot camera command and a filter. Fusing them is what made the
+   * original effect long enough to hide the fact that it did both.
+   *
+   * Frame the whole barangay when we know its shape. FOCUS_ZOOM was a
+   * compromise for having only a centroid: one zoom for every barangay, from
+   * a few downtown blocks to the tens of square kilometres of Marilog, chosen
+   * so a centroid a few hundred metres off still left the pin on screen.
+   * Where an outline exists that guess is unnecessary — the camera frames the
+   * actual area, and the reader sees where the barangay ends rather than
+   * inferring it from how far the pin is from the middle. The 66 barangays
+   * OSM has only as a point still take the old path, which is why it stays.
+   *
+   * Pitch and bearing are left alone in both: the user may have set them, and
+   * this is "go here", not "reset the view".
+   */
   useEffect(() => {
     const m = map.current;
     if (!m || !loaded) return;
 
-    pin.current?.remove();
-    pin.current = null;
     applyBarangayFocus(m, focus?.name ?? null);
     if (!focus) return;
 
     const center: [number, number] = [...focus.center];
-    pin.current = new maplibregl.Marker({
-      element: createFocusPin({
-        name: focus.name,
-        onClear: () => onFocusClearRef.current?.(),
-      }),
-      anchor: "bottom",
-    })
-      .setLngLat(center)
-      .addTo(m);
-
-    /**
-     * Frame the whole barangay when we know its shape.
-     *
-     * FOCUS_ZOOM was a compromise for having only a centroid: one zoom for
-     * every barangay, from a few downtown blocks to the tens of square
-     * kilometres of Marilog, chosen so that a centroid a few hundred metres
-     * off would still leave the pin on screen. Where an outline exists that
-     * guess is unnecessary — the camera can frame the actual area, and the
-     * reader sees where the barangay ends rather than inferring it from how
-     * far the pin is from the middle.
-     *
-     * The 66 barangays OSM has only as a point still take the old path, which
-     * is why it stays. Pitch and bearing are left alone in both: the user may
-     * have set them, and this is "go here", not "reset the view".
-     */
     const bounds = focus.name ? outlineBounds(focus.name) : null;
     const instant = prefersReducedMotion();
 
@@ -804,27 +633,12 @@ export const FloodMap = forwardRef<FloodMapHandle, Props>(function FloodMap(
    * honest drawing is the destination alone and a hand-off to a maps app for
    * the walking.
    */
-  const guidePin = useRef<maplibregl.Marker | null>(null);
-  useEffect(() => {
-    const m = map.current;
-    if (!m || !loaded) return;
-
-    guidePin.current?.remove();
-    guidePin.current = null;
-    if (guide) {
-      guidePin.current = new maplibregl.Marker({
-        element: createFocusPin({ name: guide.label }),
-        anchor: "bottom",
-      })
-        .setLngLat([...guide.to])
-        .addTo(m);
-    }
-
-    return () => {
-      guidePin.current?.remove();
-      guidePin.current = null;
-    };
-  }, [guide, loaded, layerEpoch]);
+  useMapMarker(
+    map,
+    loaded,
+    guide ? { at: guide.to, element: () => createFocusPin({ name: guide.label }) } : null,
+    [guide, loaded, layerEpoch],
+  );
 
   /**
    * The spot just tapped, and the offer to keep it.
@@ -839,31 +653,21 @@ export const FloodMap = forwardRef<FloodMapHandle, Props>(function FloodMap(
   const saveTapRef = useRef(onSaveTapPoint);
   saveTapRef.current = onSaveTapPoint;
 
-  const tapPin = useRef<maplibregl.Marker | null>(null);
-  useEffect(() => {
-    const m = map.current;
-    if (!m || !loaded) return;
-
-    tapPin.current?.remove();
-    tapPin.current = null;
-
-    if (tapPoint) {
-      tapPin.current = new maplibregl.Marker({
-        element: createTapPin({
-          label: tapPoint.label,
-          onSave: () => saveTapRef.current?.(),
-        }),
-        anchor: "bottom",
-      })
-        .setLngLat([...tapPoint.center])
-        .addTo(m);
-    }
-
-    return () => {
-      tapPin.current?.remove();
-      tapPin.current = null;
-    };
-  }, [tapPoint, loaded, layerEpoch]);
+  useMapMarker(
+    map,
+    loaded,
+    tapPoint
+      ? {
+          at: tapPoint.center,
+          element: () =>
+            createTapPin({
+              label: tapPoint.label,
+              onSave: () => saveTapRef.current?.(),
+            }),
+        }
+      : null,
+    [tapPoint, loaded, layerEpoch],
+  );
 
   /**
    * The saved place.
@@ -876,28 +680,17 @@ export const FloodMap = forwardRef<FloodMapHandle, Props>(function FloodMap(
    * basemap swap rebuilds the whole style, and a marker attached to the old
    * one goes with it.
    */
-  const homePin = useRef<maplibregl.Marker | null>(null);
-  useEffect(() => {
-    const m = map.current;
-    if (!m || !loaded) return;
-
-    homePin.current?.remove();
-    homePin.current = null;
-
-    if (savedPlace) {
-      homePin.current = new maplibregl.Marker({
-        element: createHomePin({ name: savedPlace.label }),
-        anchor: "bottom",
-      })
-        .setLngLat([...savedPlace.center])
-        .addTo(m);
-    }
-
-    return () => {
-      homePin.current?.remove();
-      homePin.current = null;
-    };
-  }, [savedPlace, loaded, layerEpoch]);
+  useMapMarker(
+    map,
+    loaded,
+    savedPlace
+      ? {
+          at: savedPlace.center,
+          element: () => createHomePin({ name: savedPlace.label }),
+        }
+      : null,
+    [savedPlace, loaded, layerEpoch],
+  );
 
   /**
    * News markers.
@@ -906,31 +699,17 @@ export const FloodMap = forwardRef<FloodMapHandle, Props>(function FloodMap(
    * to be clickable and legible at any zoom, and they must not be queryable
    * by the hazard tap handler — a news mention is not a zone.
    */
-  const newsMarkers = useRef<maplibregl.Marker[]>([]);
-  useEffect(() => {
-    const m = map.current;
-    if (!m || !loaded) return;
-
-    for (const marker of newsMarkers.current) marker.remove();
-    newsMarkers.current = [];
-    if (!showNews || !newsPins?.length) return;
-
-    for (const pin of newsPins) {
-      newsMarkers.current.push(
-        new maplibregl.Marker({
-          element: createNewsPin(pin, (p) => onOpenNewsRef.current?.(p)),
-          anchor: "bottom",
-        })
-          .setLngLat(pin.center)
-          .addTo(m),
-      );
-    }
-
-    return () => {
-      for (const marker of newsMarkers.current) marker.remove();
-      newsMarkers.current = [];
-    };
-  }, [newsPins, showNews, loaded]);
+  useMapMarkers(
+    map,
+    loaded,
+    showNews && newsPins?.length
+      ? newsPins.map((pin) => ({
+          at: pin.center,
+          element: () => createNewsPin(pin, (p) => onOpenNewsRef.current?.(p)),
+        }))
+      : null,
+    [newsPins, showNews, loaded],
+  );
 
   /**
    * Swapping the basemap replaces the whole style, which drops the hazard
