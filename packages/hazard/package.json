@@ -10,6 +10,7 @@
 		"./barangays": "./src/barangays.ts",
 		"./barangay-profiles": "./src/barangay-profiles.ts",
 		"./barangay": "./src/barangay.ts",
+		"./slug": "./src/slug.ts",
 		"./scenarios": "./src/scenarios.ts",
 		"./copy": "./src/copy.ts",
 		"./footprint": "./src/footprint.ts",

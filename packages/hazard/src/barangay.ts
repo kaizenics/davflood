@@ -3,6 +3,9 @@ import type { BarangayStat } from "./barangay-profiles";
 import { barangays } from "./barangays";
 import type { Barangay } from "./barangays";
 import { scenarios } from "./scenarios";
+/* imported as well as re-exported: `export ... from` forwards the name
+   without binding it locally, and this module calls slugify itself */
+import { slugify } from "./slug";
 import type { ScenarioYears } from "./scenarios";
 import type { HazardId } from "./tiers";
 
@@ -29,24 +32,26 @@ export type BarangayProfile = {
   }[];
   /** true when no scenario floods it at all */
   dryInEveryScenario: boolean;
+  /**
+   * The barangay's own area in km², or null when OpenStreetMap has only a
+   * point for it.
+   *
+   * Null is also the signal that every `stat.share` on this profile is null,
+   * and that the km² figures came from attributing nearby hazard polygons
+   * rather than measuring inside a boundary — see ./barangay-profiles.ts. A
+   * page showing these has to say which it is showing.
+   */
+  areaKm2: number | null;
 };
 
 /**
  * URL-safe name.
  *
- * The numbered downtown barangays ("19-B Garcia Heights") keep their number,
- * because that is how people say them and how they are signposted — dropping
- * it would produce two barangays called "Garcia Heights" in different parts
- * of the city.
+ * Defined in ./slug.ts and re-exported here, where callers expect it. It had
+ * to move because vite.config.ts needs slugs to seed prerendering, and
+ * importing this module from a config file drags in the whole profile matrix.
  */
-export function slugify(name: string): string {
-  return name
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-}
+export { slugify };
 
 const BY_SLUG = new Map<string, Barangay>(
   barangays.map((b) => [slugify(b.name), b]),
@@ -68,7 +73,14 @@ function worstBand(stat: BarangayStat): HazardId | null {
   return null;
 }
 
-const EMPTY: BarangayStat = { low: 0, medium: 0, high: 0, total: 0, zones: 0 };
+const EMPTY: BarangayStat = {
+  low: 0,
+  medium: 0,
+  high: 0,
+  total: 0,
+  zones: 0,
+  share: null,
+};
 
 export function profileFor(barangay: Barangay): BarangayProfile {
   const byScenario = BARANGAY_PROFILES[barangay.name];
@@ -89,6 +101,7 @@ export function profileFor(barangay: Barangay): BarangayProfile {
     slug: slugify(barangay.name),
     scenarios: rows,
     dryInEveryScenario: rows.every((r) => r.stat.total === 0),
+    areaKm2: byScenario?.areaKm2 ?? null,
   };
 }
 

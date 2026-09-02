@@ -3,10 +3,10 @@ import {
   profileFor,
   summaryFor,
 } from "@davflood/hazard/barangay";
-import { formatArea } from "@davflood/hazard/footprint";
+import { formatArea, formatShare } from "@davflood/hazard/footprint";
 import { hazardById } from "@davflood/hazard/tiers";
 import { Link, createFileRoute, notFound } from "@tanstack/react-router";
-import { ArrowLeft, MapPin, Phone } from "lucide-react";
+import { ArrowLeft, Phone } from "lucide-react";
 
 import { hazardBg, hazardText } from "@/lib/hazard-classes";
 import { SITE_URL, seo } from "@/lib/seo";
@@ -127,6 +127,19 @@ function BarangayScreen() {
                   >
                     {formatArea(row.stat.total)} km²
                   </span>
+                  {/* The share is the figure people actually want, and until
+                      the barangay boundaries were imported it could not be
+                      computed for anyone. It appears only where it was
+                      measured — `share` is null for the barangays OSM has as
+                      a bare point, and the note below says so. */}
+                  {row.stat.share !== null && (
+                    <span
+                      className="text-ink-dim mt-0.5 block text-[11px]"
+                      data-numeric
+                    >
+                      {formatShare(row.stat.share)} of the barangay
+                    </span>
+                  )}
                   <span
                     className={`${hazardText[row.worst]} mt-1 flex items-center justify-end gap-1.5 text-[11px] font-semibold`}
                   >
@@ -146,27 +159,31 @@ function BarangayScreen() {
           ))}
         </ul>
 
-        <p className="text-ink-dim mt-3 text-[11px] leading-relaxed">
-          Square kilometres of modelled flood footprint inside this barangay —
-          not a share of it. Two thirds of Davao&apos;s barangays exist in
-          OpenStreetMap as a point rather than a boundary, so there is no area
-          to divide by, and a percentage would be invented.
-        </p>
+        {profile.areaKm2 !== null ? (
+          <p className="text-ink-dim mt-3 text-[11px] leading-relaxed">
+            Measured over this barangay&apos;s{" "}
+            <span data-numeric>{formatArea(profile.areaKm2)} km²</span> by
+            sampling a 50 m grid across its OpenStreetMap boundary, and
+            counting which sample points the model floods. The share and the
+            square kilometres come from the same count, so they agree.
+          </p>
+        ) : (
+          <p className="text-ink-dim mt-3 text-[11px] leading-relaxed">
+            Square kilometres of modelled flood footprint near this barangay —
+            not a share of it. {barangay.name} exists in OpenStreetMap as a
+            point rather than a boundary, so there is no area to divide by and
+            a percentage would be invented. Barangays that do have a mapped
+            boundary show one.
+          </p>
+        )}
       </section>
 
+      {/* No "see it on the map" button.
+          The barangay list now goes straight to the map, so anyone reading
+          this page arrived from the map with this barangay already framed
+          behind them — offering to take them where they just came from was a
+          button that could only ever undo itself. */}
       <div className="mt-8 flex flex-wrap gap-2">
-        <Link
-          to="/"
-          search={{
-            lng: barangay.center[0],
-            lat: barangay.center[1],
-            b: barangay.name,
-          }}
-          className="bg-tide text-abyss rounded-pill flex items-center gap-1.5 px-3 py-1.5 text-[12px] font-semibold transition hover:opacity-90"
-        >
-          <MapPin className="size-3.5" aria-hidden="true" />
-          See it on the map
-        </Link>
         <Link
           to="/emergency"
           className="border-haz-high/40 bg-haz-high/8 hover:bg-haz-high/14 rounded-pill flex items-center gap-1.5 border px-3 py-1.5 text-[12px] font-semibold transition"

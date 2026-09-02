@@ -111,5 +111,31 @@ export function footprintOf(fc: HazardCollection): Footprint {
 export function formatArea(km2: number): string {
 	if (km2 >= 100) return Math.round(km2).toLocaleString("en-PH");
 	if (km2 >= 10) return km2.toFixed(0);
-	return km2.toFixed(1);
+	/* One decimal is the right resolution for a city-wide figure and the wrong
+	   one for a single downtown barangay. A barangay of 0.2 km² with 17% of it
+	   flooded rendered as "0.0 km²", which reads as none at all — beside a
+	   percentage that plainly says otherwise. Small areas get the digits they
+	   need to stay non-zero. */
+	if (km2 >= 0.1) return km2.toFixed(1);
+	if (km2 >= 0.01) return km2.toFixed(2);
+	// still real, just below what a simplified polygon set can resolve
+	return km2 > 0 ? "<0.01" : "0";
+}
+
+/**
+ * A flooded share, as a percentage.
+ *
+ * Whole numbers, with two deliberate exceptions at the ends of the range.
+ * "0%" for a barangay the model does floods a little of reads as "not
+ * flooded", which is a different and wrong answer, so anything above zero
+ * floors at "<1%". And a barangay the model covers entirely rounds to 100%,
+ * which is a strong enough claim that it should only appear when the count
+ * really was every sample — 99.6% is shown as 99%, not rounded up into a
+ * certainty the sampling cannot support.
+ */
+export function formatShare(share: number): string {
+	if (share <= 0) return "0%";
+	if (share < 0.01) return "<1%";
+	if (share >= 1) return "100%";
+	return `${Math.min(99, Math.floor(share * 100))}%`;
 }
