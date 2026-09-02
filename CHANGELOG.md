@@ -1,5 +1,34 @@
 # Changelog
 
+## [1.6.0](https://github.com/kaizenics/davflood/compare/v1.5.0...v1.6.0) (2026-09-02)
+
+
+### New
+
+* add Davao River flow history chart ([e60b32f](https://github.com/kaizenics/davflood/commit/e60b32f6f8b5730e6ec4d59075bd0b50df89f864))
+* **barangay:** animate the card in and out ([b6645ae](https://github.com/kaizenics/davflood/commit/b6645ae95231b8b2ff7332c54fd016846bc1ce05))
+* **barangay:** measure what share of a barangay floods ([98d5119](https://github.com/kaizenics/davflood/commit/98d5119f0b7f1cb9bdf75285161fa8059308ebf2))
+* **data:** import the barangay outlines OpenStreetMap has ([5cc0d15](https://github.com/kaizenics/davflood/commit/5cc0d15423ca05b0095feb0a6029496c07330ac2))
+* draw the Davao City boundary on the map ([f2ef55c](https://github.com/kaizenics/davflood/commit/f2ef55c87c3ea8cf315d0d65f6cb37e6018ca4e8))
+* enhance news filtering and handling for barangay-level reporting ([c031086](https://github.com/kaizenics/davflood/commit/c031086f602e9fb07fd1cdbb0a2f95dcf56aca76))
+* **landslide:** add UP NOAH landslide susceptibility ([faa0ec2](https://github.com/kaizenics/davflood/commit/faa0ec29ff8161cd1a804fa7961c008330788159))
+* **map:** add a map-only mode that hides the panels ([2e6f04e](https://github.com/kaizenics/davflood/commit/2e6f04eb3362754c2bc38bf826fab2ca92ccb413))
+* **map:** draw the barangay boundaries and frame the one you pick ([aa68505](https://github.com/kaizenics/davflood/commit/aa685053184526a6c3c509de2690cd8929ed0acd))
+* **nav:** go straight to the map when you pick a barangay ([b6f4691](https://github.com/kaizenics/davflood/commit/b6f46916f4ff109eb282a4ec0252051f4a9a634d))
+* **rainfall:** say how much rain has already fallen ([9e695d3](https://github.com/kaizenics/davflood/commit/9e695d30fd716fec6f1c6827ac53ac3939f4b43b))
+* refactor news handler and add cron job for news fetching ([c992ab3](https://github.com/kaizenics/davflood/commit/c992ab37742b224210a4d2ba3c685e6d7e820225))
+
+
+### Fixed
+
+* add canonical redirect to consolidate search engine ranking ([b472d56](https://github.com/kaizenics/davflood/commit/b472d56d5f59408fbb674d0c6a04a2f08a16faab))
+* **ci:** check out before merging, and land releases under the maintainer ([e5588b2](https://github.com/kaizenics/davflood/commit/e5588b247defd0419b8a544fcf7618f9db4fbc8f))
+* configure Vercel hosting so the deployed site is not a 404 ([b5dabe1](https://github.com/kaizenics/davflood/commit/b5dabe18ac72908846b1ff1eff6189eb11a3e866))
+* improve prerendering configuration to handle 189 pages with retries and error handling ([2aca34f](https://github.com/kaizenics/davflood/commit/2aca34f80e84c388aa6808f6d733e440c599ee14))
+* **landslide:** stop the overlay deadlocking on its own loading flag ([65f1e2d](https://github.com/kaizenics/davflood/commit/65f1e2def48955e44418f496fa83332ff4793266))
+* update cron schedule for news fetching to run daily ([989a0c1](https://github.com/kaizenics/davflood/commit/989a0c123539f582c441f13f2bb080ae42ebbfac))
+* update redirect URL to include 'www' for canonical domain ([b5484d7](https://github.com/kaizenics/davflood/commit/b5484d79d93ca8081c3813eabc2fc9fb6e44d0d7))
+
 ## [1.5.0](https://github.com/kaizenics/davflood/compare/v1.4.1...v1.5.0) (2026-09-02)
 
 
