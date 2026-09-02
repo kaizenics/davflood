@@ -12,6 +12,7 @@
 		"./barangay": "./src/barangay.ts",
 		"./slug": "./src/slug.ts",
 		"./scenarios": "./src/scenarios.ts",
+		"./landslide": "./src/landslide.ts",
 		"./copy": "./src/copy.ts",
 		"./footprint": "./src/footprint.ts",
 		"./schema": "./src/schema.ts",
@@ -38,6 +39,7 @@
 		"check-types": "tsc --noEmit",
 		"validate:style": "tsx scripts/validate-style.ts",
 		"build:noah": "tsx scripts/build-noah-data.ts",
+		"build:landslide": "tsx scripts/build-landslide-data.ts",
 		"build:admin": "tsx scripts/build-admin-data.ts",
 		"build:og": "tsx scripts/build-og-image.ts",
 		"build:profiles": "tsx scripts/build-barangay-profiles.ts"

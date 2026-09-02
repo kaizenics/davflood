@@ -10,6 +10,9 @@ export type MapViewProps = {
   onExtrudeChange: (v: boolean) => void;
   showRain: boolean;
   onShowRainChange: (v: boolean) => void;
+  showLandslide: boolean;
+  onShowLandslideChange: (v: boolean) => void;
+  landslideLoading?: boolean;
   showNews: boolean;
   onShowNewsChange: (v: boolean) => void;
   newsCount: number;
@@ -33,6 +36,9 @@ export function MapViewControls({
   onExtrudeChange,
   showRain,
   onShowRainChange,
+  showLandslide,
+  onShowLandslideChange,
+  landslideLoading,
   showNews,
   onShowNewsChange,
   newsCount,
@@ -50,6 +56,9 @@ export function MapViewControls({
         onExtrudeChange={onExtrudeChange}
         showRain={showRain}
         onShowRainChange={onShowRainChange}
+        showLandslide={showLandslide}
+        onShowLandslideChange={onShowLandslideChange}
+        landslideLoading={landslideLoading}
         showNews={showNews}
         onShowNewsChange={onShowNewsChange}
         newsCount={newsCount}
@@ -71,16 +80,24 @@ export function mapViewSummary({
   showHazard,
   extrude,
   showRain,
+  showLandslide,
   showNews,
   pitch,
 }: Pick<
   MapViewProps,
-  "basemap" | "showHazard" | "extrude" | "showRain" | "showNews" | "pitch"
+  | "basemap"
+  | "showHazard"
+  | "extrude"
+  | "showRain"
+  | "showLandslide"
+  | "showNews"
+  | "pitch"
 >): string {
   return [
     basemap === "satellite" ? "Satellite" : "Map",
     showHazard ? (extrude ? "3D depth" : "Flat overlay") : "Overlay off",
     ...(showRain ? ["Rain"] : []),
+    ...(showLandslide ? ["Landslide"] : []),
     ...(showNews ? ["Reports"] : []),
     `${Math.round(pitch)}°`,
   ].join(" · ");

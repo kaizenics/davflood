@@ -33,6 +33,19 @@ export const colors = {
 	hazMed: "#fa8927",
 	hazHigh: "#f1453f",
 
+	/* landslide — a SECOND hazard, and deliberately a different hue.
+	   The two can be on the map at once, and an orange that means "waist deep"
+	   next to an orange that means "no dwelling zone" is a legend that cannot
+	   be read. Purple against the flood ramp's amber-to-red is the largest
+	   separation available that still leaves three tellable steps: measured at
+	   0.24-0.29 in oklab from the flood colour of the same rank, against
+	   0.11-0.13 between neighbouring steps within either ramp.
+	   Contrast on `abyss`: 11.2 / 7.5 / 5.0 — the same profile as the flood
+	   ramp's 12.1 / 8.2 / 5.4. */
+	slideLow: "#d8b4fe",
+	slideMed: "#c084fc",
+	slideHigh: "#a855f7",
+
 	/* basemap-only shades, same hue ramp */
 	water: "#0a2c3e",
 	waterDeep: "#052231",
@@ -77,6 +90,16 @@ export const lightColors = {
 	hazLow: "#805e00",
 	hazMed: "#a22b00",
 	hazHigh: "#a00025",
+
+	/* landslide — derived in oklch and verified, like everything else here.
+	   Contrast on the light canvas 5.2 / 6.8 / 9.3 and on pure white 5.4 / 7.1
+	   / 9.7, so every step clears 4.5:1 against both. Neighbouring steps sit
+	   0.131 and 0.158 apart in oklab, and each is 0.26 or more from the flood
+	   colour of the same rank. Lightness descends as severity rises, matching
+	   the direction the flood ramp reads in. */
+	slideLow: "#9333ea",
+	slideMed: "#6b21a8",
+	slideHigh: "#3b0764",
 
 	/* basemap-only shades.
 	   `land` is deliberately a clear step darker than `abyss` and well clear of

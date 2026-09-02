@@ -21,6 +21,7 @@ import {
 import type { ReactNode } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 
+import { loadLandslide } from "@/lib/landslide-source";
 import { BarangayCard } from "@/components/map/barangay-card";
 import { CityReading } from "@/components/map/city-reading";
 import { FloodMap, type FloodMapHandle, type Guide } from "@/components/map/flood-map";
@@ -32,6 +33,7 @@ import { NewsDialog } from "@/components/map/news-dialog";
 import type { NewsPin } from "@/components/map/news-pin";
 import { OfflinePanel } from "@/components/map/offline-panel";
 import { FloodOutlook } from "@/components/map/flood-outlook";
+import { LandslideLegend } from "@/components/map/landslide-legend";
 import { RainLegend } from "@/components/map/rain-legend";
 import { SavedPlaceCard } from "@/components/map/saved-place";
 import { RainfallPanel } from "@/components/map/rainfall-panel";
@@ -317,6 +319,37 @@ export function MapShell({ children }: { children: ReactNode }) {
   const [showRain, setShowRain] = useState(false);
   const { data: rainGrid } = useRainGrid(showRain);
 
+  /**
+   * Landslide susceptibility, fetched the first time it is asked for.
+   *
+   * Same shape as the rain toggle and for the same reason — 0.63 MB that most
+   * readers never need should not be on the critical path of a map somebody
+   * opened in a storm. A failure is swallowed: the switch goes back off and
+   * the flood map, which is the thing that matters, is untouched.
+   */
+  const [showLandslide, setShowLandslide] = useState(false);
+  const [landslide, setLandslide] = useState<GeoJSON.FeatureCollection>();
+  const [landslideLoading, setLandslideLoading] = useState(false);
+
+  useEffect(() => {
+    if (!showLandslide || landslide || landslideLoading) return;
+    let cancelled = false;
+    setLandslideLoading(true);
+    loadLandslide()
+      .then((fc) => {
+        if (!cancelled) setLandslide(fc);
+      })
+      .catch((err) => {
+        console.error("[MapShell] landslide data failed to load:", err);
+        if (!cancelled) setShowLandslide(false);
+      })
+      .finally(() => {
+        if (!cancelled) setLandslideLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [showLandslide, landslide, landslideLoading]);
 
   /* Places named in recent flood reporting. On by default — unlike the rain
      layer this costs no extra request (the panel already has the file) and
@@ -576,6 +609,8 @@ export function MapShell({ children }: { children: ReactNode }) {
               basemap={basemap}
               showHazard={showHazard}
               extrude={extrude}
+              landslide={landslide}
+              showLandslide={showLandslide}
               onPitchChange={setPitch}
               focus={focus}
               onFocusClear={() =>
@@ -634,6 +669,12 @@ export function MapShell({ children }: { children: ReactNode }) {
             {showRain && (
               <RainLegend grid={rainGrid} theme={basemap === "light" ? "light" : "dark"} />
             )}
+            {showLandslide && (
+              <LandslideLegend
+                theme={basemap === "light" ? "light" : "dark"}
+                loading={landslideLoading}
+              />
+            )}
             <div className="hidden lg:block">
               <MapViewButton
                 basemap={view}
@@ -644,6 +685,9 @@ export function MapShell({ children }: { children: ReactNode }) {
                 onExtrudeChange={setExtrude}
                 showRain={showRain}
                 onShowRainChange={setShowRain}
+                showLandslide={showLandslide}
+                onShowLandslideChange={setShowLandslide}
+                landslideLoading={landslideLoading}
                 showNews={showNews}
                 onShowNewsChange={setShowNews}
                 newsCount={newsPins.length}
@@ -677,6 +721,9 @@ export function MapShell({ children }: { children: ReactNode }) {
         onExtrudeChange={setExtrude}
         showRain={showRain}
         onShowRainChange={setShowRain}
+        showLandslide={showLandslide}
+        onShowLandslideChange={setShowLandslide}
+        landslideLoading={landslideLoading}
         showNews={showNews}
         onShowNewsChange={setShowNews}
         newsCount={newsPins.length}

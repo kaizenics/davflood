@@ -3,17 +3,20 @@ import type { LngLat } from "@davflood/hazard/geo";
 import {
   BARANGAY_LAYER_IDS,
   BOUNDARY_LAYER_IDS,
+  LANDSLIDE_LAYER_IDS,
   HAZARD_BEFORE_ID,
   HAZARD_FILL_LAYER_IDS,
   LAYER_IDS,
   RAIN_LAYER_ID,
   SOURCE_BARANGAYS,
+  SOURCE_LANDSLIDE,
   SOURCE_BOUNDARY,
   SOURCE_HAZARD,
   SOURCE_RAIN,
   barangayLayers,
   boundaryLayers,
   hazardLayers,
+  landslideLayers,
   rainLayers,
 } from "@davflood/hazard/layers";
 import { representativePoint, ringsContain } from "@davflood/hazard/safe-ground";
@@ -126,6 +129,9 @@ type Props = {
   /** rain cells to draw under the hazard polygons */
   rain?: GeoJSON.FeatureCollection;
   showRain?: boolean;
+  /** landslide susceptibility polygons; undefined until first switched on */
+  landslide?: GeoJSON.FeatureCollection;
+  showLandslide?: boolean;
   /** places named in recent flood reporting */
   newsPins?: NewsPin[];
   showNews?: boolean;
@@ -185,6 +191,14 @@ function originOf(feature: maplibregl.MapGeoJSONFeature, at: LngLat): LngLat {
 function applyRainVisibility(m: maplibregl.Map, visible: boolean) {
   if (!m.getLayer(RAIN_LAYER_ID)) return;
   m.setLayoutProperty(RAIN_LAYER_ID, "visibility", visible ? "visible" : "none");
+}
+
+function applyLandslideVisibility(m: maplibregl.Map, visible: boolean) {
+  for (const id of LANDSLIDE_LAYER_IDS) {
+    if (m.getLayer(id)) {
+      m.setLayoutProperty(id, "visibility", visible ? "visible" : "none");
+    }
+  }
 }
 
 function applyHazardVisibility(m: maplibregl.Map, visible: boolean) {
@@ -338,6 +352,8 @@ export const FloodMap = forwardRef<FloodMapHandle, Props>(function FloodMap(
     onSaveTapPoint,
     rain,
     showRain = false,
+    landslide,
+    showLandslide = false,
     newsPins,
     showNews = false,
     onOpenNews,
@@ -376,6 +392,8 @@ export const FloodMap = forwardRef<FloodMapHandle, Props>(function FloodMap(
   const onFocusClearRef = useRef(onFocusClear);
   const rainRef = useRef(rain);
   const showRainRef = useRef(showRain);
+  const landslideRef = useRef(landslide);
+  const showLandslideRef = useRef(showLandslide);
   const onOpenNewsRef = useRef(onOpenNews);
   // read by initLayers, so a barangay highlighted before the style finished
   // parsing survives the style reload a basemap swap causes
@@ -393,6 +411,8 @@ export const FloodMap = forwardRef<FloodMapHandle, Props>(function FloodMap(
     onFocusClearRef.current = onFocusClear;
     rainRef.current = rain;
     showRainRef.current = showRain;
+    landslideRef.current = landslide;
+    showLandslideRef.current = showLandslide;
     onOpenNewsRef.current = onOpenNews;
     focusRef.current = focus;
   });
@@ -524,6 +544,28 @@ export const FloodMap = forwardRef<FloodMapHandle, Props>(function FloodMap(
           );
         }
         applyRainVisibility(m, showRainRef.current);
+
+        /* Landslide sits between the rain and the flood layers. It is added
+           here rather than with the reference geometry because it is hazard
+           data and belongs under the flood polygons — see landslideLayers. */
+        m.addSource(SOURCE_LANDSLIDE, {
+          type: "geojson",
+          data: landslideRef.current ?? {
+            type: "FeatureCollection",
+            features: [],
+          },
+          attribution:
+            'Landslide data © <a href="https://noah.up.edu.ph/" target="_blank" rel="noopener">UP NOAH</a>',
+        });
+        for (const layer of landslideLayers(
+          basemapRef.current === "light" ? "light" : "dark",
+        )) {
+          m.addLayer(
+            layer as maplibregl.LayerSpecification,
+            m.getLayer(HAZARD_BEFORE_ID) ? HAZARD_BEFORE_ID : undefined,
+          );
+        }
+        applyLandslideVisibility(m, showLandslideRef.current);
 
         m.addSource(SOURCE_HAZARD, {
           type: "geojson",
@@ -658,6 +700,21 @@ export const FloodMap = forwardRef<FloodMapHandle, Props>(function FloodMap(
     if (map.current) applyRainVisibility(map.current, showRain);
   }, [showRain, layerEpoch]);
 
+  /* Same layerEpoch trick again: the data arrives asynchronously the first
+     time the layer is switched on, and a basemap swap in between would
+     otherwise leave the source holding the empty collection it was born with. */
+  useEffect(() => {
+    const src = map.current?.getSource(SOURCE_LANDSLIDE);
+    if (src && "setData" in src) {
+      (src as maplibregl.GeoJSONSource).setData(
+        landslide ?? { type: "FeatureCollection", features: [] },
+      );
+    }
+  }, [landslide, layerEpoch]);
+
+  useEffect(() => {
+    if (map.current) applyLandslideVisibility(map.current, showLandslide);
+  }, [showLandslide, layerEpoch]);
 
   /* flat <-> extruded: different layer types, so remove and re-add. A basemap
      swap does not come through here — setStyle refires style.load, and

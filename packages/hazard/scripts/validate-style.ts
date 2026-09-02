@@ -18,9 +18,11 @@ import {
 	barangayLayers,
 	boundaryLayers,
 	hazardLayers,
+	landslideLayers,
 	SOURCE_BARANGAYS,
 	SOURCE_BOUNDARY,
 	SOURCE_HAZARD,
+	SOURCE_LANDSLIDE,
 } from "../src/layers";
 import { buildBaseStyle } from "../src/style";
 import type { HazardCollection } from "../src/schema";
@@ -104,13 +106,21 @@ for (const basemap of ["dark", "light", "satellite"] as const) {
 		type: "geojson",
 		data: barangayOutlines as never,
 	};
+	/* The landslide overlay validates against an empty collection: the real
+	   file is 3 MB and this only checks the style spec, which does not read
+	   the data. */
+	withHazard.sources[SOURCE_LANDSLIDE] = {
+		type: "geojson",
+		data: { type: "FeatureCollection", features: [] } as never,
+	};
 	const theme = basemap === "light" ? "light" : "dark";
 	withHazard.layers.push(
+		...landslideLayers(theme),
 		...hazardLayers({ fillOpacity: basemap === "satellite" ? 0.55 : 0.45 }),
 		...barangayLayers(theme),
 		...boundaryLayers(theme),
 	);
-	check(`${basemap} + hazard, barangay and boundary layers`, withHazard);
+	check(`${basemap} + every overlay`, withHazard);
 
 	const extruded = buildBaseStyle({ basemap });
 	extruded.sources[SOURCE_HAZARD] = {

@@ -3,6 +3,7 @@ import type {
 	LayerSpecification,
 } from "@maplibre/maplibre-gl-style-spec";
 
+import { landslideColorFor, landslideOrder } from "./landslide";
 import { rainColorsFor } from "./rain-grid";
 import { FIRST_LABEL_LAYER } from "./style";
 import { hazardColorFor, hazardOrder } from "./tiers";
@@ -304,6 +305,65 @@ export function rainLayers(theme: Theme = "dark"): LayerSpecification[] {
       },
     },
   ];
+}
+
+/* ---------------- landslide susceptibility ---------------- */
+
+export const SOURCE_LANDSLIDE = "landslide";
+
+export const LANDSLIDE_LAYER_IDS = [
+	"landslide-fill-low",
+	"landslide-fill-medium",
+	"landslide-fill-high",
+] as const;
+
+/**
+ * The landslide overlay.
+ *
+ * Flat fills only — never extruded, and this is not a styling preference.
+ * The flood layer's extrusion height is its depth band, a real quantity the
+ * volume is a picture of. Susceptibility has no depth and no thickness; a
+ * standing volume would be inventing a dimension the data does not have, and
+ * on the steep ground this layer covers it would also fight the terrain mesh
+ * it is draped over.
+ *
+ * Drawn UNDER the flood layer when both are on. Where the two overlap — the
+ * valley floors below a susceptible slope — flood depth is the more
+ * immediately actionable of the two, and the purple showing through at
+ * partial opacity is enough to say the slope above is also a hazard.
+ *
+ * Outlines are folded into the fill rather than given their own layer: at
+ * ~5,400 polygons across mountainous terrain a separate stroke per polygon
+ * read as a mesh laid over the uplands, which is the noise problem the hazard
+ * outlines were tuned away from, worse.
+ */
+export function landslideLayers(theme: Theme = "dark"): LayerSpecification[] {
+	const color = landslideColorFor(theme);
+
+	return landslideOrder.map((id) => ({
+		id: `landslide-fill-${id}`,
+		type: "fill",
+		source: SOURCE_LANDSLIDE,
+		filter: ["==", ["get", "hazard"], id],
+		paint: {
+			"fill-color": color[id],
+			/* Rising with severity, and further apart than the flood ramp's.
+			   This layer covers most of the upland half of the city, so a low
+			   class painted at flood-layer strength would put a flat wash over
+			   a third of the map. Low stays faint enough to read as terrain
+			   context; high is solid enough to find at a glance, which is the
+			   one a "no dwelling zone" ruling deserves. */
+			"fill-opacity": [
+				"interpolate",
+				["linear"],
+				["zoom"],
+				9,
+				id === "high" ? 0.42 : id === "medium" ? 0.3 : 0.18,
+				14,
+				id === "high" ? 0.55 : id === "medium" ? 0.4 : 0.24,
+			],
+		},
+	})) as LayerSpecification[];
 }
 
 /* ---------------- the barangay outlines ---------------- */

@@ -48,6 +48,13 @@
   --color-haz-med: #a22b00;
   --color-haz-high: #a00025;
 
+  /* landslide — a second hazard, kept a hue apart from flood on purpose.
+     Mirrors `slideLow` in @davflood/hazard/tokens; the two files must agree,
+     because the map paints from the package and the UI from these. */
+  --color-slide-low: #9333ea;
+  --color-slide-med: #6b21a8;
+  --color-slide-high: #3b0764;
+
   --radius-card: 0.875rem;
   --radius-pill: 999px;
 }
@@ -67,6 +74,10 @@
   --color-haz-low: #f3c443;
   --color-haz-med: #fa8927;
   --color-haz-high: #f1453f;
+
+  --color-slide-low: #d8b4fe;
+  --color-slide-med: #c084fc;
+  --color-slide-high: #a855f7;
 }
 
 :root {

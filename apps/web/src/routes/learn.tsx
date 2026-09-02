@@ -1,12 +1,22 @@
 import { FAQ, faqJsonLd } from "@davflood/hazard/faq";
 import { chanceOver, scenarios } from "@davflood/hazard/scenarios";
+import {
+  LANDSLIDE_CAVEAT,
+  landslideTiers,
+} from "@davflood/hazard/landslide";
 import { hazardTiers } from "@davflood/hazard/tiers";
 import { seo } from "@/lib/seo";
 import { createFileRoute } from "@tanstack/react-router";
 import { TriangleAlert } from "lucide-react";
 
 import { DraftNotice } from "@/components/locale-controls";
-import { hazardBg, hazardBorder, hazardText } from "@/lib/hazard-classes";
+import {
+  hazardBg,
+  hazardBorder,
+  hazardText,
+  landslideBg,
+  landslideText,
+} from "@/lib/hazard-classes";
 import { useStrings } from "@/lib/locale";
 
 export const Route = createFileRoute("/learn")({
@@ -93,6 +103,75 @@ function LearnScreen() {
           </section>
         ))}
       </div>
+
+      {/* ---- landslide ----
+          A second hazard with a second set of colours, so the page that
+          exists to explain what the colours mean has to cover it. Kept
+          visually distinct from the flood block above rather than
+          interleaved: the whole point of the purple ramp is that the two
+          scales are not comparable, and a reader must not come away thinking
+          "medium" means the same thing in both. */}
+      <section className="mt-12">
+        <h2 className="text-ink text-[1.15rem] leading-tight font-semibold tracking-tight text-balance">
+          The other hazard: slopes, not water
+        </h2>
+        <p className="text-ink-dim mt-3 text-[13.5px] leading-relaxed">
+          Most of Davao City by area is mountain — Marilog, Paquibato, Baguio,
+          upper Tugbok. The flood model barely touches that ground, and a blank
+          map there is not an all-clear; it is the wrong hazard for the
+          terrain. What threatens those barangays is the slope itself. Switch
+          on <span className="text-ink font-medium">Landslide susceptibility</span>{" "}
+          in the map&apos;s layer controls to see it.
+        </p>
+        <p className="text-ink-dim mt-3 text-[13.5px] leading-relaxed">
+          It works differently from the flood layer in one way worth
+          understanding: there is no storm size and no return period. A slope
+          is susceptible or it is not, on a dry day as much as a wet one. Heavy
+          rain is what triggers failure, which is why this layer is worth
+          reading next to the rainfall panel rather than instead of it.
+        </p>
+
+        <div className="mt-6 flex flex-col">
+          {landslideTiers.map((tier) => (
+            <section
+              key={tier.id}
+              className="border-hairline/60 border-t py-5 first:border-t-0 first:pt-0"
+            >
+              <div className="flex items-baseline gap-2.5">
+                <span
+                  className={`size-3 translate-y-px shrink-0 rounded-[3px] ${landslideBg[tier.id]}`}
+                  aria-hidden="true"
+                />
+                <h3
+                  className={`text-[1.05rem] font-semibold tracking-tight ${landslideText[tier.id]}`}
+                >
+                  {tier.label}
+                </h3>
+              </div>
+
+              <p className="text-ink mt-2 text-[14px] font-medium">
+                {tier.name}
+              </p>
+              <p className="text-ink-dim mt-2.5 text-[13.5px] leading-relaxed">
+                {tier.human}
+              </p>
+
+              {/* NOAH's published ruling, quoted rather than paraphrased —
+                  see packages/hazard/src/landslide.ts */}
+              <p className="border-hairline mt-3.5 border-l-2 pl-3.5 text-[13.5px] leading-relaxed">
+                <span className="text-ink font-semibold">
+                  What NOAH says about building here.{" "}
+                </span>
+                <span className="text-ink-dim">{tier.guidance}</span>
+              </p>
+            </section>
+          ))}
+        </div>
+
+        <p className="text-ink-dim mt-5 text-[12px] leading-relaxed">
+          {LANDSLIDE_CAVEAT}
+        </p>
+      </section>
 
       {/* ---- return periods ---- */}
       <section className="mt-12">

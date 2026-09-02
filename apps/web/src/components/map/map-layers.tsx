@@ -4,6 +4,7 @@ import {
   Eye,
   EyeOff,
   Layers,
+  Mountain,
   Newspaper,
   Satellite,
 } from "lucide-react";
@@ -18,6 +19,10 @@ type Props = {
   onExtrudeChange: (v: boolean) => void;
   showRain: boolean;
   onShowRainChange: (v: boolean) => void;
+  showLandslide: boolean;
+  onShowLandslideChange: (v: boolean) => void;
+  /** true while the 3 MB overlay is being fetched for the first time */
+  landslideLoading?: boolean;
   showNews: boolean;
   onShowNewsChange: (v: boolean) => void;
   /** how many places recent reporting actually named */
@@ -39,6 +44,9 @@ export function MapLayers({
   onExtrudeChange,
   showRain,
   onShowRainChange,
+  showLandslide,
+  onShowLandslideChange,
+  landslideLoading = false,
   showNews,
   onShowNewsChange,
   newsCount,
@@ -86,6 +94,28 @@ export function MapLayers({
           ) : (
             <EyeOff className="text-ink-dim size-4 shrink-0" aria-hidden="true" />
           )
+        }
+      />
+
+      {/* The second hazard.
+          Its own row rather than a mode of the flood overlay, because the two
+          are different questions about different ground and are worth reading
+          together: the valley floods and the slope above it fails, in the same
+          storm. Off by default — it is 0.63 MB fetched on first use, and most
+          of the city's population lives on the plain. */}
+      <SwitchRow
+        checked={showLandslide}
+        onChange={onShowLandslideChange}
+        label={
+          landslideLoading
+            ? "Loading landslide data…"
+            : "Landslide susceptibility"
+        }
+        icon={
+          <Mountain
+            className={`size-4 shrink-0 ${showLandslide ? "text-slide-med" : "text-ink-dim"}`}
+            aria-hidden="true"
+          />
         }
       />
 

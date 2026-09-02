@@ -1,3 +1,4 @@
+import type { LandslideId } from "@davflood/hazard/landslide";
 import type { HazardId } from "@davflood/hazard/tiers";
 
 /**
@@ -28,4 +29,25 @@ export const hazardBorder: Record<HazardId, string> = {
   low: "border-haz-low",
   medium: "border-haz-med",
   high: "border-haz-high",
+};
+
+/**
+ * The same arrangement for the landslide ramp.
+ *
+ * Spelled out for the same two reasons, and kept in a separate map rather
+ * than folded into the ones above because the ids collide: both hazards have
+ * a "high", and they mean entirely different things. A single lookup keyed on
+ * "high" would have been one careless import away from painting a landslide
+ * ruling in flood red.
+ */
+export const landslideText: Record<LandslideId, string> = {
+  low: "text-slide-low",
+  medium: "text-slide-med",
+  high: "text-slide-high",
+};
+
+export const landslideBg: Record<LandslideId, string> = {
+  low: "bg-slide-low",
+  medium: "bg-slide-med",
+  high: "bg-slide-high",
 };
