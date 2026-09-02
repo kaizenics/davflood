@@ -3,7 +3,7 @@ import { footprintOf, formatArea } from "@davflood/hazard/footprint";
 import { CAMERA } from "@davflood/hazard/geo";
 import type { LngLat } from "@davflood/hazard/geo";
 import { formatDepth } from "@davflood/hazard/schema";
-import type { HazardCollection, HazardProperties } from "@davflood/hazard/schema";
+import type { HazardProperties } from "@davflood/hazard/schema";
 import { DEFAULT_SCENARIO, scenarioByYears } from "@davflood/hazard/scenarios";
 import type { ScenarioYears } from "@davflood/hazard/scenarios";
 import { nearestEvacuation } from "@davflood/hazard/evacuation";
@@ -21,7 +21,12 @@ import {
 import type { ReactNode } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 
-import { loadLandslide } from "@/lib/landslide-source";
+import { DATA_IS_PLACEHOLDER } from "@/lib/hazard-source";
+import { useImmersive } from "@/hooks/use-immersive";
+import {
+  useLandslideData,
+  useScenarioData,
+} from "@/hooks/use-hazard-layers";
 import { BarangayCard } from "@/components/map/barangay-card";
 import { CityReading } from "@/components/map/city-reading";
 import { FloodMap, type FloodMapHandle, type Guide } from "@/components/map/flood-map";
@@ -46,7 +51,6 @@ import { useSavedPlace } from "@/lib/saved-place";
 import { useNewsPins } from "@/hooks/use-news-pins";
 import { useRainGrid } from "@/hooks/use-rain-grid";
 import { useBottomSheet } from "@/lib/bottom-sheet";
-import { DATA_IS_PLACEHOLDER, EMPTY, loadScenario } from "@/lib/hazard-source";
 import { useTheme } from "@/lib/theme";
 import { cn } from "@/lib/utils";
 
@@ -124,23 +128,7 @@ export function MapShell({ children }: { children: ReactNode }) {
 
   // hazard data is fetched per scenario rather than bundled — see
   // lib/hazard-source.ts for why
-  const [data, setData] = useState<HazardCollection>(EMPTY);
-  const [dataError, setDataError] = useState<string | null>(null);
-
-  useEffect(() => {
-    let live = true;
-    setDataError(null);
-    loadScenario(scenario)
-      .then((fc) => {
-        if (live) setData(fc);
-      })
-      .catch((err: unknown) => {
-        if (live) setDataError(err instanceof Error ? err.message : String(err));
-      });
-    return () => {
-      live = false;
-    };
-  }, [scenario]);
+  const { data, error: dataError } = useScenarioData(scenario);
 
   const activeScenario = scenarioByYears[scenario];
 
@@ -321,39 +309,9 @@ export function MapShell({ children }: { children: ReactNode }) {
   /* Phones reach the map-view controls from the map; desktop from the panel. */
   const [mapViewOpen, setMapViewOpen] = useState(false);
 
-  /**
-   * Map-only mode: every panel out of the way, nothing but cartography.
-   *
-   * The panel earns its space on a normal visit — it is where the reading,
-   * the scenario and the forecast live. But the map is a 3D terrain view of
-   * a city 53 km across, and there are moments (showing someone their
-   * barangay, taking a screenshot, simply looking) when the chrome is the
-   * thing in the way. This gets rid of all of it in one press.
-   *
-   * Not persisted. It is a way of looking at the map for a minute, not a
-   * preference, and a reader who returns to a chrome-less app with no memory
-   * of turning it on has lost the app.
-   */
-  const [immersive, setImmersive] = useState(false);
-
-  useEffect(() => {
-    /* Only the map route can be map-only. On a document page the panel IS
-       the page, and hiding it would leave a reader staring at cartography
-       with the article they were reading gone. */
-    if (!isMap && immersive) setImmersive(false);
-  }, [isMap, immersive]);
-
-  useEffect(() => {
-    if (!immersive) return;
-    // the phone's map-view sheet lives outside the panel, so hiding the panel
-    // would otherwise leave it floating over an otherwise bare map
-    setMapViewOpen(false);
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setImmersive(false);
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [immersive]);
+  const [immersive, setImmersive] = useImmersive(isMap, () =>
+    setMapViewOpen(false),
+  );
 
   /* Off by default: it is weather, the hazard map is the point, and the
      request only goes out once someone asks for it. */
@@ -369,43 +327,10 @@ export function MapShell({ children }: { children: ReactNode }) {
    * the flood map, which is the thing that matters, is untouched.
    */
   const [showLandslide, setShowLandslide] = useState(false);
-  const [landslide, setLandslide] = useState<GeoJSON.FeatureCollection>();
-  const [landslideLoading, setLandslideLoading] = useState(false);
-
-  /**
-   * `landslideLoading` is deliberately NOT a dependency here, and leaving it
-   * in deadlocked the layer outright.
-   *
-   * The effect sets that flag, so listing it made the effect re-run its own
-   * state change: the cleanup marked the in-flight fetch cancelled, the
-   * re-run bailed out on the very flag it had just set, and every callback on
-   * the resolved fetch was then guarded away. Nothing was drawn, the switch
-   * read "Loading…" forever, and it could never retry, because the guard it
-   * was stuck behind was the same flag it was waiting on.
-   *
-   * `landslide` alone is the correct guard — once the data is in, the effect
-   * re-runs and returns early. The flag is now UI state only, and nothing
-   * branches on it.
-   */
-  useEffect(() => {
-    if (!showLandslide || landslide) return;
-    let alive = true;
-    setLandslideLoading(true);
-    loadLandslide()
-      .then((fc) => {
-        if (alive) setLandslide(fc);
-      })
-      .catch((err) => {
-        console.error("[MapShell] landslide data failed to load:", err);
-        if (alive) setShowLandslide(false);
-      })
-      // unguarded on purpose: a spinner that outlives its fetch is the bug
-      // above in miniature, and a state call after unmount is a no-op
-      .finally(() => setLandslideLoading(false));
-    return () => {
-      alive = false;
-    };
-  }, [showLandslide, landslide]);
+  const { data: landslide, loading: landslideLoading } = useLandslideData(
+    showLandslide,
+    () => setShowLandslide(false),
+  );
 
   /* Places named in recent flood reporting. On by default — unlike the rain
      layer this costs no extra request (the panel already has the file) and
