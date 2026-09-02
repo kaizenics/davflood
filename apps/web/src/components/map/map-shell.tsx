@@ -331,25 +331,40 @@ export function MapShell({ children }: { children: ReactNode }) {
   const [landslide, setLandslide] = useState<GeoJSON.FeatureCollection>();
   const [landslideLoading, setLandslideLoading] = useState(false);
 
+  /**
+   * `landslideLoading` is deliberately NOT a dependency here, and leaving it
+   * in deadlocked the layer outright.
+   *
+   * The effect sets that flag, so listing it made the effect re-run its own
+   * state change: the cleanup marked the in-flight fetch cancelled, the
+   * re-run bailed out on the very flag it had just set, and every callback on
+   * the resolved fetch was then guarded away. Nothing was drawn, the switch
+   * read "Loading…" forever, and it could never retry, because the guard it
+   * was stuck behind was the same flag it was waiting on.
+   *
+   * `landslide` alone is the correct guard — once the data is in, the effect
+   * re-runs and returns early. The flag is now UI state only, and nothing
+   * branches on it.
+   */
   useEffect(() => {
-    if (!showLandslide || landslide || landslideLoading) return;
-    let cancelled = false;
+    if (!showLandslide || landslide) return;
+    let alive = true;
     setLandslideLoading(true);
     loadLandslide()
       .then((fc) => {
-        if (!cancelled) setLandslide(fc);
+        if (alive) setLandslide(fc);
       })
       .catch((err) => {
         console.error("[MapShell] landslide data failed to load:", err);
-        if (!cancelled) setShowLandslide(false);
+        if (alive) setShowLandslide(false);
       })
-      .finally(() => {
-        if (!cancelled) setLandslideLoading(false);
-      });
+      // unguarded on purpose: a spinner that outlives its fetch is the bug
+      // above in miniature, and a state call after unmount is a no-op
+      .finally(() => setLandslideLoading(false));
     return () => {
-      cancelled = true;
+      alive = false;
     };
-  }, [showLandslide, landslide, landslideLoading]);
+  }, [showLandslide, landslide]);
 
   /* Places named in recent flood reporting. On by default — unlike the rain
      layer this costs no extra request (the panel already has the file) and
