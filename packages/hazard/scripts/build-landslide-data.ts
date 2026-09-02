@@ -37,15 +37,12 @@ import { fileURLToPath } from "node:url";
 
 import type { LandslideId } from "../src/landslide";
 import {
-	areaM2,
+	assemblePolygons,
 	centroidOf,
 	nearestBarangay,
 	readShapefile,
 	readVarColumn,
-	round,
 	shapefilesUnder,
-	signedArea,
-	simplify,
 } from "./noah-shapefile";
 import type { Ring } from "./noah-shapefile";
 
@@ -82,16 +79,6 @@ const classOf: Record<number, LandslideId> = {
 	3: "high",
 };
 
-type LandslideFeature = {
-	type: "Feature";
-	properties: {
-		zone_id: string;
-		hazard: LandslideId;
-		barangay: string;
-	};
-	geometry: { type: "Polygon"; coordinates: Ring[] };
-};
-
 const SRC = process.argv[2];
 if (!SRC) {
 	console.error("usage: build:landslide -- <dir with one folder per province>");
@@ -124,47 +111,16 @@ for (const shpPath of shapefiles) {
 	);
 }
 
-const features: LandslideFeature[] = [];
-let current: { hazard: LandslideId; rings: Ring[] } | null = null;
-let index = 0;
-
-const flush = () => {
-	if (!current || current.rings.length === 0) return;
-	features.push({
-		type: "Feature",
-		properties: {
-			zone_id: `noah-slide-${current.hazard}-${index++}`,
-			hazard: current.hazard,
-			barangay: nearestBarangay(centroidOf(current.rings[0]!)),
-		},
-		geometry: { type: "Polygon", coordinates: current.rings },
-	});
-	current = null;
-};
-
-for (let i = 0; i < rings.length; i++) {
-	const hazard = classOf[vars[recordOf[i]!] ?? 0];
-	if (!hazard) continue;
-
-	const simplified = round(simplify(rings[i]!, TOLERANCE));
-	if (simplified.length < 4) continue;
-	// close the ring if simplification opened it
-	const first = simplified[0]!;
-	const last = simplified[simplified.length - 1]!;
-	if (first[0] !== last[0] || first[1] !== last[1]) simplified.push([...first]);
-
-	// shapefile outer rings are clockwise -> negative area; holes follow them
-	const area = signedArea(simplified);
-	if (area < 0) {
-		flush();
-		if (areaM2(simplified) < MIN_AREA_M2) continue;
-		current = { hazard, rings: [simplified] };
-	} else if (current && current.hazard === hazard) {
-		if (areaM2(simplified) >= MIN_AREA_M2) current.rings.push(simplified);
-	}
-}
-flush();
-
+const features = assemblePolygons(
+	{ rings, recordOf, vars },
+	classOf,
+	{ tolerance: TOLERANCE, minAreaM2: MIN_AREA_M2 },
+	(hazard, polygon, index) => ({
+		zone_id: `noah-slide-${hazard}-${index}`,
+		hazard,
+		barangay: nearestBarangay(centroidOf(polygon[0]!)),
+	}),
+);
 mkdirSync(OUT_DIR, { recursive: true });
 const fc = { type: "FeatureCollection" as const, features };
 const json = JSON.stringify(fc);

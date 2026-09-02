@@ -32,15 +32,12 @@ import { fileURLToPath } from "node:url";
    and must clip to the identical outline, and two copies of a hand-rolled
    shapefile parser is exactly one copy too many. */
 import {
-	areaM2,
+	assemblePolygons,
 	centroidOf,
 	nearestBarangay,
 	readShapefile,
 	readVarColumn,
-	round,
 	shapefilesUnder,
-	signedArea,
-	simplify,
 } from "./noah-shapefile";
 import type { Ring } from "./noah-shapefile";
 import type { HazardCollection, HazardFeature } from "../src/schema";
@@ -108,53 +105,22 @@ for (const years of [5, 25, 100] as const satisfies readonly ScenarioYears[]) {
 		vars.push(...partVars);
 	}
 
-	const features: HazardFeature[] = [];
-	let current: { hazard: HazardId; rings: Ring[] } | null = null;
-	let index = 0;
-
-	const flush = () => {
-		if (!current || current.rings.length === 0) return;
-		const [dmin, dmax] = bands[current.hazard];
-		features.push({
-			type: "Feature",
-			properties: {
-				zone_id: `noah-${years}-${current.hazard}-${index++}`,
-				hazard: current.hazard,
+	const features: HazardFeature[] = assemblePolygons(
+		{ rings, recordOf, vars },
+		classOf,
+		{ tolerance: TOLERANCE, minAreaM2: MIN_AREA_M2 },
+		(hazard, polygon, index) => {
+			const [dmin, dmax] = bands[hazard];
+			return {
+				zone_id: `noah-${years}-${hazard}-${index}`,
+				hazard,
 				depth_min: dmin,
 				depth_max: dmax,
-				barangay: nearestBarangay(centroidOf(current.rings[0]!)),
+				barangay: nearestBarangay(centroidOf(polygon[0]!)),
 				scenario: years,
-			},
-			geometry: { type: "Polygon", coordinates: current.rings },
-		});
-		current = null;
-	};
-
-	for (let i = 0; i < rings.length; i++) {
-		const hazard = classOf[vars[recordOf[i]!] ?? 0];
-		if (!hazard) continue;
-
-		const simplified = round(simplify(rings[i]!, TOLERANCE));
-		if (simplified.length < 4) continue;
-		// close the ring if simplification opened it
-		const first = simplified[0]!;
-		const last = simplified[simplified.length - 1]!;
-		if (first[0] !== last[0] || first[1] !== last[1]) simplified.push([...first]);
-
-		// shapefile outer rings are clockwise -> negative area; holes follow them
-		const area = signedArea(simplified);
-		if (area < 0) {
-			flush();
-			// drop sliver polygons outright rather than shipping 20k of them
-			if (areaM2(simplified) < MIN_AREA_M2) continue;
-			current = { hazard, rings: [simplified] };
-		} else if (current && current.hazard === hazard) {
-			// keep only holes big enough to matter; tiny ones just add points
-			if (areaM2(simplified) >= MIN_AREA_M2) current.rings.push(simplified);
-		}
-	}
-	flush();
-
+			};
+		},
+	);
 	const fc: HazardCollection = { type: "FeatureCollection", features };
 	const path = join(OUT_DIR, `davao-${years}.json`);
 	const json = JSON.stringify(fc);

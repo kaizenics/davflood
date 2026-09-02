@@ -297,3 +297,77 @@ export function shapefilesUnder(dir: string): string[] {
 	}
 	return out;
 }
+
+/* ---------------- ring assembly ---------------- */
+
+/**
+ * Turns a flat list of clipped rings into polygons, one per contiguous run of
+ * the same hazard class.
+ *
+ * This was written twice — once in each converter — and the copies were
+ * identical down to the comments. That is the worst kind of duplication to
+ * leave lying around, because none of it is obvious: the winding rule, the
+ * ordering assumption and the sliver floor all encode facts about the
+ * shapefile format that are invisible from the code alone.
+ *
+ * WHAT THE WINDING MEANS. Shapefiles give outer rings clockwise, which is a
+ * NEGATIVE shoelace area here, and every hole follows its outer ring
+ * counter-clockwise. So a negative area starts a new polygon and a positive
+ * one is a hole belonging to whatever came before it — which is also why the
+ * rings must be walked in file order and never sorted.
+ *
+ * `classOf` maps the numeric attribute to a class id; a value it does not
+ * cover drops the ring. `makeProperties` is called once per finished polygon,
+ * which is where the two converters actually differ: flood carries depth
+ * bands and a return period, landslide has neither.
+ */
+export function assemblePolygons<Id extends string, P>(
+	input: { rings: Ring[]; recordOf: number[]; vars: number[] },
+	classOf: Record<number, Id>,
+	opts: { tolerance: number; minAreaM2: number },
+	makeProperties: (id: Id, rings: Ring[], index: number) => P,
+): { type: "Feature"; properties: P; geometry: { type: "Polygon"; coordinates: Ring[] } }[] {
+	const out: {
+		type: "Feature";
+		properties: P;
+		geometry: { type: "Polygon"; coordinates: Ring[] };
+	}[] = [];
+
+	let current: { id: Id; rings: Ring[] } | null = null;
+	let index = 0;
+
+	const flush = () => {
+		if (!current || current.rings.length === 0) return;
+		out.push({
+			type: "Feature",
+			properties: makeProperties(current.id, current.rings, index++),
+			geometry: { type: "Polygon", coordinates: current.rings },
+		});
+		current = null;
+	};
+
+	for (let i = 0; i < input.rings.length; i++) {
+		const id = classOf[input.vars[input.recordOf[i]!] ?? 0];
+		if (!id) continue;
+
+		const simplified = round(simplify(input.rings[i]!, opts.tolerance));
+		if (simplified.length < 4) continue;
+		// close the ring if simplification opened it
+		const first = simplified[0]!;
+		const last = simplified[simplified.length - 1]!;
+		if (first[0] !== last[0] || first[1] !== last[1]) simplified.push([...first]);
+
+		if (signedArea(simplified) < 0) {
+			flush();
+			// drop sliver polygons outright rather than shipping 20k of them
+			if (areaM2(simplified) < opts.minAreaM2) continue;
+			current = { id, rings: [simplified] };
+		} else if (current && current.id === id) {
+			// keep only holes big enough to matter; tiny ones just add points
+			if (areaM2(simplified) >= opts.minAreaM2) current.rings.push(simplified);
+		}
+	}
+	flush();
+
+	return out;
+}
