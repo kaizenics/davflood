@@ -305,14 +305,55 @@ export function MapShell({ children }: { children: ReactNode }) {
   }, [selected]);
 
   /* Tapping a zone is a question, and on a phone the answer lives inside a
-     collapsed sheet. Open it — otherwise the tap appears to do nothing. */
+     collapsed sheet. Open it — otherwise the tap appears to do nothing.
+
+     Map-only mode hides that sheet entirely, so a tap there would be swallowed
+     the same way, only worse: the panel is not merely closed, it is gone. A
+     tap on a zone is a request for the reading, so it takes precedence over
+     the mode and brings the chrome back. */
   const { setOpen: setSheetOpen } = sheet;
   useEffect(() => {
-    if (selected) setSheetOpen(true);
+    if (!selected) return;
+    setSheetOpen(true);
+    setImmersive(false);
   }, [selected, setSheetOpen]);
 
   /* Phones reach the map-view controls from the map; desktop from the panel. */
   const [mapViewOpen, setMapViewOpen] = useState(false);
+
+  /**
+   * Map-only mode: every panel out of the way, nothing but cartography.
+   *
+   * The panel earns its space on a normal visit — it is where the reading,
+   * the scenario and the forecast live. But the map is a 3D terrain view of
+   * a city 53 km across, and there are moments (showing someone their
+   * barangay, taking a screenshot, simply looking) when the chrome is the
+   * thing in the way. This gets rid of all of it in one press.
+   *
+   * Not persisted. It is a way of looking at the map for a minute, not a
+   * preference, and a reader who returns to a chrome-less app with no memory
+   * of turning it on has lost the app.
+   */
+  const [immersive, setImmersive] = useState(false);
+
+  useEffect(() => {
+    /* Only the map route can be map-only. On a document page the panel IS
+       the page, and hiding it would leave a reader staring at cartography
+       with the article they were reading gone. */
+    if (!isMap && immersive) setImmersive(false);
+  }, [isMap, immersive]);
+
+  useEffect(() => {
+    if (!immersive) return;
+    // the phone's map-view sheet lives outside the panel, so hiding the panel
+    // would otherwise leave it floating over an otherwise bare map
+    setMapViewOpen(false);
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setImmersive(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [immersive]);
 
   /* Off by default: it is weather, the hazard map is the point, and the
      request only goes out once someone asks for it. */
@@ -433,7 +474,7 @@ export function MapShell({ children }: { children: ReactNode }) {
     <div className="absolute inset-0 lg:flex lg:flex-row">
       {/* On a phone the sheet covers the map while it is open, so tapping the
           scrim is the fastest way back to the map. */}
-      {isMap && sheet.open && (
+      {isMap && sheet.open && !immersive && (
         <button
           type="button"
           tabIndex={-1}
@@ -455,7 +496,13 @@ export function MapShell({ children }: { children: ReactNode }) {
       <aside
         ref={isMap ? sheet.ref : undefined}
         data-open={sheet.open}
+        /* `display: none` cannot be transitioned, so map-only mode is a
+           data attribute and .nf-chrome-panel animates it out — left as a
+           column above lg, downward as a sheet below it. See app.css. */
+        data-hidden={immersive || undefined}
+        inert={immersive || undefined}
         className={cn(
+          "nf-chrome-panel",
           "border-hairline bg-deep/95 lg:bg-deep/40 flex min-w-0 flex-col backdrop-blur-xl",
           // `nf-sheet` owns position, height and the open/closed transform
           // below lg — see app.css for why that is hand-written CSS
@@ -671,7 +718,11 @@ export function MapShell({ children }: { children: ReactNode }) {
               while you are reading the sources is an answer to a question
               nobody is asking. */}
           {isMap && (
-            <div className="border-hairline bg-deep/92 pointer-events-auto absolute top-4 left-4 z-10 hidden max-h-[calc(100%-2rem)] w-[21rem] overflow-x-hidden overflow-y-auto rounded-2xl border shadow-2xl backdrop-blur-xl lg:block">
+            <div
+              data-hidden={immersive || undefined}
+              inert={immersive || undefined}
+              className="nf-chrome nf-chrome-reading border-hairline bg-deep/92 pointer-events-auto absolute top-4 left-4 z-10 hidden max-h-[calc(100%-2rem)] w-[21rem] overflow-x-hidden overflow-y-auto rounded-2xl border shadow-2xl backdrop-blur-xl lg:block"
+            >
               {reading}
             </div>
           )}
@@ -690,7 +741,18 @@ export function MapShell({ children }: { children: ReactNode }) {
                 loading={landslideLoading}
               />
             )}
-            <div className="hidden lg:block">
+            {/* The legends deliberately stay in map-only mode.
+                They are not chrome — they are what makes the colours on the
+                map mean anything, and the landslide one carries the caveat
+                that the purple is susceptibility rather than a forecast. A
+                clean screenshot of an unexplained hazard overlay is exactly
+                the artefact this app should not help anyone produce. Both
+                are absent anyway unless their layer is switched on. */}
+            <div
+              data-hidden={immersive || undefined}
+              inert={immersive || undefined}
+              className="nf-chrome hidden lg:block"
+            >
               <MapViewButton
                 basemap={view}
                 onBasemapChange={setView}
@@ -720,6 +782,10 @@ export function MapShell({ children }: { children: ReactNode }) {
               onToggleTerrain={() => setTerrain((v) => !v)}
               onOpenMapView={() => setMapViewOpen((v) => !v)}
               mapViewOpen={mapViewOpen}
+              immersive={immersive}
+              onToggleImmersive={
+                isMap ? () => setImmersive((v) => !v) : undefined
+              }
             />
           </div>
         </div>

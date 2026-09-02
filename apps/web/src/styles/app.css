@@ -294,6 +294,112 @@
 }
 
 /* ------------------------------------------------------------------
+   Map-only mode.
+
+   Hiding the chrome used to be `display: none`, which cannot be
+   transitioned and made the panel vanish between two frames. Everything
+   here animates instead, and each piece leaves toward the edge it lives
+   on: the panel to the left (or down, when it is a sheet), the controls
+   into the corner they came from.
+
+   The panel's exit is the awkward one, and the obvious version of it is
+   wrong. Above lg the panel is a flex column, so animating its width or
+   margin to collapse the space makes the map's container resize on every
+   frame — and MapLibre puts a ResizeObserver on that container, so the
+   map re-projects ~40 times during the slide, holding its centre while
+   the viewport changes shape. On screen that reads as the map shaking.
+
+   So the layout changes exactly ONCE: the panel leaves the flow the
+   instant it starts hiding, the map takes the full width in a single
+   step, and the only things that animate are transform and opacity,
+   which cost no layout at all.
+   ------------------------------------------------------------------ */
+
+.nf-chrome {
+  transition:
+    opacity 200ms ease,
+    transform 280ms cubic-bezier(0.16, 1, 0.3, 1),
+    visibility 280ms;
+}
+.nf-chrome[data-hidden="true"] {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* the floating reading leaves toward its own corner */
+.nf-chrome-reading[data-hidden="true"] {
+  transform: translateX(-0.75rem) scale(0.98);
+}
+
+@media (width >= 64rem) {
+  .nf-chrome-panel {
+    /* above the map in both directions of travel: the map container is
+       positioned and comes later in the DOM, so without this the panel
+       slides in and out behind it */
+    z-index: 20;
+    transition:
+      transform 320ms cubic-bezier(0.16, 1, 0.3, 1),
+      opacity 220ms ease,
+      visibility 320ms;
+  }
+
+  /* Out of flow, in one step. Nothing here is animated except transform
+     and opacity — `position` flips discretely, which is the point: the
+     map resizes once and then holds still while the panel slides over
+     it. Width keeps coming from lg:w-[26rem] / xl:w-[29rem] on the
+     element, so there is no measurement to keep in sync here. */
+  .nf-chrome-panel[data-hidden="true"] {
+    position: absolute;
+    inset-block: 0;
+    inset-inline-start: 0;
+    transform: translateX(-100%);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+}
+
+/* Below lg the panel is .nf-sheet, which already owns a transform and a
+   transition. Map-only mode is just a third position for it: all the way
+   down, past the peek the closed state stops at. */
+@media (width < 64rem) {
+  .nf-sheet[data-hidden="true"] {
+    transform: translateY(100%);
+  }
+}
+
+/* The control stack collapses to the one button that gets you back out.
+   The others fold up into it rather than blinking away, which is also
+   what keeps the exit button from jumping: it sits above them, so
+   nothing above it changes size. */
+.nf-chrome-stack {
+  max-height: 16rem;
+  overflow: hidden;
+  transition:
+    max-height 280ms cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 180ms ease,
+    transform 280ms cubic-bezier(0.16, 1, 0.3, 1),
+    margin-top 280ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.nf-chrome-stack[data-hidden="true"] {
+  max-height: 0;
+  opacity: 0;
+  transform: scale(0.9);
+  /* eats the parent's gap so the collapse closes completely */
+  margin-top: -0.5rem;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nf-chrome,
+  .nf-chrome-panel,
+  .nf-chrome-stack {
+    transition-duration: 1ms;
+  }
+}
+
+/* ------------------------------------------------------------------
    The reading slot.
 
    One slot answers "how deep does it get here" at two scales, and the
