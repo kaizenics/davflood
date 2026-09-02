@@ -1,5 +1,41 @@
 # Changelog
 
+## [1.5.0](https://github.com/kaizenics/davflood/compare/v1.4.1...v1.5.0) (2026-09-02)
+
+
+### New
+
+* add Davao River flow history chart ([e60b32f](https://github.com/kaizenics/davflood/commit/e60b32f6f8b5730e6ec4d59075bd0b50df89f864))
+* **barangay:** animate the card in and out ([b6645ae](https://github.com/kaizenics/davflood/commit/b6645ae95231b8b2ff7332c54fd016846bc1ce05))
+* **barangay:** measure what share of a barangay floods ([98d5119](https://github.com/kaizenics/davflood/commit/98d5119f0b7f1cb9bdf75285161fa8059308ebf2))
+* **data:** import the barangay outlines OpenStreetMap has ([5cc0d15](https://github.com/kaizenics/davflood/commit/5cc0d15423ca05b0095feb0a6029496c07330ac2))
+* draw the Davao City boundary on the map ([f2ef55c](https://github.com/kaizenics/davflood/commit/f2ef55c87c3ea8cf315d0d65f6cb37e6018ca4e8))
+* enhance news filtering and handling for barangay-level reporting ([c031086](https://github.com/kaizenics/davflood/commit/c031086f602e9fb07fd1cdbb0a2f95dcf56aca76))
+* **landslide:** add UP NOAH landslide susceptibility ([faa0ec2](https://github.com/kaizenics/davflood/commit/faa0ec29ff8161cd1a804fa7961c008330788159))
+* **map:** add a map-only mode that hides the panels ([2e6f04e](https://github.com/kaizenics/davflood/commit/2e6f04eb3362754c2bc38bf826fab2ca92ccb413))
+* **map:** draw the barangay boundaries and frame the one you pick ([aa68505](https://github.com/kaizenics/davflood/commit/aa685053184526a6c3c509de2690cd8929ed0acd))
+* **nav:** go straight to the map when you pick a barangay ([b6f4691](https://github.com/kaizenics/davflood/commit/b6f46916f4ff109eb282a4ec0252051f4a9a634d))
+* **rainfall:** say how much rain has already fallen ([9e695d3](https://github.com/kaizenics/davflood/commit/9e695d30fd716fec6f1c6827ac53ac3939f4b43b))
+* refactor news handler and add cron job for news fetching ([c992ab3](https://github.com/kaizenics/davflood/commit/c992ab37742b224210a4d2ba3c685e6d7e820225))
+* **web:** a page for every barangay in Davao City ([9b7ebcf](https://github.com/kaizenics/davflood/commit/9b7ebcf34a1ae3dd63af6ec75934402ed45918ea))
+* **web:** open flat, and let the reader ask for depth ([11ecbd0](https://github.com/kaizenics/davflood/commit/11ecbd01f7d57ad083a38a9c71f5b6702680d1a6))
+* **web:** open on the worst case, not the middle one ([2111f8d](https://github.com/kaizenics/davflood/commit/2111f8d36e39b5d463ad19b7416f4495f466d6ae))
+* **web:** show the tapped spot in all three storms at once ([31cb6fa](https://github.com/kaizenics/davflood/commit/31cb6fa898f014133fba3642a45288dd3cf406f9))
+
+
+### Fixed
+
+* add canonical redirect to consolidate search engine ranking ([b472d56](https://github.com/kaizenics/davflood/commit/b472d56d5f59408fbb674d0c6a04a2f08a16faab))
+* **ci:** check out before merging, and land releases under the maintainer ([e5588b2](https://github.com/kaizenics/davflood/commit/e5588b247defd0419b8a544fcf7618f9db4fbc8f))
+* configure Vercel hosting so the deployed site is not a 404 ([b5dabe1](https://github.com/kaizenics/davflood/commit/b5dabe18ac72908846b1ff1eff6189eb11a3e866))
+* improve prerendering configuration to handle 189 pages with retries and error handling ([2aca34f](https://github.com/kaizenics/davflood/commit/2aca34f80e84c388aa6808f6d733e440c599ee14))
+* **landslide:** stop the overlay deadlocking on its own loading flag ([65f1e2d](https://github.com/kaizenics/davflood/commit/65f1e2def48955e44418f496fa83332ff4793266))
+* update cron schedule for news fetching to run daily ([989a0c1](https://github.com/kaizenics/davflood/commit/989a0c123539f582c441f13f2bb080ae42ebbfac))
+* update redirect URL to include 'www' for canonical domain ([b5484d7](https://github.com/kaizenics/davflood/commit/b5484d79d93ca8081c3813eabc2fc9fb6e44d0d7))
+* **web:** let the map show through the hazard fills ([72f30cf](https://github.com/kaizenics/davflood/commit/72f30cf5ce276ff22b4f9fbdee447a0d4d741d30))
+* **web:** make the hazard bands read again over satellite ([5918190](https://github.com/kaizenics/davflood/commit/59181903d0e4989c71434884d872cf715577f855))
+* **web:** stop the hazard layer doubling when you zoom out ([f789668](https://github.com/kaizenics/davflood/commit/f78966814264a7562a468ab9f091778199411f92))
+
 ## [1.4.1](https://github.com/kaizenics/davflood/compare/v1.6.1...v1.4.1) (2026-09-01)
 
 
