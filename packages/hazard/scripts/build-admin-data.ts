@@ -1,8 +1,9 @@
 /**
  * Builds the two OpenStreetMap-derived artifacts the app needs for Davao City:
  *
- *   src/barangays.ts            the barangay directory (name + centroid)
- *   src/data/davao-boundary.json  the city outline, used to clip hazard data
+ *   src/barangays.ts                     the barangay directory (name + centroid)
+ *   src/data/davao-boundary.json         the city outline, used to clip hazard
+ *   src/data/davao-barangays.json        the barangay outlines, where OSM has one
  *
  * Why both come from one script: they are two views of the same Overpass
  * answer, and they must agree. If the boundary said one thing and the barangay
@@ -30,7 +31,8 @@
  *
  * Run:  pnpm --filter @davflood/hazard build:admin -- <dir-with-overpass-json>
  *
- * The directory must hold brgy.json and city.json, fetched with:
+ * The directory must hold brgy.json, city.json and brgy-geom.json, fetched
+ * with:
  *
  *   # brgy.json
  *   [out:json][timeout:240];area(3603936841)->.d;
@@ -39,9 +41,22 @@
  *
  *   # city.json
  *   [out:json][timeout:300];relation(3936841);out geom;
+ *
+ *   # brgy-geom.json
+ *   [out:json][timeout:280];area(3603936841)->.d;
+ *   relation["admin_level"="10"](area.d);
+ *   out geom;
+ *
+ * WHY brgy.json AND brgy-geom.json ARE BOTH FETCHED, when the second is a
+ * superset of the first's relations: Overpass `out` takes `center` OR `geom`,
+ * never both, and the two answer different questions. `center` is where the
+ * directory's pins go and has been stable since the first build; `geom` is the
+ * outline. Recomputing the pins from the geometry would move every one of them
+ * — a true centroid is not a bounding-box centre — and for a concave barangay
+ * it can move the pin outside its own boundary. Two queries, no regression.
  */
 
-import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -247,6 +262,13 @@ export function searchBarangays(query: string, limit = 200): Barangay[] {
 
 type Way = { type: string; role?: string; geometry?: { lat: number; lon: number }[] };
 
+type OverpassRelation = {
+	type: string;
+	id: number;
+	tags?: Record<string, string>;
+	members?: Way[];
+};
+
 /**
  * An OSM boundary relation is an unordered bag of way fragments. Stitch them
  * into closed rings by repeatedly attaching whichever fragment continues the
@@ -294,6 +316,123 @@ function stitch(ways: Way[]): LngLat[][] {
 	return rings.sort((a, b) => b.length - a.length);
 }
 
+/* ---------------- barangay outlines ---------------- */
+
+/**
+ * Douglas-Peucker, at the resolution a barangay outline is actually read at.
+ *
+ * OSM boundary ways carry survey-grade detail — 1.7 MB of it across 117
+ * barangays, which is more than the whole hazard layer for one scenario. At
+ * ~11 m the outlines are indistinguishable on screen at any zoom this map
+ * allows, and the file comes back under a tenth of that.
+ *
+ * The tolerance is deliberately finer than build-noah-data.ts uses for hazard
+ * rings (~22 m). A hazard polygon is a modelled blob whose edge is already
+ * approximate; a boundary is a legal line, and neighbouring barangays share
+ * it — simplifying hard enough to see would open visible gaps between two
+ * barangays that are supposed to touch.
+ */
+function simplifyRing(ring: LngLat[], tol: number): LngLat[] {
+	if (ring.length <= 4) return ring;
+	const keep = new Uint8Array(ring.length);
+	keep[0] = 1;
+	keep[ring.length - 1] = 1;
+	const stack: [number, number][] = [[0, ring.length - 1]];
+
+	while (stack.length) {
+		const [first, last] = stack.pop()!;
+		const [x1, y1] = ring[first]!;
+		const [x2, y2] = ring[last]!;
+		const dx = x2 - x1;
+		const dy = y2 - y1;
+		const denom = dx * dx + dy * dy;
+		let maxD = -1;
+		let idx = -1;
+
+		for (let i = first + 1; i < last; i++) {
+			const [px, py] = ring[i]!;
+			let d: number;
+			if (denom === 0) {
+				d = (px - x1) ** 2 + (py - y1) ** 2;
+			} else {
+				let t = ((px - x1) * dx + (py - y1) * dy) / denom;
+				t = Math.max(0, Math.min(1, t));
+				d = (px - (x1 + t * dx)) ** 2 + (py - (y1 + t * dy)) ** 2;
+			}
+			if (d > maxD) {
+				maxD = d;
+				idx = i;
+			}
+		}
+
+		if (maxD > tol * tol && idx > 0) {
+			keep[idx] = 1;
+			stack.push([first, idx], [idx, last]);
+		}
+	}
+
+	const out: LngLat[] = [];
+	for (let i = 0; i < ring.length; i++) if (keep[i]) out.push(ring[i]!);
+	return out;
+}
+
+/** ~11 m at Davao's latitude. */
+const BOUNDARY_TOLERANCE = 0.0001;
+
+type BarangayFeature = {
+	type: "Feature";
+	properties: { name: string; osm: string };
+	geometry: { type: "Polygon"; coordinates: LngLat[][] };
+};
+
+/**
+ * The barangay outlines OSM actually has.
+ *
+ * 117 of 183, and the gap is the point rather than a defect to paper over —
+ * these are exactly the barangays barangays.ts marks `surveyed: true`. The
+ * other 66 exist in OSM as a single node with no area at all, so there is
+ * nothing here to draw for them and the UI has to say so rather than
+ * inventing a circle around a point.
+ *
+ * Inner rings (`role: "inner"`) are kept. A barangay wholly enclosing another
+ * is real here — several of the Poblacion barangays are shaped that way — and
+ * dropping the hole would double-count the enclave's area in every figure
+ * derived from these polygons.
+ */
+function buildBarangayOutlines(elements: OverpassRelation[]): BarangayFeature[] {
+	const out: BarangayFeature[] = [];
+
+	for (const el of elements) {
+		if (el.type !== "relation") continue;
+		const tags = el.tags ?? {};
+		const name = (tags["name:en"] ?? tags.name ?? "").trim();
+		if (!name || tags.admin_level !== "10") continue;
+		if (NOT_A_BARANGAY.has(normalize(name))) continue;
+
+		const members = el.members ?? [];
+		const outer = stitch(members.filter((m) => m.role !== "inner"));
+		if (!outer.length) continue;
+		const inner = stitch(members.filter((m) => m.role === "inner"));
+
+		// largest outer ring only: a barangay is one area, and a stray second
+		// ring here means an unclosed fragment rather than a real exclave
+		const rings = [outer[0]!, ...inner]
+			.map((r) => simplifyRing(r, BOUNDARY_TOLERANCE))
+			.filter((r) => r.length >= 4)
+			.map((r) =>
+				r.map(([x, y]) => [Number(x.toFixed(5)), Number(y.toFixed(5))] as LngLat),
+			);
+
+		out.push({
+			type: "Feature",
+			properties: { name, osm: `relation/${el.id}` },
+			geometry: { type: "Polygon", coordinates: rings },
+		});
+	}
+
+	return out.sort((a, b) => a.properties.name.localeCompare(b.properties.name));
+}
+
 /* ---------------- main ---------------- */
 
 const dir = process.argv[2];
@@ -313,14 +452,35 @@ if (!relation) throw new Error("city.json holds no relation");
 const rings = stitch((relation.members ?? []).filter((m: Way) => m.role !== "inner"));
 if (!rings.length) throw new Error("could not stitch the city outline into a ring");
 
+mkdirSync(join(SRC, "data"), { recursive: true });
+
 const boundary = {
 	type: "Feature" as const,
 	properties: { name: "Davao City", osm: "relation/3936841" },
 	geometry: { type: "Polygon" as const, coordinates: rings.slice(0, 1) },
 };
 
-mkdirSync(join(SRC, "data"), { recursive: true });
 writeFileSync(join(SRC, "data", "davao-boundary.json"), JSON.stringify(boundary));
+
+/**
+ * The barangay outlines, from the second Overpass answer.
+ *
+ * Optional so an older checkout of the input directory still rebuilds the two
+ * artifacts it always did, rather than failing on a file it never had.
+ */
+const geomPath = join(dir, "brgy-geom.json");
+let outlineCount = 0;
+if (existsSync(geomPath)) {
+	const geomRaw = JSON.parse(readFileSync(geomPath, "utf8"));
+	const outlines = buildBarangayOutlines(geomRaw.elements ?? []);
+	outlineCount = outlines.length;
+	writeFileSync(
+		join(SRC, "data", "davao-barangays.json"),
+		JSON.stringify({ type: "FeatureCollection", features: outlines }),
+	);
+} else {
+	console.warn(`  ! no brgy-geom.json in ${dir} — barangay outlines not rebuilt`);
+}
 
 const surveyed = entries.filter((e) => e.surveyed).length;
 const ring = rings[0]!;
@@ -333,3 +493,8 @@ console.log(
 	`boundary   ${ring.length} points  bbox [${Math.min(...lons).toFixed(3)}, ${Math.min(...lats).toFixed(3)}, ${Math.max(...lons).toFixed(3)}, ${Math.max(...lats).toFixed(3)}]`,
 );
 if (rings.length > 1) console.log(`           (dropped ${rings.length - 1} smaller ring(s) — islands)`);
+if (outlineCount) {
+	console.log(
+		`outlines   ${outlineCount}/${entries.length} barangays have a mapped boundary`,
+	);
+}
