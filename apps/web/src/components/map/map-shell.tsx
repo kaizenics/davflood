@@ -577,6 +577,11 @@ export function MapShell({ children }: { children: ReactNode }) {
                   map instead of opening them. */}
               {b && (
                 <BarangayCard
+                  /* Remount per barangay: it replays the enter animation when
+                     you pick a different one, and it clears the card's own
+                     `closing` state, which would otherwise render the next
+                     barangay already collapsed. */
+                  key={b}
                   name={b}
                   scenario={scenario}
                   onClear={() =>

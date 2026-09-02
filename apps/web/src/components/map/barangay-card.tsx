@@ -5,9 +5,12 @@ import { slugify } from "@davflood/hazard/slug";
 import { hazardById } from "@davflood/hazard/tiers";
 import { Link } from "@tanstack/react-router";
 import { ChevronRight, Leaf, X } from "lucide-react";
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { hazardBg, hazardText } from "@/lib/hazard-classes";
+
+/** Mirrors the `.nf-card` exit duration in app.css. */
+const EXIT_MS = 190;
 
 /**
  * What the model says about the barangay currently framed on the map.
@@ -39,6 +42,32 @@ export function BarangayCard({
     return barangay ? profileFor(barangay) : null;
   }, [name]);
 
+  /**
+   * Hold the card open for its own exit.
+   *
+   * Dismissing it clears `b` from the URL, and React unmounts on the same
+   * frame it re-renders — so the card had no chance to animate and simply
+   * blinked out. `closing` delays the caller by exactly one animation.
+   *
+   * The same trick the reading slot uses for its swap; see reading-slot.tsx.
+   */
+  const [closing, setClosing] = useState(false);
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    // navigating away mid-animation should not fire a route change behind
+    // whatever the reader went to instead
+    return () => {
+      if (timer.current) clearTimeout(timer.current);
+    };
+  }, []);
+
+  function dismiss() {
+    if (closing) return; // a second press must not queue a second navigation
+    setClosing(true);
+    timer.current = setTimeout(() => onClear?.(), EXIT_MS);
+  }
+
   // a `b` in the URL that matches no barangay is a hand-edited link, not a
   // state worth rendering an error for
   if (!profile) return null;
@@ -48,7 +77,10 @@ export function BarangayCard({
   const worst = row?.worst ?? null;
 
   return (
-    <div className="border-hairline/60 relative border-t px-5 py-4">
+    <div
+      data-phase={closing ? "out" : "in"}
+      className="nf-card border-hairline/60 relative border-t px-5 py-4"
+    >
       {worst && (
         <span
           className={`${hazardBg[worst]} absolute top-0 bottom-0 left-0 w-[3px]`}
@@ -63,7 +95,7 @@ export function BarangayCard({
         {onClear && (
           <button
             type="button"
-            onClick={onClear}
+            onClick={dismiss}
             aria-label={`Stop showing ${name}`}
             className="text-ink-dim hover:text-ink ml-auto -mr-1 flex size-5 shrink-0 items-center justify-center rounded transition"
           >
