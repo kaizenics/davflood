@@ -14,7 +14,12 @@ import { fileURLToPath } from "node:url";
 
 import { validateStyleMin } from "@maplibre/maplibre-gl-style-spec";
 
-import { hazardLayers, SOURCE_HAZARD } from "../src/layers";
+import {
+	boundaryLayers,
+	hazardLayers,
+	SOURCE_BOUNDARY,
+	SOURCE_HAZARD,
+} from "../src/layers";
 import { buildBaseStyle } from "../src/style";
 import type { HazardCollection } from "../src/schema";
 
@@ -25,6 +30,19 @@ const hazard25 = JSON.parse(
 		"utf8",
 	),
 ) as HazardCollection;
+
+const boundary = JSON.parse(
+	readFileSync(
+		join(
+			dirname(fileURLToPath(import.meta.url)),
+			"..",
+			"src",
+			"data",
+			"davao-boundary.json",
+		),
+		"utf8",
+	),
+);
 
 let failed = false;
 
@@ -63,10 +81,15 @@ for (const basemap of ["dark", "light", "satellite"] as const) {
 		type: "geojson",
 		data: hazard25 as unknown as HazardCollection,
 	};
+	withHazard.sources[SOURCE_BOUNDARY] = {
+		type: "geojson",
+		data: boundary as never,
+	};
 	withHazard.layers.push(
 		...hazardLayers({ fillOpacity: basemap === "satellite" ? 0.55 : 0.45 }),
+		...boundaryLayers(basemap === "light" ? "light" : "dark"),
 	);
-	check(`${basemap} + hazard source and layers`, withHazard);
+	check(`${basemap} + hazard and boundary layers`, withHazard);
 
 	const extruded = buildBaseStyle({ basemap });
 	extruded.sources[SOURCE_HAZARD] = {

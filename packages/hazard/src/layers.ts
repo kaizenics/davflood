@@ -305,3 +305,67 @@ export function rainLayers(theme: Theme = "dark"): LayerSpecification[] {
     },
   ];
 }
+
+/* ---------------- the city outline ---------------- */
+
+export const SOURCE_BOUNDARY = "city-boundary";
+
+/** Casing first, line second — order matters, the casing draws underneath. */
+export const BOUNDARY_LAYER_IDS = [
+	"city-boundary-casing",
+	"city-boundary-line",
+] as const;
+
+/**
+ * Davao City's administrative outline.
+ *
+ * Worth drawing because the hazard data stops at the city limit and nothing
+ * on the map said so. Zones simply ran out mid-landscape, which reads as "no
+ * flooding beyond this point" rather than "not surveyed here" — the same
+ * failure mode as a blank map, just smaller. With the line in place the edge
+ * of the data is visibly the edge of the city.
+ *
+ * Dashed, and this is not decoration: a dashed line is the cartographic
+ * convention for an administrative border, and it is what stops a 70 km line
+ * running down a valley from being read as a river or a highway. The casing
+ * underneath is what keeps it legible over satellite imagery, where a thin
+ * light line disappears into cloud and a thin dark one into forest.
+ *
+ * Reference geometry, so it is never queryable and never toggled with the
+ * hazard overlay — the boundary is true regardless of which scenario, or
+ * whether any hazard is shown at all.
+ */
+export function boundaryLayers(theme: Theme = "dark"): LayerSpecification[] {
+	const colors = colorsFor(theme);
+
+	return [
+		{
+			id: BOUNDARY_LAYER_IDS[0],
+			type: "line",
+			source: SOURCE_BOUNDARY,
+			layout: { "line-cap": "round", "line-join": "round" },
+			paint: {
+				// the opposite of the line it carries, so one of the two always
+				// has contrast against whatever is underneath
+				"line-color": theme === "light" ? "#ffffff" : "#000000",
+				"line-width": ["interpolate", ["linear"], ["zoom"], 8, 3.2, 12, 4.4, 16, 6],
+				"line-opacity": 0.5,
+				"line-blur": 1.5,
+			},
+		},
+		{
+			id: BOUNDARY_LAYER_IDS[1],
+			type: "line",
+			source: SOURCE_BOUNDARY,
+			// butt caps, not round: round caps on a dashed line swell every dash
+			// into a lozenge and the border stops reading as a border
+			layout: { "line-cap": "butt", "line-join": "round" },
+			paint: {
+				"line-color": colors.ink,
+				"line-width": ["interpolate", ["linear"], ["zoom"], 8, 1.1, 12, 1.7, 16, 2.4],
+				"line-opacity": 0.8,
+				"line-dasharray": [3, 2],
+			},
+		},
+	];
+}

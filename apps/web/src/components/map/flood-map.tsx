@@ -1,12 +1,15 @@
 import { CAMERA, DAVAO_BBOX } from "@davflood/hazard/geo";
 import type { LngLat } from "@davflood/hazard/geo";
 import {
+  BOUNDARY_LAYER_IDS,
   HAZARD_BEFORE_ID,
   HAZARD_FILL_LAYER_IDS,
   LAYER_IDS,
   RAIN_LAYER_ID,
+  SOURCE_BOUNDARY,
   SOURCE_HAZARD,
   SOURCE_RAIN,
+  boundaryLayers,
   hazardLayers,
   rainLayers,
 } from "@davflood/hazard/layers";
@@ -21,6 +24,10 @@ import {
 } from "@davflood/hazard/style";
 import type { BasemapKind } from "@davflood/hazard/style";
 import { colors } from "@davflood/hazard/tokens";
+/* Imported, not fetched: ~48 KB of outline, which is small enough to sit in
+   the bundle and cheap next to the round-trip it saves. The hazard files go
+   through `?url` because they are megabytes; this one is not. */
+import cityBoundary from "@davflood/hazard/data/davao-boundary.json";
 // maplibre-gl v6 ships named exports only — there is no default export
 import * as maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
@@ -207,6 +214,26 @@ function rebuildHazardLayers(
   // satellite mode
   const before = m.getLayer(HAZARD_BEFORE_ID) ? HAZARD_BEFORE_ID : undefined;
   for (const layer of layers) {
+    m.addLayer(layer as maplibregl.LayerSpecification, before);
+  }
+}
+
+/**
+ * (Re)creates the city outline on top of the current style.
+ *
+ * Separate from the hazard rebuild rather than folded into it, because the
+ * two are re-added at the same anchor and the LAST one added wins the top
+ * slot. The boundary has to be the last one: it is a 1-2 px dashed line and
+ * an extruded hazard volume drawn over it swallows it whole. Every caller
+ * that rebuilds the hazard layers therefore calls this straight afterwards.
+ */
+function rebuildBoundaryLayers(m: maplibregl.Map, basemap: BasemapKind) {
+  if (!m.getSource(SOURCE_BOUNDARY)) return;
+  for (const id of BOUNDARY_LAYER_IDS) {
+    if (m.getLayer(id)) m.removeLayer(id);
+  }
+  const before = m.getLayer(HAZARD_BEFORE_ID) ? HAZARD_BEFORE_ID : undefined;
+  for (const layer of boundaryLayers(basemap === "light" ? "light" : "dark")) {
     m.addLayer(layer as maplibregl.LayerSpecification, before);
   }
 }
@@ -452,6 +479,17 @@ export const FloodMap = forwardRef<FloodMapHandle, Props>(function FloodMap(
           basemap: basemapRef.current,
           extrude: extrudeRef.current,
         });
+
+        /* The city outline, added last so it sits above both the rain grid
+           and the hazard zones. It is reference geometry, not data: no tap
+           handler queries it, and it stays put when the hazard overlay is
+           switched off. */
+        m.addSource(SOURCE_BOUNDARY, {
+          type: "geojson",
+          data: cityBoundary as GeoJSON.Feature,
+        });
+        rebuildBoundaryLayers(m, basemapRef.current);
+
         // re-apply everything that changed while the style was still loading —
         // this also runs after a basemap swap, which resets the whole style
         applySelection(m, selectedRef.current);
@@ -566,6 +604,8 @@ export const FloodMap = forwardRef<FloodMapHandle, Props>(function FloodMap(
     const m = map.current;
     if (!m || !m.getSource(SOURCE_HAZARD)) return;
     rebuildHazardLayers(m, { basemap, extrude });
+    // the hazard layers just took the top slot back — see rebuildBoundaryLayers
+    rebuildBoundaryLayers(m, basemap);
     applySelection(m, selectedZoneId);
     applyHazardVisibility(m, showHazard);
     // eslint-disable-next-line react-hooks/exhaustive-deps
