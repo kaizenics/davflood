@@ -21,6 +21,7 @@ import {
 import type { ReactNode } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 
+import { BarangayCard } from "@/components/map/barangay-card";
 import { CityReading } from "@/components/map/city-reading";
 import { FloodMap, type FloodMapHandle, type Guide } from "@/components/map/flood-map";
 import { FloodNews } from "@/components/map/flood-news";
@@ -146,6 +147,25 @@ export function MapShell({ children }: { children: ReactNode }) {
      Measured here rather than inside the reading because the collapsed mobile
      sheet shows the same figure, and it should only ever be computed once. */
   const footprint = useMemo(() => footprintOf(data), [data]);
+
+  /**
+   * Back to the top whenever the column changes what it is showing.
+   *
+   * One scroll container serves every route — the barangay list, the map
+   * panel, the profile pages all render into it — which is what keeps the map
+   * alive beside them instead of remounting. The cost is that the scroll
+   * offset is shared too: picking a barangay from 183 rows meant arriving at
+   * the map panel already scrolled most of the way down it, with the answer
+   * to the thing just clicked somewhere above the viewport.
+   *
+   * Keyed on the barangay as well as the path, because choosing a different
+   * barangay from the map does not change the route and would otherwise leave
+   * the reader wherever the last one had them.
+   */
+  const scrollArea = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    scrollArea.current?.scrollTo({ top: 0, behavior: "instant" });
+  }, [pathname, b]);
 
   /* The URL is the whole state of "take me to this barangay" — the map flies
      and pins from this prop rather than an imperative call, because the map
@@ -297,6 +317,7 @@ export function MapShell({ children }: { children: ReactNode }) {
   const [showRain, setShowRain] = useState(false);
   const { data: rainGrid } = useRainGrid(showRain);
 
+
   /* Places named in recent flood reporting. On by default — unlike the rain
      layer this costs no extra request (the panel already has the file) and
      it is the only thing here describing flooding that actually happened. */
@@ -430,7 +451,7 @@ export function MapShell({ children }: { children: ReactNode }) {
         <SidebarNav />
 
         {/* scroll area — one slot, whichever page you are on */}
-        <div className="min-h-0 flex-1 overflow-y-auto">
+        <div ref={scrollArea} className="min-h-0 flex-1 overflow-y-auto">
           {isMap ? (
             <div className="divide-hairline/60 divide-y">
               {DATA_IS_PLACEHOLDER && (
@@ -451,6 +472,22 @@ export function MapShell({ children }: { children: ReactNode }) {
                 <p className="text-haz-high bg-haz-high/10 px-5 py-2.5 text-[11px] font-semibold">
                   Hazard data failed to load — {dataError}
                 </p>
+              )}
+
+              {/* What the model says about the barangay just picked.
+                  Above the reading slot: someone who arrived by choosing
+                  their barangay came for this, and it should not be below the
+                  city-wide answer they did not ask for. Also the only route
+                  to those 183 profile pages now that the list flies to the
+                  map instead of opening them. */}
+              {b && (
+                <BarangayCard
+                  name={b}
+                  scenario={scenario}
+                  onClear={() =>
+                    navigate({ to: "/", search: {}, replace: true })
+                  }
+                />
               )}
 
               {/* ONE reading slot, two scales. Tapping a zone narrows the

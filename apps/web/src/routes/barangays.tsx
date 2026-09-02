@@ -101,9 +101,14 @@ function BarangaysScreen() {
                     be copied, and — the reason this mattered — was invisible
                     to the prerender crawler, so 183 pages existed and nothing
                     on the site pointed at them. */}
+                {/* Straight to the map.
+                    Picking your barangay out of a list of 183 is not the goal
+                    — seeing whether it floods is, and the map is where that
+                    answer lives. The detail page is still one tap away, from
+                    the map itself once the barangay is framed. */}
                 <Link
-                  to="/barangay/$slug"
-                  params={{ slug: slugify(b.name) }}
+                  to="/"
+                  search={{ lng: b.center[0], lat: b.center[1], b: b.name }}
                   className="border-hairline/60 hover:bg-raised/40 -mx-2 flex w-[calc(100%+1rem)] items-center gap-3 border-b px-2 py-3 text-left transition"
                 >
                   <span className="border-hairline bg-raised/60 flex size-8 shrink-0 items-center justify-center rounded-full border">

@@ -1,3 +1,5 @@
+import { barangays } from "@davflood/hazard/barangays";
+import { slugify } from "@davflood/hazard/slug";
 import tailwindcss from "@tailwindcss/vite";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import react from "@vitejs/plugin-react";
@@ -98,6 +100,30 @@ export default defineConfig({
         // the only page whose content genuinely changes on its own
         { path: "/news", sitemap: { priority: 0.6, changefreq: "daily" } },
         { path: "/about", sitemap: { priority: 0.5, changefreq: "monthly" } },
+
+        /**
+         * Every barangay profile, listed explicitly rather than discovered.
+         *
+         * These used to arrive by crawlLinks, because the barangay list
+         * linked to each one. The list now links straight to the map — which
+         * is what a person picking their barangay actually wants — and those
+         * links carry ?lng&lat&b, which the filter above deliberately drops.
+         * The crawler consequently reached none of the 183 and the sitemap
+         * fell from 189 URLs to 6.
+         *
+         * Seeding them from the same barangays.ts the routes are built from
+         * makes the set explicit and impossible to lose to a UI change: add a
+         * barangay and its page is prerendered, whether or not anything links
+         * to it.
+         *
+         * Low priority, rarely changing: they are the long tail somebody
+         * reaches by searching their own barangay's name, which is exactly
+         * the search worth being findable for.
+         */
+        ...barangays.map(({ name }) => ({
+          path: `/barangay/${slugify(name)}`,
+          sitemap: { priority: 0.4, changefreq: "monthly" as const },
+        })),
       ],
     }),
     react(),
