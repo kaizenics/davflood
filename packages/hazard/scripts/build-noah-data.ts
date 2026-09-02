@@ -23,244 +23,32 @@
  * Run:  pnpm --filter @davflood/hazard build:noah -- <dir-with-extracted-shapefiles>
  */
 
-import { readFileSync, writeFileSync, mkdirSync, readdirSync, statSync } from "node:fs";
+import { writeFileSync, mkdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { barangays } from "../src/barangays";
-import boundary from "../src/data/davao-boundary.json" with { type: "json" };
+/* The shapefile reader, the city clip and the geometry helpers live in
+   ./noah-shapefile.ts — the landslide converter reads the identical format
+   and must clip to the identical outline, and two copies of a hand-rolled
+   shapefile parser is exactly one copy too many. */
+import {
+	areaM2,
+	centroidOf,
+	nearestBarangay,
+	readShapefile,
+	readVarColumn,
+	round,
+	shapefilesUnder,
+	signedArea,
+	simplify,
+} from "./noah-shapefile";
+import type { Ring } from "./noah-shapefile";
 import type { HazardCollection, HazardFeature } from "../src/schema";
 import type { ScenarioYears } from "../src/scenarios";
 import { hazardTiers } from "../src/tiers";
 import type { HazardId } from "../src/tiers";
 
 const OUT_DIR = join(dirname(fileURLToPath(import.meta.url)), "..", "src", "data");
-
-type Ring = [number, number][];
-
-/**
- * Davao City's real outline, from OpenStreetMap via build-admin-data.ts.
- *
- * Clipping to a bounding box is not good enough here. Davao City's bbox also
- * contains Panabo City to the north-east, so a rectangular clip shipped
- * Panabo's flood polygons inside a map captioned "Davao City" — hazard data
- * attributed to the wrong local government. The outline is the only honest
- * boundary.
- */
-const CITY: Ring = (boundary.geometry.coordinates[0] as [number, number][]) ?? [];
-
-/** A little slack so polygons are not sheared exactly at the camera bound. */
-const PAD = 0.02;
-const [W, S, E, N] = [
-	Math.min(...CITY.map((p) => p[0])) - PAD,
-	Math.min(...CITY.map((p) => p[1])) - PAD,
-	Math.max(...CITY.map((p) => p[0])) + PAD,
-	Math.max(...CITY.map((p) => p[1])) + PAD,
-];
-
-/** Ray-casting point-in-polygon. */
-function inCity([x, y]: [number, number]): boolean {
-	let inside = false;
-	for (let i = 0, j = CITY.length - 1; i < CITY.length; j = i++) {
-		const [xi, yi] = CITY[i]!;
-		const [xj, yj] = CITY[j]!;
-		if (yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) {
-			inside = !inside;
-		}
-	}
-	return inside;
-}
-
-/**
- * Whether a hazard ring belongs to Davao City.
- *
- * NOAH's rings are fine-grained — hundreds of thousands per province — so each
- * one is small relative to the city and sampling a dozen vertices settles it.
- *
- * The test is deliberately "mostly inside", not "touches". Rings are kept or
- * dropped whole, never cut, so accepting anything that merely grazes the
- * border pulled entire Panabo-side polygons back in and pushed the 100-year
- * layer 12 km past the city's northern tip. Requiring the majority of the ring
- * to be in Davao attributes each polygon to the city that actually contains
- * it. The centroid alone would be cheaper but misreads rings lying in a
- * concavity of the outline, so it only breaks ties.
- */
-function ringInCity(ring: Ring): boolean {
-	const step = Math.max(1, Math.floor(ring.length / 12));
-	let sampled = 0;
-	let inside = 0;
-	for (let i = 0; i < ring.length; i += step) {
-		sampled++;
-		if (inCity(ring[i]!)) inside++;
-	}
-	if (sampled > 0 && inside * 2 >= sampled) return true;
-
-	let sx = 0;
-	let sy = 0;
-	for (const [x, y] of ring) {
-		sx += x;
-		sy += y;
-	}
-	return inCity([sx / ring.length, sy / ring.length]);
-}
-
-/* ---------------- shapefile (.shp) ---------------- */
-
-function readShapefile(path: string): { rings: Ring[]; recordOf: number[] } {
-	const buf = readFileSync(path);
-	const rings: Ring[] = [];
-	const recordOf: number[] = []; // which record each ring came from
-	let off = 100; // skip the file header
-	let record = 0;
-
-	while (off < buf.length) {
-		// record header is big-endian; content length is in 16-bit words
-		const contentWords = buf.readInt32BE(off + 4);
-		let p = off + 8;
-		const shapeType = buf.readInt32LE(p);
-
-		// 5 = Polygon. Anything else in a flood layer is not something we can use.
-		if (shapeType === 5) {
-			p += 4 + 32; // shape type + bbox
-			const numParts = buf.readInt32LE(p);
-			p += 4;
-			const numPoints = buf.readInt32LE(p);
-			p += 4;
-
-			const parts: number[] = [];
-			for (let i = 0; i < numParts; i++) parts.push(buf.readInt32LE(p + i * 4));
-			p += numParts * 4;
-
-			for (let i = 0; i < numParts; i++) {
-				const start = parts[i]!;
-				const end = i + 1 < numParts ? parts[i + 1]! : numPoints;
-				const ring: Ring = [];
-				let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-
-				for (let j = start; j < end; j++) {
-					const x = buf.readDoubleLE(p + j * 16);
-					const y = buf.readDoubleLE(p + j * 16 + 8);
-					ring.push([x, y]);
-					if (x < minX) minX = x;
-					if (x > maxX) maxX = x;
-					if (y < minY) minY = y;
-					if (y > maxY) maxY = y;
-				}
-
-				// Keep only rings inside Davao City. The province files cover a far
-				// larger area, and the city's bbox overlaps Panabo City, so the
-				// bbox is only a cheap reject before the real outline test.
-				const near = maxX >= W && minX <= E && maxY >= S && minY <= N;
-				if (near && ring.length >= 4 && ringInCity(ring)) {
-					rings.push(ring);
-					recordOf.push(record);
-				}
-			}
-		}
-
-		off += 8 + contentWords * 2;
-		record++;
-	}
-
-	return { rings, recordOf };
-}
-
-/* ---------------- attributes (.dbf) ---------------- */
-
-function readVarColumn(path: string): number[] {
-	const b = readFileSync(path);
-	const count = b.readInt32LE(4);
-	const headerLen = b.readInt16LE(8);
-	const recLen = b.readInt16LE(10);
-	const out: number[] = [];
-	for (let i = 0; i < count; i++) {
-		const start = headerLen + i * recLen + 1; // +1 skips the deletion flag
-		out.push(Number(b.toString("ascii", start, start + recLen - 1).trim()));
-	}
-	return out;
-}
-
-/* ---------------- geometry helpers ---------------- */
-
-/** Shapefile winding: outer rings are clockwise (negative shoelace area). */
-function signedArea(r: Ring): number {
-	let a = 0;
-	for (let i = 0, j = r.length - 1; i < r.length; j = i++) {
-		a += r[j]![0] * r[i]![1] - r[i]![0] * r[j]![1];
-	}
-	return a / 2;
-}
-
-/** Douglas–Peucker. NOAH polygons carry far more detail than a city map shows. */
-function simplify(ring: Ring, tol: number): Ring {
-	if (ring.length <= 4) return ring;
-	const keep = new Uint8Array(ring.length);
-	keep[0] = 1;
-	keep[ring.length - 1] = 1;
-	const stack: [number, number][] = [[0, ring.length - 1]];
-
-	while (stack.length) {
-		const [first, last] = stack.pop()!;
-		let maxD = -1;
-		let idx = -1;
-		const [x1, y1] = ring[first]!;
-		const [x2, y2] = ring[last]!;
-		const dx = x2 - x1;
-		const dy = y2 - y1;
-		const denom = dx * dx + dy * dy;
-
-		for (let i = first + 1; i < last; i++) {
-			const [px, py] = ring[i]!;
-			let d: number;
-			if (denom === 0) {
-				d = (px - x1) ** 2 + (py - y1) ** 2;
-			} else {
-				let t = ((px - x1) * dx + (py - y1) * dy) / denom;
-				t = Math.max(0, Math.min(1, t));
-				d = (px - (x1 + t * dx)) ** 2 + (py - (y1 + t * dy)) ** 2;
-			}
-			if (d > maxD) {
-				maxD = d;
-				idx = i;
-			}
-		}
-
-		if (maxD > tol * tol && idx > 0) {
-			keep[idx] = 1;
-			stack.push([first, idx], [idx, last]);
-		}
-	}
-
-	const out: Ring = [];
-	for (let i = 0; i < ring.length; i++) if (keep[i]) out.push(ring[i]!);
-	return out;
-}
-
-function centroidOf(ring: Ring): [number, number] {
-	let x = 0;
-	let y = 0;
-	for (const [px, py] of ring) {
-		x += px;
-		y += py;
-	}
-	return [x / ring.length, y / ring.length];
-}
-
-function nearestBarangay([cx, cy]: [number, number]): string {
-	let best = barangays[0]!;
-	let bestD = Infinity;
-	for (const b of barangays) {
-		const d = (b.center[0] - cx) ** 2 + (b.center[1] - cy) ** 2;
-		if (d < bestD) {
-			bestD = d;
-			best = b;
-		}
-	}
-	return best.name;
-}
-
-const round = (r: Ring): Ring =>
-	r.map(([x, y]) => [Number(x.toFixed(5)), Number(y.toFixed(5))]);
 
 /* ---------------- build ---------------- */
 
@@ -284,13 +72,6 @@ if (!SRC) {
 const TOLERANCE = 0.0002; // ~22 m
 const MIN_AREA_M2 = 2500;
 
-/** Metres per degree at Davao's latitude — good enough for an area filter. */
-const M_PER_DEG_LAT = 110574;
-const M_PER_DEG_LON = 111320 * Math.cos((7.3 * Math.PI) / 180);
-
-function areaM2(ring: Ring): number {
-	return Math.abs(signedArea(ring)) * M_PER_DEG_LAT * M_PER_DEG_LON;
-}
 const bands: Record<HazardId, [number, number]> = {
 	low: [hazardTiers[0]!.depthMin, hazardTiers[0]!.depthMax ?? 0.5],
 	medium: [hazardTiers[1]!.depthMin, hazardTiers[1]!.depthMax ?? 1.5],
@@ -305,21 +86,7 @@ mkdirSync(OUT_DIR, { recursive: true });
 for (const years of [5, 25, 100] as const satisfies readonly ScenarioYears[]) {
 	const dir = join(SRC, `${years}yr`);
 
-	/**
-	 * Davao City straddles what NOAH still files under two provinces — the
-	 * city is administratively in Davao del Sur, but its northern districts
-	 * (Paquibato, Marilog) run up against Davao del Norte. Merging both and
-	 * clipping to the city bbox is the only way to get the WHOLE city; taking
-	 * one province alone silently truncates the north.
-	 */
-	const shapefiles: string[] = [];
-	for (const entry of readdirSync(dir)) {
-		const sub = join(dir, entry);
-		if (!statSync(sub).isDirectory()) continue;
-		for (const f of readdirSync(sub)) {
-			if (f.toLowerCase().endsWith(".shp")) shapefiles.push(join(sub, f));
-		}
-	}
+	const shapefiles = shapefilesUnder(dir);
 	if (shapefiles.length === 0) {
 		console.error(`no .shp under ${dir}`);
 		process.exit(1);
