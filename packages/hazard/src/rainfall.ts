@@ -40,8 +40,33 @@ export type Rainfall = {
 		weatherCode: number;
 		isDay: boolean;
 	};
+	/** today onward — the forecast, and the only thing `days` has ever held */
 	days: RainfallDay[];
+	/** the days BEFORE today, oldest first. Observed, not forecast. */
+	past: RainfallDay[];
+	/** what has already fallen, which is what saturates ground */
+	recent: {
+		/** total mm across `past` — excludes today, which is still happening */
+		mm: number;
+		/** how many days that total covers, so the UI never has to assume */
+		days: number;
+	};
 };
+
+/**
+ * How far back to look.
+ *
+ * Three days, because that is the window in which rain stops being weather
+ * and starts being ground condition. Beyond about that, in a tropical city
+ * with this much relief, it has drained or run off; inside it, it is still in
+ * the soil and the next storm lands on ground that cannot take it.
+ *
+ * The river has always pulled `past_days: 6` for the same reason — see
+ * ./river.ts. Rainfall asked only for the forecast, which meant the app could
+ * tell you 40 mm was coming and had no way to say it would be landing on
+ * ground that took 160 mm since Sunday. Those are not the same warning.
+ */
+export const PAST_DAYS = 3;
 
 export function rainfallUrl(
 	[lng, lat]: readonly [number, number] = DAVAO_CENTER,
@@ -54,12 +79,15 @@ export function rainfallUrl(
 		hourly: "precipitation,precipitation_probability,weather_code",
 		timezone: "Asia/Manila",
 		forecast_days: "4",
+		past_days: String(PAST_DAYS),
 	});
 	return `${ENDPOINT}?${params.toString()}`;
 }
 
 type RawResponse = {
 	current?: {
+		/** local ISO stamp, e.g. "2026-09-02T14:00" — how we know what "today" is */
+		time?: string;
 		precipitation?: number;
 		weather_code?: number;
 		is_day?: number;
@@ -105,19 +133,54 @@ export function parseRainfall(raw: unknown): Rainfall {
 		byDate.set(date, bucket);
 	}
 
+	const all: RainfallDay[] = times.map((date, i) => ({
+		date,
+		precipitation: d.precipitation_sum?.[i] ?? 0,
+		probability: d.precipitation_probability_max?.[i] ?? 0,
+		weatherCode: d.weather_code?.[i] ?? 0,
+		hours: byDate.get(date) ?? [],
+	}));
+
+	/**
+	 * Split the series at today.
+	 *
+	 * `days` must keep meaning "today onward". Every consumer written before
+	 * this indexes it positionally — `days[0]` is today and `days[1]` is
+	 * tomorrow in the panel, the chart and the outlook sentence — so letting
+	 * three past days slide in at the front would not have thrown anything,
+	 * it would have quietly relabelled last Saturday's rain as the forecast.
+	 * That is the worst class of bug this app can have: wrong, confident, and
+	 * about the weather.
+	 *
+	 * The cut is made on the date the API itself reports as current rather
+	 * than on PAST_DAYS, so a short response — Open-Meteo trimming the window,
+	 * or a cached body from before midnight — lands the boundary in the right
+	 * place instead of three entries from the front regardless.
+	 */
+	const todayDate = r.current?.time?.slice(0, 10);
+	const found = todayDate
+		? all.findIndex((day) => day.date >= todayDate)
+		: Math.min(PAST_DAYS, all.length);
+	/* -1 means the body holds nothing at or after today — a stale cached
+	   response. Everything in it is then past, and `days` is empty: consumers
+	   already render a missing forecast as absent, which is the truth here,
+	   where treating the newest past day as "today" would not be. */
+	const cut = found === -1 ? all.length : found;
+	const past = all.slice(0, cut);
+	const days = all.slice(cut);
+
 	return {
 		current: {
 			precipitation: r.current?.precipitation ?? 0,
 			weatherCode: r.current?.weather_code ?? 0,
 			isDay: (r.current?.is_day ?? 1) === 1,
 		},
-		days: times.map((date, i) => ({
-			date,
-			precipitation: d.precipitation_sum?.[i] ?? 0,
-			probability: d.precipitation_probability_max?.[i] ?? 0,
-			weatherCode: d.weather_code?.[i] ?? 0,
-			hours: byDate.get(date) ?? [],
-		})),
+		days,
+		past,
+		recent: {
+			mm: past.reduce((sum, day) => sum + day.precipitation, 0),
+			days: past.length,
+		},
 	};
 }
 
@@ -182,4 +245,29 @@ export function rainBand(mm: number): "none" | "light" | "moderate" | "heavy" {
 	if (mm < 15) return "light";
 	if (mm < 50) return "moderate";
 	return "heavy";
+}
+
+export type SoakBand = "dry" | "damp" | "wet" | "saturated";
+
+/**
+ * How loaded the ground already is, from what fell over `PAST_DAYS`.
+ *
+ * A SEPARATE scale from rainBand, and it has to be: 50 mm in one day is heavy
+ * rain, while 50 mm spread over three is an ordinary wet week. Running an
+ * accumulation through the daily bands would have called half the rainy
+ * season "heavy" and taught people to ignore the word.
+ *
+ * These thresholds are EDITORIAL — the same admission rainBand already makes.
+ * They are not a published trigger, and nobody has calibrated a rainfall
+ * threshold for Davao's catchments that is free to use; PAGASA's advisories
+ * are hourly intensities, which is a different measurement answering a
+ * different question. So the wording these drive stays descriptive ("the
+ * ground is already wet") and never predictive ("flooding is likely"), because
+ * the second one is a claim this scale cannot support.
+ */
+export function soakBand(mm: number): SoakBand {
+	if (mm < 20) return "dry";
+	if (mm < 60) return "damp";
+	if (mm < 150) return "wet";
+	return "saturated";
 }

@@ -63,15 +63,33 @@ const EN = {
    * because word-by-word substitution produces grammatical nonsense in
    * languages whose sentences are not shaped like English ones.
    */
+  /**
+   * EVERY CLAUSE HERE STARTS LOWERCASE, including the ones that usually open
+   * the sentence. floodOutlook capitalises whichever clause ends up first,
+   * and which one that is now depends on the weather — `soak` goes in front
+   * of the rain when three days of it have already fallen. Pre-capitalised
+   * clauses produced "…, and Heavy rain forecast today" the first time that
+   * happened. Lowercase here, capitalised once at the join, is the only
+   * arrangement that reads correctly in every order.
+   */
   outlook: {
-    heavyToday: "Heavy rain forecast today — {mm} mm",
-    heavyTomorrow: "Heavy rain forecast tomorrow — {mm} mm",
-    rainToday: "Rain forecast today — {mm} mm",
-    rainTomorrow: "Rain forecast tomorrow — {mm} mm",
+    heavyToday: "heavy rain forecast today — {mm} mm",
+    heavyTomorrow: "heavy rain forecast tomorrow — {mm} mm",
+    rainToday: "rain forecast today — {mm} mm",
+    rainTomorrow: "rain forecast tomorrow — {mm} mm",
     riverHigh: "the Davao River is forecast to run high",
     riverAbove: "the Davao River is forecast to run above normal",
-    /** joins the rain clause to the river clause */
+    /**
+     * Rain that has already fallen. Past tense and a bare quantity on
+     * purpose: it says what came down and leaves what that means about the
+     * ground to the reader, because the ground is not something this app can
+     * see. See soakClause in ../outlook.ts.
+     */
+    soak: "{mm} mm has already fallen over the last {days} days",
+    /** joins the last clause to the rest */
     and: ", and ",
+    /** separates the earlier clauses when there are three of them */
+    listSep: ", ",
     /** joins the weather to the place — never a causal word */
     zone: ", while the {years}-year model puts {where} at {depth} ({summary}).",
     city:
@@ -199,13 +217,15 @@ const CEB: Strings = {
     },
   },
   outlook: {
-    heavyToday: "Kusog nga ulan ang forecast karong adlawa — {mm} mm",
-    heavyTomorrow: "Kusog nga ulan ang forecast ugma — {mm} mm",
-    rainToday: "Adunay ulan nga forecast karong adlawa — {mm} mm",
-    rainTomorrow: "Adunay ulan nga forecast ugma — {mm} mm",
+    heavyToday: "kusog nga ulan ang forecast karong adlawa — {mm} mm",
+    heavyTomorrow: "kusog nga ulan ang forecast ugma — {mm} mm",
+    rainToday: "adunay ulan nga forecast karong adlawa — {mm} mm",
+    rainTomorrow: "adunay ulan nga forecast ugma — {mm} mm",
     riverHigh: "gidahom nga motaas ang Davao River",
     riverAbove: "gidahom nga labaw sa normal ang Davao River",
+    soak: "{mm} mm na ang nahulog sulod sa milabay nga {days} ka adlaw",
     and: ", ug ",
+    listSep: ", ",
     zone: ", samtang ang {years}-ka-tuig nga modelo nagbutang sa {where} sa {depth} ({summary}).",
     city:
       ", samtang ang {years}-ka-tuig nga modelo naglunop og mga {km2} km² sa siyudad.",
@@ -311,13 +331,15 @@ const FIL: Strings = {
     },
   },
   outlook: {
-    heavyToday: "Malakas na ulan ang forecast ngayong araw — {mm} mm",
-    heavyTomorrow: "Malakas na ulan ang forecast bukas — {mm} mm",
-    rainToday: "May ulan na forecast ngayong araw — {mm} mm",
-    rainTomorrow: "May ulan na forecast bukas — {mm} mm",
+    heavyToday: "malakas na ulan ang forecast ngayong araw — {mm} mm",
+    heavyTomorrow: "malakas na ulan ang forecast bukas — {mm} mm",
+    rainToday: "may ulan na forecast ngayong araw — {mm} mm",
+    rainTomorrow: "may ulan na forecast bukas — {mm} mm",
     riverHigh: "inaasahang tataas ang Davao River",
     riverAbove: "inaasahang lalagpas sa normal ang Davao River",
+    soak: "{mm} mm na ang bumagsak sa nakalipas na {days} araw",
     and: ", at ",
+    listSep: ", ",
     zone: ", habang inilalagay ng {years}-taong modelo ang {where} sa {depth} ({summary}).",
     city:
       ", habang binabaha ng {years}-taong modelo ang humigit-kumulang {km2} km² ng lungsod.",

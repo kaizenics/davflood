@@ -1,5 +1,5 @@
 import type { Locale } from "./locale";
-import { rainBand } from "./rainfall";
+import { rainBand, soakBand } from "./rainfall";
 import type { Rainfall } from "./rainfall";
 import type { River } from "./river";
 import type { ScenarioYears } from "./scenarios";
@@ -97,6 +97,41 @@ function rainClause(
   return null;
 }
 
+/**
+ * What has already fallen.
+ *
+ * The one clause here that looks backwards, and the reason it earns a place
+ * is that it is the only one describing ground rather than sky. Forty
+ * millimetres forecast onto dry ground and forty onto ground that took a
+ * hundred and sixty since Sunday are not the same warning, and until now the
+ * app could not tell them apart — it never asked for the past.
+ *
+ * STILL NOT A MEASUREMENT, and the wording has to hold that line. Open-Meteo's
+ * past days come from the same model as its forecast, reanalysed rather than
+ * observed; there is no rain gauge behind this number. So the clause says what
+ * fell and stops there. It never says the ground is saturated, never says
+ * drains are full, and never predicts — those are the inferences a reader may
+ * draw and this function may not, and `caveat` already tells them the whole
+ * line is model output rather than water anyone has seen.
+ *
+ * Silent below `wet`. An ordinary damp week in Davao is not news.
+ */
+function soakClause(
+  rain: Rainfall | null | undefined,
+  t: Strings["outlook"],
+): { text: string; saturated: boolean } | null {
+  const recent = rain?.recent;
+  if (!recent || recent.days === 0) return null;
+
+  const band = soakBand(recent.mm);
+  if (band === "dry" || band === "damp") return null;
+
+  return {
+    text: fill(t.soak, { mm: Math.round(recent.mm), days: recent.days }),
+    saturated: band === "saturated",
+  };
+}
+
 /** Where the sentence is about: a tapped zone, or the city as a whole. */
 export type OutlookPlace =
   | { kind: "zone"; hazard: HazardId; barangay: string | null }
@@ -169,22 +204,41 @@ export function floodOutlook({
   const w = rainWindow(rain);
   const weather = w ? rainClause(w, t) : null;
   const flow = riverClause(river, t);
+  const soak = soakClause(rain, t);
 
-  // no weather news and no river news: the map alone is the honest answer
-  if (!weather && !flow) return null;
+  // nothing behind, nothing coming, nothing in the river: the map alone is
+  // the honest answer
+  if (!weather && !flow && !soak) return null;
 
   const hazardous =
     place.kind === "zone" ? place.hazard === "high" || place.hazard === "medium" : false;
 
-  /* alert needs BOTH halves — heavy rain forecast AND somewhere that the
-     model floods deeply. Heavy rain over ground the model leaves dry is not
-     an alert, and saying it is would teach people to ignore the real one. */
-  const tone: OutlookTone = weather?.heavy && (hazardous || flow) ? "alert" : "watch";
+  /* alert needs BOTH halves — heavy rain forecast AND somewhere for it to
+     matter. Heavy rain over ground the model leaves dry is not an alert, and
+     saying it is would teach people to ignore the real one.
 
-  // at least one part is present — the early return above guarantees it
-  const parts = [weather?.text, flow].filter((p): p is string => Boolean(p));
-  const sentence =
-    parts.join(t.and) + placeClause(place, scenario, t, strings.tiers);
+     A saturated third day now counts as the second half too. Heavy rain
+     forecast onto ground that has already taken 150 mm is the case this
+     sentence exists for, and it was previously indistinguishable from the
+     same forecast falling on a dry week. */
+  const tone: OutlookTone =
+    weather?.heavy && (hazardous || flow || soak?.saturated) ? "alert" : "watch";
+
+  /* Chronological: what fell, what is forecast, what the river is doing. At
+     least one is present — the early return above guarantees it.
+
+     Joined as a real list rather than with `and` between every pair, because
+     three clauses can now appear where only two ever could and "A, and B, and
+     C" reads like a machine wrote it. Two clauses still produce exactly the
+     string they always did. */
+  const parts = [soak?.text, weather?.text, flow].filter((p): p is string =>
+    Boolean(p),
+  );
+  const joined =
+    parts.length > 1
+      ? parts.slice(0, -1).join(t.listSep) + t.and + parts[parts.length - 1]
+      : parts[0]!;
+  const sentence = joined + placeClause(place, scenario, t, strings.tiers);
 
   return {
     tone,

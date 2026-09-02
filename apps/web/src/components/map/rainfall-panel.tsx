@@ -1,4 +1,4 @@
-import { describeWeather, rainBand } from "@davflood/hazard/rainfall";
+import { describeWeather, rainBand, soakBand } from "@davflood/hazard/rainfall";
 import type { RainfallDay } from "@davflood/hazard/rainfall";
 import {
   ChevronDown,
@@ -57,6 +57,13 @@ export function RainfallPanel() {
   const totalMm = days.reduce((s, d) => s + d.precipitation, 0);
   const dry = peakMm < 0.5;
 
+  /* What already fell. Shown above the forecast because it happened first,
+     and because it is the half of the picture this panel used to be missing
+     entirely — see PAST_DAYS in @davflood/hazard/rainfall. */
+  const past = data?.past ?? [];
+  const recentMm = data?.recent.mm ?? 0;
+  const soak = soakBand(recentMm);
+
   /**
    * Bars scale against the wettest day in view, but never against less than
    * 5 mm.
@@ -66,7 +73,14 @@ export function RainfallPanel() {
    * floor lets it stay on screen and still tell the truth: a trivial day now
    * renders as a sliver, and anything above 5 mm behaves as it always did.
    */
-  const scaleMm = Math.max(peakMm, 5);
+  const scaleMm = Math.max(
+    peakMm,
+    // one scale across past and forecast, so a 70 mm Monday visibly towers
+    // over a 20 mm Thursday instead of both drawing a full-height bar in
+    // their own separate charts
+    past.reduce((m, d) => Math.max(m, d.precipitation), 0),
+    5,
+  );
 
   const CurrentIcon = data ? weatherIcon(data.current.weatherCode) : CloudRain;
 
@@ -141,6 +155,64 @@ export function RainfallPanel() {
               it is only the BARS that were uninformative, and the scale floor
               above fixes those. The sentence stays, as a caption. */}
           <>
+              {/* What has already fallen.
+                  Deliberately NOT interactive and deliberately not in the
+                  brand colour: the forecast bars below are tappable and
+                  tide-coloured, and past rain must not be mistakable for
+                  either the forecast or a hazard reading. It shares their
+                  scale, though, which is the entire point — the comparison
+                  between what the ground has taken and what is still coming
+                  is the thing this panel could not show before. */}
+              {past.length > 0 && (
+                <div className="border-hairline/60 mb-3 border-b pb-3">
+                  <div className="text-ink-dim mb-1.5 flex items-baseline justify-between text-[10px]">
+                    <span className="font-semibold tracking-[0.1em] uppercase">
+                      Last {past.length} days
+                    </span>
+                    <span data-numeric>
+                      {fmt(recentMm)} mm already fallen
+                    </span>
+                  </div>
+
+                  <ol className="flex items-end gap-1.5">
+                    {past.map((day) => (
+                      <li key={day.date} className="flex-1">
+                        <div className="flex w-full flex-col items-center gap-1">
+                          <span
+                            className="text-ink-dim text-[10px] font-semibold"
+                            data-numeric
+                          >
+                            {fmt(day.precipitation)}
+                          </span>
+                          <span className="bg-raised/70 flex h-6 w-full items-end overflow-hidden rounded-[3px]">
+                            <span
+                              className="bg-ink-dim/40 w-full rounded-[3px]"
+                              style={{
+                                height: `${Math.max(6, (day.precipitation / scaleMm) * 100)}%`,
+                              }}
+                            />
+                          </span>
+                          <span className="text-ink-dim text-[10px] font-medium opacity-80">
+                            {weekday(day.date)}
+                          </span>
+                        </div>
+                      </li>
+                    ))}
+                  </ol>
+
+                  {/* Only when it is worth a sentence. On a dry week the
+                      numbers above already say everything, and a line that
+                      appears every day is a line nobody reads on the day it
+                      matters. */}
+                  {(soak === "wet" || soak === "saturated") && (
+                    <p className="text-ink-dim mt-2 text-[10px] leading-relaxed">
+                      Rain forecast below lands on ground that has already
+                      taken this much.
+                    </p>
+                  )}
+                </div>
+              )}
+
               <div className="text-ink-dim mb-2 flex items-baseline justify-between text-[10px]">
                 <span className="font-semibold tracking-[0.1em] uppercase">
                   Next 4 days
