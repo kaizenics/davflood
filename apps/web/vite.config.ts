@@ -79,7 +79,7 @@ export default defineConfig({
       },
       // must match lib/seo.ts — a sitemap on a different origin than the
       // canonical tags is a sitemap Search Console rejects
-      sitemap: { host: "https://davflood.site" },
+      sitemap: { host: "https://www.davflood.site" },
 
       /**
        * Declared so the sitemap is a statement of intent rather than a

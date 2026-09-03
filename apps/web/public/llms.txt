@@ -44,12 +44,12 @@ Davao City has **not** published a complete public directory of evacuation centr
 
 ## Pages
 
-- [Map](https://davflood.site/): the hazard map itself. Tap any point for expected depth, elevation, the nearest ground the scenario does not flood, and the nearest public building it leaves dry.
-- [Barangays](https://davflood.site/barangays): every barangay in Davao City, searchable, each linking to its place on the map.
-- [Emergency hotlines](https://davflood.site/emergency): Central 911, the CDRRMO, and what the city has published about evacuation centres.
-- [Hazard levels](https://davflood.site/learn): what low, medium and high mean in metres, in furniture and in decisions, and what a return period actually is.
-- [Flood reports](https://davflood.site/news): recent news coverage of flooding in Davao City, newest first.
-- [The data](https://davflood.site/about): sources, licences, and the limits of the model.
+- [Map](https://www.davflood.site/): the hazard map itself. Tap any point for expected depth, elevation, the nearest ground the scenario does not flood, and the nearest public building it leaves dry.
+- [Barangays](https://www.davflood.site/barangays): every barangay in Davao City, searchable, each linking to its place on the map.
+- [Emergency hotlines](https://www.davflood.site/emergency): Central 911, the CDRRMO, and what the city has published about evacuation centres.
+- [Hazard levels](https://www.davflood.site/learn): what low, medium and high mean in metres, in furniture and in decisions, and what a return period actually is.
+- [Flood reports](https://www.davflood.site/news): recent news coverage of flooding in Davao City, newest first.
+- [The data](https://www.davflood.site/about): sources, licences, and the limits of the model.
 
 ## How to cite this correctly
 

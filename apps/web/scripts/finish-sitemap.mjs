@@ -16,13 +16,32 @@ import { fileURLToPath } from "node:url";
  * starts including "/", this finds it already there and does nothing.
  */
 
-const SITE = "https://davflood.site";
 /* Resolved from this file, not from the working directory: pnpm runs the
    script with the workspace package as cwd, so a repo-root-relative path
    resolves to apps/web/apps/web. */
 const PATH = fileURLToPath(new URL("../dist/client/sitemap.xml", import.meta.url));
 
 let xml = readFileSync(PATH, "utf8");
+
+/**
+ * The origin, READ OUT OF THE SITEMAP rather than written down again.
+ *
+ * This was a fourth hardcoded copy of the site's origin — after lib/seo.ts,
+ * `sitemap.host` in vite.config.ts and robots.txt — and it is the copy nobody
+ * would think to grep for, being the only one not in a .ts or .txt file. When
+ * the canonical host moved to www it stayed behind, and the result was a
+ * sitemap whose 188 generated URLs were correct and whose homepage — the
+ * single most important URL on the site, and the whole reason this script
+ * exists — pointed at a host that answers 301.
+ *
+ * The plugin has already written 188 entries using `sitemap.host`, so the
+ * answer is right there in the file. Deriving it cannot drift.
+ */
+const SITE = xml.match(/<loc>(https?:\/\/[^/<]+)/)?.[1];
+if (!SITE) {
+  console.error("[sitemap] no <loc> to read the origin from — homepage NOT added");
+  process.exit(1);
+}
 
 /* The crawler follows "See it on the map" from every barangay profile, and
    those links carry ?lng=&lat=&b= — so 183 query-string URLs land in the

@@ -1,4 +1,4 @@
-# DavFlood — https://davflood.site
+# DavFlood — https://www.davflood.site
 #
 # Everything here is public safety information about Davao City, and all of it
 # is welcome in search AND in AI answers. Someone asking an assistant "how
@@ -69,4 +69,4 @@ Allow: /
 User-agent: CCBot
 Allow: /
 
-Sitemap: https://davflood.site/sitemap.xml
+Sitemap: https://www.davflood.site/sitemap.xml

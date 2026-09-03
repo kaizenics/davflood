@@ -20,8 +20,20 @@
 
 import { currentVersion, currentVersionDate } from "@/lib/changelog";
 
-/** The canonical origin. No trailing slash — every helper appends one. */
-export const SITE_URL = "https://davflood.site";
+/**
+ * The canonical origin. No trailing slash — every helper appends one.
+ *
+ * WITH THE www, because that is the host Vercel actually serves: the apex and
+ * davflood.kaizenics.dev both redirect here. This said `https://davflood.site`
+ * while the redirect in vercel.json pointed at www, so every canonical tag,
+ * every og:url and the whole sitemap named a host that answers 301 — which is
+ * the opposite of what a canonical tag is for. It tells a crawler "this is the
+ * address of this page", and the address it gave was a forwarding one.
+ *
+ * If the primary domain ever changes, this constant, `sitemap.host` in
+ * vite.config.ts, robots.txt and llms.txt all have to move together.
+ */
+export const SITE_URL = "https://www.davflood.site";
 
 /** Brand suffix. Titles read "<page> · DavFlood" so the tab is scannable. */
 const BRAND = "DavFlood";
