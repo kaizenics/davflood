@@ -1,5 +1,26 @@
 # Changelog
 
+## [1.7.0](https://github.com/kaizenics/davflood/compare/v1.6.0...v1.7.0) (2026-09-03)
+
+
+### New
+
+* add Davao River flow history chart ([e60b32f](https://github.com/kaizenics/davflood/commit/e60b32f6f8b5730e6ec4d59075bd0b50df89f864))
+* **barangay:** animate the card in and out ([b6645ae](https://github.com/kaizenics/davflood/commit/b6645ae95231b8b2ff7332c54fd016846bc1ce05))
+* **barangay:** measure what share of a barangay floods ([98d5119](https://github.com/kaizenics/davflood/commit/98d5119f0b7f1cb9bdf75285161fa8059308ebf2))
+* **data:** import the barangay outlines OpenStreetMap has ([5cc0d15](https://github.com/kaizenics/davflood/commit/5cc0d15423ca05b0095feb0a6029496c07330ac2))
+* draw the Davao City boundary on the map ([f2ef55c](https://github.com/kaizenics/davflood/commit/f2ef55c87c3ea8cf315d0d65f6cb37e6018ca4e8))
+* **landslide:** add UP NOAH landslide susceptibility ([faa0ec2](https://github.com/kaizenics/davflood/commit/faa0ec29ff8161cd1a804fa7961c008330788159))
+* **map:** add a map-only mode that hides the panels ([2e6f04e](https://github.com/kaizenics/davflood/commit/2e6f04eb3362754c2bc38bf826fab2ca92ccb413))
+* **map:** draw the barangay boundaries and frame the one you pick ([aa68505](https://github.com/kaizenics/davflood/commit/aa685053184526a6c3c509de2690cd8929ed0acd))
+* **nav:** go straight to the map when you pick a barangay ([b6f4691](https://github.com/kaizenics/davflood/commit/b6f46916f4ff109eb282a4ec0252051f4a9a634d))
+* **rainfall:** say how much rain has already fallen ([9e695d3](https://github.com/kaizenics/davflood/commit/9e695d30fd716fec6f1c6827ac53ac3939f4b43b))
+
+
+### Fixed
+
+* **landslide:** stop the overlay deadlocking on its own loading flag ([65f1e2d](https://github.com/kaizenics/davflood/commit/65f1e2def48955e44418f496fa83332ff4793266))
+
 ## [1.6.0](https://github.com/kaizenics/davflood/compare/v1.5.0...v1.6.0) (2026-09-02)
 
 
