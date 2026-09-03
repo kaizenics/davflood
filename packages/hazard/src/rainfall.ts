@@ -162,11 +162,38 @@ export function parseRainfall(raw: unknown): Rainfall {
 		? all.findIndex((day) => day.date >= todayDate)
 		: Math.min(PAST_DAYS, all.length);
 	/* -1 means the body holds nothing at or after today — a stale cached
-	   response. Everything in it is then past, and `days` is empty: consumers
-	   already render a missing forecast as absent, which is the truth here,
-	   where treating the newest past day as "today" would not be. */
-	const cut = found === -1 ? all.length : found;
-	const past = all.slice(0, cut);
+	   response. `days` is then empty: consumers already render a missing
+	   forecast as absent, which is the truth here, where treating the newest
+	   past day as "today" would not be. */
+	const stale = found === -1;
+	const cut = stale ? all.length : found;
+
+	/**
+	 * `past` is bounded to PAST_DAYS, and dropped outright on a stale body.
+	 *
+	 * The cut is right about where the FORECAST starts, and the stale case was
+	 * already handled honestly for `days`. It was silently wrong about the
+	 * other half: everything before the cut became "what has already fallen",
+	 * so a body whose `current.time` ran ahead of its own daily series — a
+	 * cached response, or the window either side of midnight in Asia/Manila —
+	 * put all seven entries into `past` and reported 280 mm where 60 mm had
+	 * fallen.
+	 *
+	 * That figure is not cosmetic. `recent.mm` feeds `soakBand`, which returns
+	 * "saturated" at 150 mm, which is one of the two halves `floodOutlook`
+	 * needs to escalate its tone to `alert` — so a stale body could put an
+	 * alert-toned sentence about saturated ground in front of a reader on an
+	 * ordinary week. Wrong, confident, and about the weather, which is exactly
+	 * what the comment above forbids.
+	 *
+	 * Two rules, then. Normally: take the last PAST_DAYS entries before the
+	 * cut, so the window is the one `PAST_DAYS` documents however many days
+	 * the response carries. On a stale body: nothing. Its newest entries were
+	 * FORECASTS when it was issued, and a window that closed days ago is not
+	 * the ground anyone is standing on now — the same reason `days` is empty
+	 * rather than shifted. Absent beats stale on both halves or on neither.
+	 */
+	const past = stale ? [] : all.slice(Math.max(0, cut - PAST_DAYS), cut);
 	const days = all.slice(cut);
 
 	return {
