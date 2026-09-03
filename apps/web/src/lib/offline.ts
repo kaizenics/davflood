@@ -21,6 +21,22 @@ function packUrls(): string[] {
   return [...offlineTileUrls(13), ...SCENARIO_URLS, "/flood-news.json"];
 }
 
+/**
+ * The cache the service worker keeps the deliberately-saved pack in.
+ *
+ * MUST MATCH `PACK` IN public/sw.js, VERSION INCLUDED — bumping the version
+ * there to evict a bad cache has to be done here in the same commit, or this
+ * looks in a cache nothing writes to and the panel offers to save a pack that
+ * is already on the device. The worker is a static file with no access to the
+ * bundle and this is a bundled module with no access to the worker, so a
+ * shared constant is not available; the duplication is real and the only
+ * defence is that both places say so.
+ *
+ * Nothing except `cacheUrls` writes here, which is what makes it a truthful
+ * answer to "did this person press Save" — see below.
+ */
+const PACK_CACHE = "davflood-v2-pack";
+
 export const PACK_MB = estimateMb(offlineTileUrls(13).length, 5_600_000);
 
 export function registerServiceWorker() {
@@ -59,13 +75,31 @@ export function useOfflinePack() {
       return;
     }
     let live = true;
-    // "saved" is not a flag we set — it is a question we ask the cache, so it
-    // stays true only while the data is actually there
+    /**
+     * "saved" is not a flag we set — it is a question we ask the cache, so it
+     * stays true only while the data is actually there.
+     *
+     * ASKED OF THE PACK, not of a tile count. This used to be
+     * `tiles.keys().length > 200`, and the tile cache also fills from
+     * ordinary browsing: panning the map across a few zoom levels passes 200
+     * without anyone pressing anything, so the panel told readers the city
+     * was saved for offline when it was not — while the hazard scenarios,
+     * which are most of the pack and all of the point, had never been
+     * fetched. On an app that will not show a stale forecast, telling someone
+     * they can rely on a map they cannot is the worse version of the same
+     * mistake.
+     *
+     * The scenarios are the thing worth checking: only `cacheUrls` writes
+     * them here, so all three present means Save ran and completed.
+     */
     caches
-      .open("davflood-v1-tiles")
-      .then((c) => c.keys())
-      .then((keys) => {
-        if (live && keys.length > 200) setState("saved");
+      .open(PACK_CACHE)
+      .then(async (c) => {
+        const found = await Promise.all(SCENARIO_URLS.map((url) => c.match(url)));
+        return found.every(Boolean);
+      })
+      .then((saved) => {
+        if (live && saved) setState("saved");
       })
       .catch(() => {});
     return () => {
@@ -91,11 +125,30 @@ export function useOfflinePack() {
   }, []);
 
   const save = useCallback(async () => {
-    const reg = await navigator.serviceWorker.ready;
     const urls = packUrls();
+    /**
+     * The worker has to be there before the UI claims anything is happening.
+     *
+     * `setState("saving")` used to run unconditionally, and the progress
+     * messages that clear it come from the worker — so if `ready` never
+     * resolved, or the registration had no active worker to post to, the
+     * panel sat at "Saving… 0%" for the rest of the session with nothing
+     * behind it and no way back to the button.
+     */
+    let worker: ServiceWorker | null = null;
+    try {
+      worker = (await navigator.serviceWorker.ready).active;
+    } catch {
+      worker = null;
+    }
+    if (!worker) {
+      setState("idle");
+      return;
+    }
+
     setState("saving");
     setProgress({ done: 0, total: urls.length, failed: 0 });
-    reg.active?.postMessage({ type: "CACHE_URLS", urls });
+    worker.postMessage({ type: "CACHE_URLS", urls });
   }, []);
 
   const clear = useCallback(async () => {
