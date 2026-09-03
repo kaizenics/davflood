@@ -294,6 +294,55 @@
 }
 
 /* ------------------------------------------------------------------
+   The map key.
+
+   A hint rather than furniture: it shows itself when a layer is
+   switched on and retires a few seconds later, so it transitions in
+   both directions rather than animating in once like .nf-viewpop does.
+
+   `visibility` is in the transition so the closed legend leaves the
+   accessibility tree and stops taking pointer events, but only after
+   the fade has finished — transitioning it alone would cut the fade
+   off at the first frame.
+   ------------------------------------------------------------------ */
+
+.nf-legendpop {
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-6px) scale(0.985);
+  transform-origin: top left;
+  pointer-events: none;
+  transition:
+    opacity 180ms ease,
+    transform 220ms cubic-bezier(0.16, 1, 0.3, 1),
+    visibility 220ms;
+}
+.nf-legendpop[data-open] {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+/* From lg up the stack is anchored to the bottom of the map, so the
+   key opens upward and should grow from that edge. */
+@media (width >= 64rem) {
+  .nf-legendpop {
+    transform: translateY(6px) scale(0.985);
+    transform-origin: bottom left;
+  }
+  .nf-legendpop[data-open] {
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nf-legendpop {
+    transition-duration: 1ms;
+  }
+}
+
+/* ------------------------------------------------------------------
    The barangay card.
 
    It appears when a barangay is picked and leaves when it is dismissed,

@@ -19,7 +19,7 @@ export function RainLegend({ grid, theme }: Props) {
   const dry = !grid || grid.cells.features.length === 0;
 
   return (
-    <div className="border-hairline bg-abyss/85 pointer-events-none max-w-[15rem] rounded-xl border p-3 shadow-lg backdrop-blur">
+    <div className="border-hairline bg-abyss/85 pointer-events-none w-full rounded-xl border p-3 shadow-lg backdrop-blur">
       <p className="text-ink text-[11px] font-semibold">
         Rain right now — not flooding
       </p>

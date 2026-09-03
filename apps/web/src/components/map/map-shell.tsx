@@ -38,8 +38,7 @@ import { NewsDialog } from "@/components/map/news-dialog";
 import type { NewsPin } from "@/components/map/news-pin";
 import { OfflinePanel } from "@/components/map/offline-panel";
 import { FloodOutlook } from "@/components/map/flood-outlook";
-import { LandslideLegend } from "@/components/map/landslide-legend";
-import { RainLegend } from "@/components/map/rain-legend";
+import { MapLegends } from "@/components/map/map-legends";
 import { SavedPlaceCard } from "@/components/map/saved-place";
 import { RainfallPanel } from "@/components/map/rainfall-panel";
 import { ReadingSlot } from "@/components/map/reading-slot";
@@ -658,26 +657,26 @@ export function MapShell({ children }: { children: ReactNode }) {
           )}
 
           {/* Bottom-left, stacked: the reading floats top-left, the camera
-              controls are top-right and the attribution is bottom-right, so this
-              is the corner that is free. On a phone the legend goes back to the
-              top-left, where the reading is down in the sheet. */}
+              controls are top-right and the attribution is bottom-right, so
+              this is the corner that is free. On a phone it anchors to the
+              top-left instead, where the reading is down in the sheet. */}
           <div className="pointer-events-none absolute top-4 left-4 flex flex-col items-start gap-2 lg:top-auto lg:bottom-6">
-            {showRain && (
-              <RainLegend grid={rainGrid} theme={basemap === "light" ? "light" : "dark"} />
-            )}
-            {showLandslide && (
-              <LandslideLegend
-                theme={basemap === "light" ? "light" : "dark"}
-                loading={landslideLoading}
-              />
-            )}
-            {/* The legends deliberately stay in map-only mode.
-                They are not chrome — they are what makes the colours on the
-                map mean anything, and the landslide one carries the caveat
-                that the purple is susceptibility rather than a forecast. A
-                clean screenshot of an unexplained hazard overlay is exactly
-                the artefact this app should not help anyone produce. Both
-                are absent anyway unless their layer is switched on. */}
+            {/* The key stays available in map-only mode.
+                It is not chrome — it is what makes the colours on the map
+                mean anything, and the landslide one carries the caveat that
+                the purple is susceptibility rather than a forecast. A clean
+                screenshot of an unexplained hazard overlay is exactly the
+                artefact this app should not help anyone produce. It is a
+                single pill now rather than an open panel, and it renders
+                nothing at all unless a layer is switched on. */}
+            <MapLegends
+              showRain={showRain}
+              rainGrid={rainGrid}
+              showLandslide={showLandslide}
+              landslideLoading={landslideLoading}
+              theme={basemap === "light" ? "light" : "dark"}
+            />
+
             <div
               data-hidden={immersive || undefined}
               inert={immersive || undefined}

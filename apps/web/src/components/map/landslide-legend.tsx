@@ -29,7 +29,7 @@ export function LandslideLegend({ theme, loading = false }: Props) {
   const colors = landslideColorFor(theme);
 
   return (
-    <div className="border-hairline bg-abyss/85 pointer-events-none max-w-[16rem] rounded-xl border p-3 shadow-lg backdrop-blur">
+    <div className="border-hairline bg-abyss/85 pointer-events-none w-full rounded-xl border p-3 shadow-lg backdrop-blur">
       <p className="text-ink text-[11px] font-semibold">
         Landslide susceptibility
       </p>
