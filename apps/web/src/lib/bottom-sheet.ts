@@ -1,5 +1,8 @@
 import { useCallback, useRef, useState } from "react";
-import type { PointerEvent as ReactPointerEvent } from "react";
+import type {
+  KeyboardEvent as ReactKeyboardEvent,
+  PointerEvent as ReactPointerEvent,
+} from "react";
 
 /**
  * How much of the sheet stays on screen when it is closed. Must match the
@@ -82,6 +85,22 @@ export function useBottomSheet(initialOpen = false) {
     [release],
   );
 
+  /**
+   * The handle is a `<button aria-expanded>`, so it has to work like one.
+   *
+   * Toggling lived entirely in `onPointerUp`, which keyboard activation never
+   * fires — so the control announced itself as expandable to a screen reader
+   * and then did nothing on Enter or Space. Handled here rather than with
+   * `onClick`, which a pointer drag also fires: that would toggle the sheet a
+   * second time at the end of every throw, undoing the gesture.
+   */
+  const onKeyDown = useCallback((e: ReactKeyboardEvent<HTMLElement>) => {
+    if (e.key !== "Enter" && e.key !== " ") return;
+    // Space scrolls the page otherwise, and this sheet is the page
+    e.preventDefault();
+    setOpen((v) => !v);
+  }, []);
+
   return {
     open,
     setOpen,
@@ -93,6 +112,7 @@ export function useBottomSheet(initialOpen = false) {
       onPointerMove,
       onPointerUp,
       onPointerCancel: release,
+      onKeyDown,
       // the browser must not also scroll or pull-to-refresh on this gesture
       style: { touchAction: "none" as const },
     },
