@@ -35,6 +35,21 @@ import { collectNews, mergeNews } from "@davflood/hazard/news-sources";
  * Request it returns 100 items in about two seconds. The only thing that
  * matters here is that Vercel can call it.
  */
+/**
+ * THE 20s BUDGET IN vercel.json IS THIS FUNCTION'S, and it is deliberate.
+ *
+ * A healthy request takes about two seconds. A bad one takes about seven:
+ * SOURCE_TIMEOUT_MS gives each source 6.5s and the seed gets 4s, all of them
+ * in parallel, so the worst case is roughly the slowest single source plus
+ * parsing. Vercel's Node default is 10s, which leaves almost nothing over the
+ * slow day this is budgeted for — and hitting the limit means a 504, where
+ * the handler allowed to finish would have returned the committed seed and a
+ * `allFailed` note. Timing out is the one outcome worse than every source
+ * failing, because the app gets nothing rather than something stale and dated.
+ *
+ * The two numbers have to move together: raising SOURCE_TIMEOUT_MS in
+ * news-sources.ts without raising maxDuration puts the ceiling back.
+ */
 export default async function handler(req: Request) {
   // Concurrently: the seed is a fetch of our own origin and has no reason to
   // spend any of the budget the sources need.
