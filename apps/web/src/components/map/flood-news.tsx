@@ -47,7 +47,7 @@ export function FloodNews() {
 
       <ul className="mt-2.5 space-y-3">
         {items.slice(0, SHOWN).map((item) => (
-          <li key={item.url}>
+          <li key={item.title}>
             <a
               href={item.url}
               target="_blank"

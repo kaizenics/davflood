@@ -1,6 +1,7 @@
-import { describeAge } from "@davflood/hazard/news";
+import { describeAge, newsDay } from "@davflood/hazard/news";
 import { ExternalLink } from "lucide-react";
 
+import { useNow } from "@/hooks/use-now";
 import type { NewsPin } from "@/components/map/news-pin";
 import {
   Dialog,
@@ -24,6 +25,12 @@ type Props = {
  * else, and every item carries its age in words next to the date.
  */
 export function NewsDialog({ pin, onClose }: Props) {
+  /* Ticks every 30s, like every other relative timestamp in the app. The ages
+     here were read once at render off a bare `new Date()`, so a dialog left
+     open during a storm — which is when it is open — froze at whatever "2
+     hours ago" was true when it was tapped. */
+  const now = useNow();
+
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="p-5">
@@ -38,7 +45,7 @@ export function NewsDialog({ pin, onClose }: Props) {
 
         <ul className="mt-4 space-y-3.5">
           {pin.items.map((item) => (
-            <li key={item.url} className="border-hairline/60 border-b pb-3.5 last:border-0 last:pb-0">
+            <li key={item.title} className="border-hairline/60 border-b pb-3.5 last:border-0 last:pb-0">
               <a
                 href={item.url}
                 target="_blank"
@@ -67,7 +74,13 @@ export function NewsDialog({ pin, onClose }: Props) {
                     />
                   </span>
                   <span className="text-ink-dim mt-1 block text-[11px]">
-                    {item.source} · {item.date} · {describeAge(item.date)}
+                    {/* `newsDay`, not the raw field. RSS carries a full
+                        timestamp — keeping the clock is what lets the age
+                        below say "3 hours ago" — and printing it unformatted
+                        put "2026-08-28T00:08:31.000Z" in front of the reader.
+                        /news has always used the calendar part here. */}
+                    {item.source} · {newsDay(item.date)}
+                    {now && ` · ${describeAge(item.date, now)}`}
                   </span>
                 </span>
               </a>

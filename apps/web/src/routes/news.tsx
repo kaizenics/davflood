@@ -80,8 +80,13 @@ function NewsScreen() {
           </div>
         ) : (
           <ul className="divide-hairline/60 divide-y">
+            {/* Keyed on the title, which is what `mergeNews` dedupes on and
+                therefore the only field guaranteed unique here. Two sources
+                can carry one story under different URLs — and, less often,
+                two stories behind one URL, which is a duplicate React key and
+                a dropped row. */}
             {items.map((item) => (
-              <Report key={item.url} item={item} />
+              <Report key={item.title} item={item} />
             ))}
           </ul>
         )}
