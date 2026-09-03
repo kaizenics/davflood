@@ -21,7 +21,21 @@ import { collectNews, mergeNews } from "@davflood/hazard/news-sources";
  * back of the two-month window is the CLI's job, and the file it produces is
  * what this merges on top of.
  */
-export async function GET(req: Request) {
+/**
+ * A DEFAULT-EXPORTED FUNCTION, and it has to stay that way.
+ *
+ * This was briefly `export function GET` plus `export default { fetch: GET }`
+ * — the Cloudflare Workers and Bun convention. Vercel's Node runtime invokes
+ * the default export directly, an object is not callable, and every request
+ * came back 500 FUNCTION_INVOCATION_FAILED from the moment it deployed. The
+ * app fell back to the committed flood-news.json and quietly went five days
+ * stale, which is the failure mode this endpoint exists to prevent.
+ *
+ * Nothing about the handler itself was wrong then and nothing is now: given a
+ * Request it returns 100 items in about two seconds. The only thing that
+ * matters here is that Vercel can call it.
+ */
+export default async function handler(req: Request) {
   // Concurrently: the seed is a fetch of our own origin and has no reason to
   // spend any of the budget the sources need.
   const [seed, collected] = await Promise.all([
@@ -54,8 +68,6 @@ export async function GET(req: Request) {
     },
   );
 }
-
-export default { fetch: GET };
 
 /**
  * The committed file, used as the floor.
