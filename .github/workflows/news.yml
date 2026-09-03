@@ -1,0 +1,92 @@
+# Refreshes the committed flood-news.json.
+#
+# WHY THIS EXISTS AT ALL. /api/news is the live path and is the one readers
+# actually hit — but it is deliberately SHALLOW: one Google News query and the
+# publishers' feeds, about two seconds, because it runs inside a request. The
+# two-month history it merges on top of comes from the committed file, and the
+# deep sweep that reaches the back of that window — three overlapping date
+# ranges plus a query per flood-prone barangay, ~20 requests with pauses — is
+# far too slow to do inside a function.
+#
+# Nothing was running that sweep. The code and its comments described a
+# scheduled job that did not exist, so the committed seed only ever changed
+# when someone ran the script by hand. Items age out at NEWS_RETENTION_DAYS
+# (60), so the file was quietly emptying itself: the oldest entries had already
+# passed the window, and left alone it would eventually contribute nothing,
+# leaving the app with whatever today's four headlines happened to be — and
+# with an empty list on any day the function was down.
+#
+# Every six hours. The sweep is not cheap on someone else's servers and the
+# live path already covers the last few hours; this is only here to keep the
+# back of the window populated.
+name: News
+
+on:
+  schedule:
+    - cron: "17 */6 * * *"
+  # so the file can be repaired without waiting for the next slot
+  workflow_dispatch:
+
+concurrency:
+  group: news
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # The script exits non-zero and leaves the file untouched when every
+      # source failed, which is the outcome that must never be committed: a
+      # stale file is true and dated, an empty one is a claim that nothing has
+      # been reported.
+      - name: Sweep the sources
+        env:
+          RELIEFWEB_APPNAME: ${{ secrets.RELIEFWEB_APPNAME }}
+        run: pnpm -F @davflood/hazard build:news
+
+      - name: Commit if anything changed
+        run: |
+          set -euo pipefail
+
+          FILE=apps/web/public/flood-news.json
+
+          # Compare the ITEMS, not the file. Every run rewrites `fetched` with
+          # the current time, so a plain `git diff --quiet` is never quiet and
+          # this would commit four times a day whether or not anything was
+          # published. The reports are the content; the timestamp is a
+          # by-product, and one on its own is not worth a commit.
+          git show HEAD:"$FILE" | jq -S '.items' > /tmp/news-old.json
+          jq -S '.items' "$FILE" > /tmp/news-new.json
+
+          if diff -q /tmp/news-old.json /tmp/news-new.json > /dev/null; then
+            echo "No new reports." >> "$GITHUB_STEP_SUMMARY"
+            git checkout -- "$FILE"
+            exit 0
+          fi
+
+          BEFORE=$(jq '.items | length' /tmp/news-old.json)
+          AFTER=$(jq '.items | length' /tmp/news-new.json)
+          echo "Reports: $BEFORE -> $AFTER" >> "$GITHUB_STEP_SUMMARY"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "$FILE"
+
+          # `chore` on purpose: release-please must not cut a release for a
+          # data refresh, and this runs four times a day.
+          git commit -m "chore(news): refresh flood reports"
+          git push

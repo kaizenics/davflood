@@ -42,7 +42,8 @@
 		"build:landslide": "tsx scripts/build-landslide-data.ts",
 		"build:admin": "tsx scripts/build-admin-data.ts",
 		"build:og": "tsx scripts/build-og-image.ts",
-		"build:profiles": "tsx scripts/build-barangay-profiles.ts"
+		"build:profiles": "tsx scripts/build-barangay-profiles.ts",
+		"build:news": "tsx scripts/build-flood-news.ts ../../apps/web/public/flood-news.json"
 	},
 	"dependencies": {
 		"@maplibre/maplibre-gl-style-spec": "24.8.5",
