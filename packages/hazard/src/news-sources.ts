@@ -278,12 +278,16 @@ async function readFeed(name: string, url: string): Promise<NewsItem[]> {
     const when = new Date(tag("pubDate"));
     if (Number.isNaN(when.getTime())) continue;
 
+    // once, not twice — four regexes per item, run again only to unwrap the
+    // value the first run already found
+    const image = imageFrom(block);
+
     out.push({
       title,
       url: link,
       source: name,
       date: when.toISOString(),
-      ...(imageFrom(block) ? { image: imageFrom(block)! } : {}),
+      ...(image ? { image } : {}),
     });
   }
 
@@ -316,6 +320,29 @@ function decodeEntities(s: string): string {
     .replace(/&#(\d+);/g, (_, n) => String.fromCodePoint(Number(n)))
     .replace(/&#x([0-9a-f]+);/gi, (_, n) => String.fromCodePoint(parseInt(n, 16)))
     .replace(/&([a-z]+);/gi, (whole, name: string) => named[name.toLowerCase()] ?? whole);
+}
+
+/**
+ * Only http(s) links survive into the file.
+ *
+ * Every url and image here is a string somebody else's CMS put in an XML
+ * document, and the app renders them straight into `href` and `src`. A
+ * `javascript:` href is a click away from running in the reader's page, and
+ * nothing upstream was checking: the feeds are parsed with regexes, so
+ * whatever sits between the tags is what gets through.
+ *
+ * A scheme check is the whole fix. It is not that these publishers are
+ * hostile — it is that this app has no business trusting the answer either
+ * way, and a hazard map is a page people are told to open in an emergency.
+ */
+function isHttpUrl(value: string): boolean {
+  try {
+    const { protocol } = new URL(value);
+    return protocol === "https:" || protocol === "http:";
+  } catch {
+    // relative or malformed — not something to hand a browser as a link
+    return false;
+  }
 }
 
 /**
@@ -494,9 +521,23 @@ export function mergeNews(
     const key = item.title.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
     if (!key) continue;
     if (ageInDays(item.date) > NEWS_RETENTION_DAYS) continue;
+    /* Checked here rather than in each source, because this is the one gate
+       every item passes through — including the ones read back out of the
+       committed file, which is why it is not enough to have checked them on
+       the way in. See isHttpUrl. */
+    if (!isHttpUrl(item.url)) continue;
+    if (item.image && !isHttpUrl(item.image)) delete item.image;
 
     const held = byKey.get(key);
-    if (held && !betterCopy(item, held)) continue;
+    if (held && !betterCopy(item, held)) {
+      /* The worse copy still gets a say about WHEN. It is dropped for its
+         link and its picture, not for its date, and a second source picking a
+         story up days later must not make it look like it happened twice —
+         which is what the rule below says and what this early `continue` was
+         quietly exempting half the collisions from. */
+      if (item.date < held.date) held.date = item.date;
+      continue;
+    }
 
     // geotag late, so re-runs pick up matcher improvements on old items too
     const where = locateHeadline(item.title);
