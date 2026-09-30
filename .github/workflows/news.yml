@@ -78,8 +78,8 @@ jobs:
             exit 0
           fi
 
-          BEFORE=$(jq '.items | length' /tmp/news-old.json)
-          AFTER=$(jq '.items | length' /tmp/news-new.json)
+          BEFORE=$(jq 'length' /tmp/news-old.json)
+          AFTER=$(jq 'length' /tmp/news-new.json)
           echo "Reports: $BEFORE -> $AFTER" >> "$GITHUB_STEP_SUMMARY"
 
           git config user.name "github-actions[bot]"
