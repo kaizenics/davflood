@@ -1,4 +1,5 @@
 import { collectNews, mergeNews } from "@davflood/hazard/news-sources";
+import type { NewsItem } from "@davflood/hazard/news";
 
 /**
  * /api/news — the flood reports, fetched when someone asks for them.
@@ -85,22 +86,33 @@ export default async function handler(req: Request) {
 }
 
 /**
- * The committed file, used as the floor.
+ * The last deep sweep, used as the floor.
  *
  * It carries the two-month history the shallow fetch above cannot reach, and
  * it is why a cold start still returns a full list rather than today's four
- * headlines. Fetched from the deployed site rather than read from disk: a
- * bundled function has no reliable path to the static output directory.
+ * headlines. The News workflow publishes it to the news-data branch (so main
+ * is not a wall of bot commits), read here over raw.githubusercontent.com so
+ * a refresh needs no deploy. The copy bundled with the site is the fallback:
+ * older, but always there.
  */
+const SWEEP_URL =
+  "https://raw.githubusercontent.com/kaizenics/davflood/news-data/flood-news.json";
+
 async function loadSeed(req: Request) {
+  return (
+    (await readItems(SWEEP_URL)) ??
+    (await readItems(new URL("/flood-news.json", req.url))) ??
+    []
+  );
+}
+
+async function readItems(url: string | URL): Promise<NewsItem[] | null> {
   try {
-    const res = await fetch(new URL("/flood-news.json", req.url), {
-      signal: AbortSignal.timeout(4000),
-    });
-    if (!res.ok) return [];
+    const res = await fetch(url, { signal: AbortSignal.timeout(4000) });
+    if (!res.ok) return null;
     const file = (await res.json()) as { items?: unknown };
-    return Array.isArray(file.items) ? file.items : [];
+    return Array.isArray(file.items) ? (file.items as NewsItem[]) : null;
   } catch {
-    return [];
+    return null;
   }
 }

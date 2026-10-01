@@ -1,4 +1,4 @@
-# Refreshes the committed flood-news.json.
+# Refreshes flood-news.json on the news-data branch.
 #
 # WHY THIS EXISTS AT ALL. /api/news is the live path and is the one readers
 # actually hit — but it is deliberately SHALLOW: one Google News query and the
@@ -49,8 +49,21 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      # Start from the last published sweep, not the bundled copy on main:
+      # the history lives on the news-data branch now, and the merge needs it
+      # or every run would rebuild the window from scratch. The bundled file
+      # is only the starting point the very first time.
+      - name: Load the previous sweep
+        run: |
+          set -euo pipefail
+          FILE=apps/web/public/flood-news.json
+          if git fetch --depth=1 origin news-data 2>/dev/null; then
+            git show FETCH_HEAD:flood-news.json > "$FILE"
+          fi
+          jq -S ".items" "$FILE" > /tmp/news-old.json
+
       # The script exits non-zero and leaves the file untouched when every
-      # source failed, which is the outcome that must never be committed: a
+      # source failed, which is the outcome that must never be published: a
       # stale file is true and dated, an empty one is a claim that nothing has
       # been reported.
       - name: Sweep the sources
@@ -58,35 +71,37 @@ jobs:
           RELIEFWEB_APPNAME: ${{ secrets.RELIEFWEB_APPNAME }}
         run: pnpm -F @davflood/hazard build:news
 
-      - name: Commit if anything changed
+      # PUBLISHED TO news-data, NOT main. A commit on main four times a day
+      # buried the real history and redeployed the site for a data change.
+      # /api/news reads this branch over raw.githubusercontent.com, so the site
+      # picks the new file up without a deploy. The branch is force-pushed as a
+      # single orphan commit: it holds data, not history.
+      - name: Publish if anything changed
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
 
           FILE=apps/web/public/flood-news.json
 
-          # Compare the ITEMS, not the file. Every run rewrites `fetched` with
-          # the current time, so a plain `git diff --quiet` is never quiet and
-          # this would commit four times a day whether or not anything was
-          # published. The reports are the content; the timestamp is a
-          # by-product, and one on its own is not worth a commit.
-          git show HEAD:"$FILE" | jq -S '.items' > /tmp/news-old.json
-          jq -S '.items' "$FILE" > /tmp/news-new.json
-
+          # Compare the ITEMS, not the file: every run rewrites `fetched`, and
+          # a timestamp on its own is not worth a push.
+          jq -S ".items" "$FILE" > /tmp/news-new.json
           if diff -q /tmp/news-old.json /tmp/news-new.json > /dev/null; then
             echo "No new reports." >> "$GITHUB_STEP_SUMMARY"
-            git checkout -- "$FILE"
             exit 0
           fi
 
-          BEFORE=$(jq 'length' /tmp/news-old.json)
-          AFTER=$(jq 'length' /tmp/news-new.json)
+          BEFORE=$(jq "length" /tmp/news-old.json)
+          AFTER=$(jq "length" /tmp/news-new.json)
           echo "Reports: $BEFORE -> $AFTER" >> "$GITHUB_STEP_SUMMARY"
 
+          OUT=$(mktemp -d)
+          cp "$FILE" "$OUT/flood-news.json"
+          cd "$OUT"
+          git init -q -b news-data
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add "$FILE"
-
-          # `chore` on purpose: release-please must not cut a release for a
-          # data refresh, and this runs four times a day.
-          git commit -m "chore(news): refresh flood reports"
-          git push
+          git add flood-news.json
+          git commit -q -m "chore(news): refresh flood reports"
+          git push -q --force             "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" news-data
