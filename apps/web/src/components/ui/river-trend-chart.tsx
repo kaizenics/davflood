@@ -30,7 +30,6 @@ export function RiverTrendChart({ river, palette }: Props) {
   const todayIndex = matchedTodayIndex >= 0 ? matchedTodayIndex : 0;
   const points = river.days.map((day, index) => ({
     ...day,
-    label: shortDay(day.date),
     history: index <= todayIndex ? day.discharge : null,
     // Include today in both series so the projection starts without a gap.
     forecast: index >= todayIndex ? day.discharge : null,
@@ -56,7 +55,8 @@ export function RiverTrendChart({ river, palette }: Props) {
           </defs>
           <CartesianGrid stroke={palette.hairline} vertical={false} />
           <XAxis
-            dataKey="label"
+            dataKey="date"
+            tickFormatter={shortDay}
             tick={{ fill: palette.inkDim, fontSize: 9 }}
             tickLine={false}
             axisLine={false}
@@ -78,7 +78,7 @@ export function RiverTrendChart({ river, palette }: Props) {
             strokeOpacity={0.5}
           />
           <ReferenceLine
-            x={shortDay(todayDate)}
+            x={todayDate}
             stroke={palette.tide}
             strokeWidth={1.5}
             label={{ value: "NOW", fill: palette.tide, fontSize: 8, position: "top" }}
