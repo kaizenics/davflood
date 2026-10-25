@@ -1,9 +1,9 @@
 @import "tailwindcss";
 
-/* Manrope, self-hosted variable (200–800) — no CDN round-trip on a connection
+/* Geist, self-hosted variable (100–900) — no CDN round-trip on a connection
    that may already be struggling. Subsets are unicode-range gated, so a
    latin-only page only ever fetches the one file. */
-@import "@fontsource-variable/manrope/index.css";
+@import "@fontsource-variable/geist/index.css";
 
 @custom-variant dark (&:where(.dark, .dark *));
 
@@ -29,17 +29,17 @@
 
 @theme {
   --font-sans:
-    "Manrope Variable", "Manrope", ui-sans-serif, system-ui, -apple-system,
+    "Geist Variable", "Geist", ui-sans-serif, system-ui, -apple-system,
     "Segoe UI", sans-serif;
 
   /* light (default) */
-  --color-abyss: #f9fafb;
+  --color-abyss: #eef2f6;
   --color-deep: #ffffff;
-  --color-raised: #f0f3f6;
-  --color-hairline: #d5dade;
+  --color-raised: #e8eef4;
+  --color-hairline: #d3dce5;
 
-  --color-ink: #192028;
-  --color-ink-dim: #5c646d;
+  --color-ink: #121b25;
+  --color-ink-dim: #52606e;
 
   --color-tide: #007188;
   --color-tide-deep: #005469;
@@ -55,18 +55,18 @@
   --color-slide-med: #6b21a8;
   --color-slide-high: #3b0764;
 
-  --radius-card: 0.875rem;
+  --radius-card: 1.125rem;
   --radius-pill: 999px;
 }
 
 .dark {
-  --color-abyss: #060a0e;
-  --color-deep: #0f141a;
-  --color-raised: #1a2027;
-  --color-hairline: #2e343a;
+  --color-abyss: #050a10;
+  --color-deep: #0c1520;
+  --color-raised: #15212f;
+  --color-hairline: #213042;
 
-  --color-ink: #f3f5f8;
-  --color-ink-dim: #979fa8;
+  --color-ink: #eef3f8;
+  --color-ink-dim: #93a2b3;
 
   --color-tide: #3bcddc;
   --color-tide-deep: #008295;
@@ -888,4 +888,34 @@
 .recharts-wrapper:focus,
 .recharts-surface:focus {
   outline: none;
+}
+
+/* ------------------------------------------------------------------
+   Scrollbars: a thin rounded thumb on no track, so the panel's edge
+   reads as the card column rather than a browser gutter.
+   ------------------------------------------------------------------ */
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--color-ink-dim) 35%, transparent) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--color-ink-dim) 30%, transparent);
+  border: 3px solid transparent;
+  border-radius: 999px;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background-color: color-mix(in srgb, var(--color-tide) 60%, transparent);
+}
+::-webkit-scrollbar-corner {
+  background: transparent;
 }

@@ -15,14 +15,14 @@
 
 export const colors = {
 	/* surfaces */
-	abyss: "#060a0e",
-	surface: "#0f141a",
-	raised: "#1a2027",
-	hairline: "#2e343a",
+	abyss: "#050a10",
+	surface: "#0c1520",
+	raised: "#15212f",
+	hairline: "#213042",
 
-	/* text — inkDim is 6.8:1 on abyss, verified */
-	ink: "#f3f5f8",
-	inkDim: "#979fa8",
+	/* text — inkDim is 7.6:1 on abyss, 7.0:1 on surface, verified */
+	ink: "#eef3f8",
+	inkDim: "#93a2b3",
 
 	/* brand */
 	tide: "#3bcddc",
@@ -73,14 +73,14 @@ export const colors = {
  */
 export const lightColors = {
 	/* surfaces */
-	abyss: "#f9fafb",
+	abyss: "#eef2f6",
 	surface: "#ffffff",
-	raised: "#f0f3f6",
-	hairline: "#d5dade",
+	raised: "#e8eef4",
+	hairline: "#d3dce5",
 
 	/* text */
-	ink: "#192028",
-	inkDim: "#5c646d",
+	ink: "#121b25",
+	inkDim: "#52606e",
 
 	/* brand */
 	tide: "#007188",
