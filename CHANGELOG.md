@@ -1,5 +1,25 @@
 # Changelog
 
+## [1.8.0](https://github.com/kaizenics/davflood/compare/v1.7.0...v1.8.0) (2026-10-01)
+
+
+### New
+
+* **map:** implement unified map legends component and enhance legend visibility ([095765a](https://github.com/kaizenics/davflood/commit/095765a55cce4cb5d0ae8276625f39db54ebcb63))
+* **news:** change GET function to default export for Vercel compatibility ([10df769](https://github.com/kaizenics/davflood/commit/10df76954603c773bc663aabff85022f293f792b))
+
+
+### Fixed
+
+* **a11y:** let the sheet handle be opened from the keyboard ([736d5ac](https://github.com/kaizenics/davflood/commit/736d5ac6683abc948d941f027d9fbaf8732f80f1))
+* **api:** give /api/news room for a slow source ([76e511f](https://github.com/kaizenics/davflood/commit/76e511f8ab7891f8b70af3aa0fdbcf1836a2b438))
+* **ci:** count the reports from the extracted items array ([ba98bd0](https://github.com/kaizenics/davflood/commit/ba98bd0b63b4c5a7bcd4fffbe1244169a2ac6b4e))
+* **news:** reject non-http links and keep the earliest date ([8261c0f](https://github.com/kaizenics/davflood/commit/8261c0f6d99e3a51bb03738452d28fc763227ee0))
+* **news:** show a date rather than a raw timestamp in the dialog ([c118a8b](https://github.com/kaizenics/davflood/commit/c118a8ba68d50e996d927223df4ff9bda69d8504))
+* **offline:** make the saved pack actually work offline ([676e9b3](https://github.com/kaizenics/davflood/commit/676e9b301bd5ae7fe3f9ba763ef6ec0dd016deef))
+* **rainfall:** stop a stale forecast reporting rain that never fell ([6a6fdc4](https://github.com/kaizenics/davflood/commit/6a6fdc41ac56259b62f9f3076bb7cf1c369484d3))
+* **seo:** point the canonical tags at the host that serves the site ([a5ffb3f](https://github.com/kaizenics/davflood/commit/a5ffb3ffd64b5e3b395240b8269d945e012990b7))
+
 ## [1.7.0](https://github.com/kaizenics/davflood/compare/v1.6.0...v1.7.0) (2026-09-03)
 
 
