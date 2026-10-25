@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.9.0](https://github.com/kaizenics/davflood/compare/v1.8.0...v1.9.0) (2026-10-25)
+
+
+### New
+
+* **map:** card panel with live conditions tiles and river cross-section ([875512e](https://github.com/kaizenics/davflood/commit/875512e125465f0ca39cc063111609aebbc2afb6))
+* **news:** skeleton rows instead of Loading… text ([7f8cb8d](https://github.com/kaizenics/davflood/commit/7f8cb8d85e1f40c22104ce7ef6d16e5576a835d4))
+
+
+### Fixed
+
+* **api:** answer Vercel's (req, res) call instead of timing out ([c8d9943](https://github.com/kaizenics/davflood/commit/c8d9943a9053c35785dfbbe3b0db470476d1460c))
+* **api:** bundle /api/news so Vercel can load it ([2d7158e](https://github.com/kaizenics/davflood/commit/2d7158e424ed425071eae0aa35544cac0013589e))
+* **chart:** update x-axis data key to use date and format ticks ([aca96a7](https://github.com/kaizenics/davflood/commit/aca96a7542a29e593c732216ebfdf24f8240842f))
+* **deps:** bump TanStack Start past CVE-2026-102989 ([f0f2f89](https://github.com/kaizenics/davflood/commit/f0f2f89470ad8dc2a3495ea1dd442e2598a5354d))
+* **vercel:** point the function timeout at the bundled api/news.js ([77a7b27](https://github.com/kaizenics/davflood/commit/77a7b27a5fa3145e57a7b62e4b835a8272400160))
+
 ## [1.8.0](https://github.com/kaizenics/davflood/compare/v1.7.0...v1.8.0) (2026-10-01)
 
 
