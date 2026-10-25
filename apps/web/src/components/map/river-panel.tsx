@@ -1,11 +1,12 @@
 import { RIVER_GAUGE, RIVER_NORMAL } from "@davflood/hazard/river";
 import type { River } from "@davflood/hazard/river";
 import { colorsFor } from "@davflood/hazard/tokens";
-import { Waves } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import { gcTime, useMounted } from "@/lib/query";
+import { useState } from "react";
+import { gcTime } from "@/lib/query";
 
 import { fetchRiver } from "@davflood/hazard/river";
+import { RiverChannel } from "@/components/ui/river-channel";
 import { RiverTrendChart } from "@/components/ui/river-trend-chart";
 import { useTheme } from "@/lib/theme";
 
@@ -21,10 +22,8 @@ import { useTheme } from "@/lib/theme";
  * band, and the moment those two share a palette the map starts making claims
  * neither of them supports.
  */
-export function RiverPanel() {
-  const { theme } = useTheme();
-  const palette = colorsFor(theme);
-  const { data, isLoading, isError } = useQuery<River>({
+export function useRiver() {
+  return useQuery<River>({
     // client-only, like every fetch here — see use-news-pins.ts
     enabled: typeof window !== "undefined",
     // v2 adds six historical days and an explicit todayDate. Keeping it
@@ -38,84 +37,69 @@ export function RiverPanel() {
     retry: 1,
     refetchOnWindowFocus: false,
   });
+}
 
-  // see lib/query.ts — the server and the first client render must agree
-  const mounted = useMounted();
-  const pending = !mounted || isLoading;
-  // three states, and only `ready` may touch `data`
-  const ready = !pending && !isError && !!data;
-  const notable = ready && data.level.id !== "low" && data.level.id !== "normal";
+/** Low and normal are the quiet days; anything above is worth the accent. */
+export function riverIsNotable(river: River): boolean {
+  return river.level.id !== "low" && river.level.id !== "normal";
+}
+
+/** The expanded half of the river tile: what it means, and the two-week trend. */
+export function RiverDetail({ river }: { river: River }) {
+  const { theme } = useTheme();
+  const palette = colorsFor(theme);
+  const [view, setView] = useState<"chart" | "channel">("chart");
 
   return (
     <div>
-      <div className="flex items-center gap-3">
-        <span
-          className={`flex size-9 shrink-0 items-center justify-center rounded-full ${
-            ready ? "bg-tide/12" : "bg-raised"
-          }`}
-        >
-          <Waves
-            className={`size-[18px] ${ready ? "text-tide" : "text-ink-dim"}`}
-            aria-hidden="true"
-          />
-        </span>
+      <p className="text-ink text-[12.5px] leading-relaxed">
+        {river.level.blurb}
+        {river.peak
+          ? ` Forecast to peak around ${river.peak.discharge.toFixed(0)} m³/s on ${weekday(river.peak.date)}.`
+          : ""}
+      </p>
 
-        <span className="min-w-0 flex-1">
-          <span className="text-ink block truncate text-[13.5px] font-semibold">
-            {pending
-              ? "Checking the river…"
-              : ready
-                ? `${RIVER_GAUGE.name} — ${data.level.label.toLowerCase()}`
-                : "River forecast unavailable"}
-          </span>
-          <span className="text-ink-dim block truncate text-[11.5px]" data-numeric>
-            {pending
-              ? " "
-              : ready
-                ? `${data.today.toFixed(0)} m³/s · ${data.timesNormal.toFixed(1)}× the usual`
-                : "The map still works without it"}
-          </span>
-        </span>
-
-        {notable && (
-          <span className="text-tide bg-tide/12 rounded-full px-2 py-0.5 text-[10px] font-bold tracking-wide uppercase">
-            {data.level.label}
-          </span>
-        )}
-      </div>
-
-      {ready && (
-        <>
-          <p className="text-ink-dim mt-2.5 text-[12px] leading-relaxed">
-            {data.level.blurb}
-            {data.peak
-              ? ` Forecast to peak around ${data.peak.discharge.toFixed(0)} m³/s on ${weekday(data.peak.date)}.`
-              : ""}
-          </p>
-
-          <section aria-labelledby="river-trend-heading">
-            <div className="mt-3 flex items-center justify-between gap-3">
-              <h3 id="river-trend-heading" className="text-ink text-[11.5px] font-semibold">
-                Recent flow and outlook
-              </h3>
-              <div className="text-ink-dim flex items-center gap-2 text-[9.5px]">
-                <span className="flex items-center gap-1"><i className="bg-tide block h-0.5 w-3" />Recent</span>
-                <span className="flex items-center gap-1"><i className="border-ink-dim block w-3 border-t border-dashed" />Forecast</span>
-              </div>
+      <section aria-labelledby="river-trend-heading">
+        <div className="mt-3.5 flex items-center justify-between gap-3">
+          <h3 id="river-trend-heading" className="text-ink text-[11.5px] font-semibold">
+            {view === "chart" ? "Recent flow and outlook" : "How full the river is"}
+          </h3>
+          <div role="radiogroup" aria-label="River view" className="bg-raised/60 border-hairline/60 flex gap-0.5 rounded-lg border p-0.5">
+            {(["chart", "channel"] as const).map((v) => (
+              <button
+                key={v}
+                type="button"
+                role="radio"
+                aria-checked={view === v}
+                onClick={() => setView(v)}
+                className={`rounded-md px-2 py-0.5 text-[10.5px] font-semibold transition ${
+                  view === v ? "bg-deep text-ink shadow-sm" : "text-ink-dim hover:text-ink"
+                }`}
+              >
+                {v === "chart" ? "Chart" : "River"}
+              </button>
+            ))}
+          </div>
+        </div>
+        {view === "chart" ? (
+          <>
+            <div className="text-ink-dim mt-2 flex items-center justify-end gap-2.5 text-[10px]">
+              <span className="flex items-center gap-1"><i className="bg-tide block h-0.5 w-3" />Recent</span>
+              <span className="flex items-center gap-1"><i className="border-ink-dim block w-3 border-t border-dashed" />Forecast</span>
             </div>
-            <RiverTrendChart river={data} palette={palette} />
-            <p className="text-ink-dim -mt-1 text-[9.5px]">
-              Dashed horizontal line marks the elevated-flow threshold ({RIVER_NORMAL.p90.toFixed(0)} m³/s).
-            </p>
-          </section>
+            <RiverTrendChart river={river} palette={palette} />
+          </>
+        ) : (
+          <RiverChannel river={river} />
+        )}
+      </section>
 
-          <p className="text-ink-dim mt-2 text-[10px] leading-relaxed">
-            Modelled flow in the river channel {RIVER_GAUGE.where}, against its{" "}
-            {RIVER_NORMAL.from}–{RIVER_NORMAL.to} range. It says how hard the
-            river is running — not that anywhere is flooded.
-          </p>
-        </>
-      )}
+      <p className="text-ink-dim mt-1 text-[10.5px] leading-relaxed">
+        Modelled flow {RIVER_GAUGE.where}. Dashed line: elevated above{" "}
+        <span data-numeric>{RIVER_NORMAL.p90.toFixed(0)} m³/s</span>, from
+        its {RIVER_NORMAL.from}–{RIVER_NORMAL.to} range. It shows how hard
+        the river is running, not that anywhere is flooded.
+      </p>
     </div>
   );
 }

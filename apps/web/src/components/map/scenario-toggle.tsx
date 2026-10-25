@@ -17,7 +17,7 @@ export function ScenarioToggle({ value, onChange }: Props) {
     <div
       role="radiogroup"
       aria-label="Flood scenario"
-      className="bg-raised/70 flex w-full gap-0.5 rounded-lg p-0.5"
+      className="bg-raised/60 border-hairline/60 flex w-full gap-0.5 rounded-xl border p-0.5"
     >
       {scenarios.map((s) => {
         const active = s.years === value;
@@ -29,13 +29,19 @@ export function ScenarioToggle({ value, onChange }: Props) {
             aria-checked={active}
             aria-label={`${s.label} flood scenario`}
             onClick={() => onChange(s.years)}
-            className={`flex-1 rounded-[6px] py-1.5 text-[12.5px] font-semibold transition ${
+            className={`flex flex-1 flex-col items-center rounded-[9px] py-2 transition active:scale-[0.98] ${
               active
-                ? "bg-tide text-abyss shadow-sm"
+                ? "bg-deep text-ink ring-tide/60 shadow-sm ring-1"
                 : "text-ink-dim hover:text-ink"
             }`}
           >
-            {s.years}-yr
+            <span className="text-[12.5px] font-semibold">{s.years}-yr storm</span>
+            <span
+              className={`text-[10px] ${active ? "text-tide" : "opacity-80"}`}
+              data-numeric
+            >
+              {s.annualChance} a year
+            </span>
           </button>
         );
       })}

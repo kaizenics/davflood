@@ -40,9 +40,8 @@ import { OfflinePanel } from "@/components/map/offline-panel";
 import { FloodOutlook } from "@/components/map/flood-outlook";
 import { MapLegends } from "@/components/map/map-legends";
 import { SavedPlaceCard } from "@/components/map/saved-place";
-import { RainfallPanel } from "@/components/map/rainfall-panel";
 import { ReadingSlot } from "@/components/map/reading-slot";
-import { RiverPanel } from "@/components/map/river-panel";
+import { ConditionsCard } from "@/components/map/conditions-card";
 import { ScenarioToggle } from "@/components/map/scenario-toggle";
 import { SidebarNav } from "@/components/site-nav";
 import { useStrings } from "@/lib/locale";
@@ -383,11 +382,13 @@ export function MapShell({ children }: { children: ReactNode }) {
           scenario={activeScenario}
           dimmed={!showHazard}
         />
-        <p className="text-ink-dim border-hairline/60 flex items-start gap-2.5 border-t px-5 py-3 text-[11.5px] leading-relaxed">
-          <MousePointerClick
-            className="mt-px size-3.5 shrink-0 opacity-70"
-            aria-hidden="true"
-          />
+        <p className="text-ink-dim bg-raised/50 border-hairline/50 mx-3 mb-3 flex items-center gap-2.5 rounded-xl border px-3 py-2.5 text-[11.5px] leading-snug">
+          <span className="bg-tide/12 flex size-6 shrink-0 items-center justify-center rounded-md">
+            <MousePointerClick
+              className="text-tide size-3.5"
+              aria-hidden="true"
+            />
+          </span>
           Tap a coloured zone for the expected depth at that spot.
         </p>
       </ReadingSlot>
@@ -427,7 +428,7 @@ export function MapShell({ children }: { children: ReactNode }) {
         inert={immersive || undefined}
         className={cn(
           "nf-chrome-panel",
-          "border-hairline bg-deep/95 lg:bg-deep/40 flex min-w-0 flex-col backdrop-blur-xl",
+          "border-hairline bg-abyss/95 lg:bg-abyss flex min-w-0 flex-col backdrop-blur-xl",
           // `nf-sheet` owns position, height and the open/closed transform
           // below lg — see app.css for why that is hand-written CSS
           isMap ? "nf-sheet" : "absolute inset-0",
@@ -472,107 +473,97 @@ export function MapShell({ children }: { children: ReactNode }) {
         {/* scroll area — one slot, whichever page you are on */}
         <div ref={scrollArea} className="min-h-0 flex-1 overflow-y-auto">
           {isMap ? (
-            <div className="divide-hairline/60 divide-y">
+            <div className="space-y-2.5 p-3">
               {DATA_IS_PLACEHOLDER && (
-                <p className="text-haz-med bg-haz-med/10 flex items-center gap-2 px-5 py-2.5 text-[11px] font-semibold">
+                <p className="text-haz-med bg-haz-med/10 rounded-card flex items-center gap-2 px-4 py-2.5 text-[11px] font-semibold">
                   <Construction className="size-3.5 shrink-0" aria-hidden="true" />
                   Placeholder data — not real hazard information
                 </p>
               )}
 
-              {/* The scenario governs everything below it, so it sits above
-                  everything below it — and states its own consequence rather
-                  than being labelled "Scenario". */}
-              <div className="px-5 py-4">
-                <ScenarioToggle value={scenario} onChange={setScenario} />
-              </div>
-
               {dataError && (
-                <p className="text-haz-high bg-haz-high/10 px-5 py-2.5 text-[11px] font-semibold">
+                <p className="text-haz-high bg-haz-high/10 rounded-card px-4 py-2.5 text-[11px] font-semibold">
                   Hazard data failed to load — {dataError}
                 </p>
               )}
 
-              {/* What the model says about the barangay just picked.
-                  Above the reading slot: someone who arrived by choosing
-                  their barangay came for this, and it should not be below the
-                  city-wide answer they did not ask for. Also the only route
-                  to those 183 profile pages now that the list flies to the
-                  map instead of opening them. */}
+              {/* What the model says about the barangay just picked — the
+                  reason someone who chose their barangay is here. */}
               {b && (
-                <BarangayCard
-                  /* Remount per barangay: it replays the enter animation when
-                     you pick a different one, and it clears the card's own
-                     `closing` state, which would otherwise render the next
-                     barangay already collapsed. */
-                  key={b}
-                  name={b}
-                  scenario={scenario}
-                  onClear={() =>
-                    navigate({ to: "/", search: {}, replace: true })
-                  }
-                />
+                <div className={CARD}>
+                  <BarangayCard
+                    /* Remount per barangay: replays the enter animation and
+                       clears the card's own `closing` state. */
+                    key={b}
+                    name={b}
+                    scenario={scenario}
+                    onClear={() =>
+                      navigate({ to: "/", search: {}, replace: true })
+                    }
+                  />
+                </div>
               )}
 
-              {/* ONE reading slot, two scales. Tapping a zone narrows the
-                  question from "the city" to "this place"; going back widens
-                  it again. Both answer "how deep does it get here".
-
-                  Below lg only — from lg up the same slot floats over the map. */}
-              <div className="lg:hidden">{reading}</div>
-
-              {/* Above the forecast panels: the model's answer about your own
-                  house outranks the city-wide weather. Renders nothing until
-                  something is saved. */}
-              <SavedPlaceCard
-                data={data}
-                scenario={scenario}
-                onShow={(p) => mapRef.current?.flyTo(p.center, 15)}
-              />
-
-              <div className="px-5 py-3.5">
-                <RainfallPanel />
+              {/* The model's answer about your own house outranks everything
+                  city-wide. Renders nothing until something is saved, and the
+                  card collapses with it. */}
+              <div className={cn(CARD, "empty:hidden")}>
+                <SavedPlaceCard
+                  data={data}
+                  scenario={scenario}
+                  onShow={(p) => mapRef.current?.flyTo(p.center, 15)}
+                />
               </div>
 
-              {/* Rain that already fell upstream and is on its way down — the one
-                  thing local rainfall cannot show. */}
-              <div className="px-5 py-3.5">
-                <RiverPanel />
-              </div>
+              {/* Live first, model second: the only part of the panel that
+                  changes hour to hour is what someone checks during a storm. */}
+              <ConditionsCard />
+
+              {/* The scenario governs the whole map, so it states what it is
+                  rather than being three bare numbers. */}
+              <PanelSection title="Flood map" note="Modelled, not live">
+                <ScenarioToggle value={scenario} onChange={setScenario} />
+              </PanelSection>
+
+              {/* ONE reading slot, two scales. Below lg only — from lg up the
+                  same slot floats over the map. */}
+              <div className={cn(CARD, "lg:hidden")}>{reading}</div>
 
               {/* Renders nothing until CI has published a file, which is the
                   normal state on a fresh deploy. */}
-              <div className="empty:hidden [&>*]:px-5 [&>*]:py-3.5">
+              <div className={cn(CARD, "empty:hidden [&>*]:px-4 [&>*]:py-4")}>
                 <FloodNews />
               </div>
 
-              {/* The most useful thing here during a storm, so it sits with the
-                  content rather than behind a disclosure. */}
-              <OfflinePanel />
-
-              {/* The other way in. Hunting for your own barangay by panning a
-                  city 53 km across is the hard path; this is the easy one. */}
-              <Link
-                to="/barangays"
-                className="group hover:bg-raised/40 flex items-center gap-2.5 px-5 py-3.5 transition"
-              >
-                <Search
-                  className="text-ink-dim size-4 shrink-0"
-                  aria-hidden="true"
-                />
-                <span className="min-w-0 flex-1">
-                  <span className="text-ink block text-[12.5px] font-semibold">
-                    Find your barangay
+              {/* The two tools, side by side in one card: saving for offline
+                  is the most useful thing here during a storm, and the
+                  barangay search is the easy way in. */}
+              <div className={cn(CARD, "divide-hairline/70 divide-y [&>div]:px-4")}>
+                <OfflinePanel />
+                <Link
+                  to="/barangays"
+                  className="group hover:bg-raised/50 flex items-center gap-3 px-4 py-3.5 transition"
+                >
+                  <span className="bg-raised flex size-9 shrink-0 items-center justify-center rounded-xl">
+                    <Search
+                      className="text-ink-dim size-4"
+                      aria-hidden="true"
+                    />
                   </span>
-                  <span className="text-ink-dim block text-[11px]">
-                    Search all {BARANGAYS_MAPPED} and fly straight to it
+                  <span className="min-w-0 flex-1">
+                    <span className="text-ink block text-[13px] font-semibold">
+                      Find your barangay
+                    </span>
+                    <span className="text-ink-dim block text-[11.5px]">
+                      Search all {BARANGAYS_MAPPED} and fly straight to it
+                    </span>
                   </span>
-                </span>
-                <ChevronRight
-                  className="text-ink-dim group-hover:text-ink size-4 shrink-0 transition"
-                  aria-hidden="true"
-                />
-              </Link>
+                  <ChevronRight
+                    className="text-ink-dim group-hover:text-ink size-4 shrink-0 transition group-hover:translate-x-0.5"
+                    aria-hidden="true"
+                  />
+                </Link>
+              </div>
             </div>
           ) : (
             children
@@ -650,7 +641,7 @@ export function MapShell({ children }: { children: ReactNode }) {
             <div
               data-hidden={immersive || undefined}
               inert={immersive || undefined}
-              className="nf-chrome nf-chrome-reading border-hairline bg-deep/92 pointer-events-auto absolute top-4 left-4 z-10 hidden max-h-[calc(100%-2rem)] w-[21rem] overflow-x-hidden overflow-y-auto rounded-2xl border shadow-2xl backdrop-blur-xl lg:block"
+              className="nf-chrome nf-chrome-reading border-hairline/70 bg-deep/85 pointer-events-auto absolute top-4 left-4 z-10 hidden max-h-[calc(100%-2rem)] w-[22rem] overflow-x-hidden overflow-y-auto rounded-[22px] border shadow-[0_24px_64px_-24px_rgb(0_0_0/0.65)] ring-1 ring-white/[0.04] ring-inset backdrop-blur-2xl backdrop-saturate-150 lg:block"
             >
               {reading}
             </div>
@@ -745,5 +736,38 @@ export function MapShell({ children }: { children: ReactNode }) {
         <NewsDialog pin={openNews} onClose={() => setOpenNews(null)} />
       )}
     </div>
+  );
+}
+
+/** The panel's one surface: every group is a card floating on the darker column. */
+const CARD = "bg-deep border-hairline/70 rounded-card overflow-hidden border";
+
+function SectionHeading({ title, note }: { title: string; note: string }) {
+  return (
+    <div className="mb-3 flex items-center justify-between gap-3">
+      <h2 className="text-ink-dim flex items-center gap-2 text-[10.5px] font-semibold tracking-[0.14em] uppercase">
+        <span className="bg-tide size-1.5 rounded-full" aria-hidden="true" />
+        {title}
+      </h2>
+      <span className="text-ink-dim/80 text-[10.5px]">{note}</span>
+    </div>
+  );
+}
+
+/** A labelled group in the map panel — the heading says what kind of answer is inside. */
+function PanelSection({
+  title,
+  note,
+  children,
+}: {
+  title: string;
+  note: string;
+  children: ReactNode;
+}) {
+  return (
+    <section className={cn(CARD, "px-4 pt-3.5 pb-4")}>
+      <SectionHeading title={title} note={note} />
+      {children}
+    </section>
   );
 }

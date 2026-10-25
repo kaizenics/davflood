@@ -25,7 +25,7 @@ export function OfflinePanel() {
     <div className="px-5 py-3.5">
       <div className="flex items-center gap-2.5">
         <span
-          className={`flex size-9 shrink-0 items-center justify-center rounded-full ${
+          className={`flex size-9 shrink-0 items-center justify-center rounded-xl ${
             state === "saved" ? "bg-tide/12" : "bg-raised"
           }`}
         >

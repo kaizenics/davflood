@@ -1,7 +1,6 @@
-import { describeWeather, rainBand, soakBand } from "@davflood/hazard/rainfall";
+import { soakBand } from "@davflood/hazard/rainfall";
 import type { RainfallDay } from "@davflood/hazard/rainfall";
 import {
-  ChevronDown,
   Cloud,
   CloudDrizzle,
   CloudFog,
@@ -15,7 +14,6 @@ import {
 import { lazy, Suspense, useState } from "react";
 
 import { useRainfall } from "@/hooks/use-rainfall";
-import { useMounted } from "@/lib/query";
 
 /**
  * recharts is ~400 KB and only ever renders inside this dialog. Lazy so the
@@ -29,28 +27,20 @@ const RainfallDayDialog = lazy(() =>
 );
 
 /**
- * Current conditions and the 4-day rainfall outlook.
+ * The 4-day rainfall outlook, and what already fell — the expanded half of
+ * the rain tile in the conditions card.
  *
  * Rendered in the BRAND colour, never the hazard ramp: millimetres of rain
  * are not a flood hazard class, and colouring them the same way would undo
  * the distinction the whole app rests on.
  *
- * Fails quietly — if Open-Meteo is unreachable the row says so and the map
- * carries on without it.
+ * Only ever opened from a tile that has data — the tile owns the
+ * unavailable state.
  */
-export function RainfallPanel() {
-  const [open, setOpen] = useState(false);
+export function RainDetail() {
   const [openDay, setOpenDay] = useState<number | null>(null);
-  const { data, isLoading, isError } = useRainfall();
-
-  // see lib/query.ts — the prerendered markup and the first client render
-  // must say the same thing, and the query cannot run during prerender
-  const mounted = useMounted();
-  const pending = !mounted || isLoading;
-  const unavailable = isError || !data;
+  const { data } = useRainfall();
   const days = data?.days.slice(0, 4) ?? [];
-  const today = days[0];
-  const band = today ? rainBand(today.precipitation) : "none";
 
   const peakMm = days.reduce((m, d) => Math.max(m, d.precipitation), 0);
   const peak = days.find((d) => d.precipitation === peakMm && peakMm > 0);
@@ -82,71 +72,9 @@ export function RainfallPanel() {
     5,
   );
 
-  const CurrentIcon = data ? weatherIcon(data.current.weatherCode) : CloudRain;
-
   return (
     <div>
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        aria-expanded={open}
-        disabled={unavailable}
-        className="group flex w-full items-center gap-3 text-left disabled:cursor-default"
-      >
-        <span
-          className={`flex size-9 shrink-0 items-center justify-center rounded-full ${
-            unavailable ? "bg-raised" : "bg-tide/12"
-          }`}
-        >
-          <CurrentIcon
-            className={`size-[18px] ${unavailable ? "text-ink-dim" : "text-tide"}`}
-            aria-hidden="true"
-          />
-        </span>
-
-        <span className="min-w-0 flex-1">
-          <span className="text-ink block truncate text-[13.5px] font-semibold">
-            {pending
-              ? "Checking…"
-              : unavailable
-                ? "Forecast unavailable"
-                : describeWeather(data.current.weatherCode)}
-          </span>
-          <span className="text-ink-dim block truncate text-[11.5px]">
-            {pending
-              ? " "
-              : unavailable
-                ? "No connection — the map still works"
-                : today
-                  ? `${fmt(today.precipitation)} mm today · ${Math.round(today.probability)}% chance`
-                  : "—"}
-          </span>
-        </span>
-
-        {!unavailable && band !== "none" && (
-          <span className="text-tide bg-tide/12 rounded-full px-2 py-0.5 text-[10px] font-bold tracking-wide">
-            {band.toUpperCase()}
-          </span>
-        )}
-        {!unavailable && (
-          <ChevronDown
-            className={`text-ink-dim size-4 shrink-0 transition-transform ${open ? "rotate-180" : ""}`}
-            aria-hidden="true"
-          />
-        )}
-      </button>
-
-      {/* Mounted whether it is open or not, so closing can animate too — see
-          `.nf-collapse` in app.css. `inert` keeps the collapsed forecast out
-          of the tab order and the accessibility tree, which `display: none`
-          used to do for free. */}
-      <div
-        className="nf-collapse"
-        data-open={open && !unavailable}
-        inert={!open || unavailable}
-      >
-        <div>
-          <div className="mt-4">
+          <div>
             {/* The days are always shown, dry or not.
               They used to be replaced by a sentence when nothing much was
               coming, on the grounds that empty bars say nothing. But a
@@ -289,8 +217,6 @@ export function RainfallPanel() {
               advisories.
             </p>
           </div>
-        </div>
-      </div>
 
       {openDay !== null && days[openDay] && (
         <Suspense fallback={null}>
@@ -314,7 +240,7 @@ export function RainfallPanel() {
  * numbers collapses 2.1 and 2.2 into the same "2" while the bars beside them
  * clearly differ. Above 10 mm the decimal is noise.
  */
-function fmt(mm: number): string {
+export function fmt(mm: number): string {
   if (mm === 0) return "0";
   if (mm < 10) return mm.toFixed(1);
   return Math.round(mm).toString();
@@ -332,7 +258,7 @@ function dayLabel(day: RainfallDay, days: RainfallDay[]): string {
 }
 
 /** WMO weather interpretation codes — the same bands describeWeather uses. */
-function weatherIcon(code: number): LucideIcon {
+export function weatherIcon(code: number): LucideIcon {
   if (code === 0) return Sun;
   if (code <= 2) return CloudSun;
   if (code === 3) return Cloud;
