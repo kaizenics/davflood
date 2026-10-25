@@ -105,7 +105,7 @@ export function GithubMark() {
 }
 
 const ROUND_BUTTON =
-  "border-hairline text-ink-dim hover:text-ink hover:border-tide flex size-8 shrink-0 items-center justify-center rounded-full border transition";
+  "border-hairline/80 bg-deep text-ink-dim hover:text-ink hover:border-tide/60 flex size-8 shrink-0 items-center justify-center rounded-[10px] border transition active:scale-95";
 
 export function GithubLink() {
   return (
@@ -135,16 +135,18 @@ export function EmergencyLink() {
   return (
     <Link
       to="/emergency"
-      className="border-haz-high/40 bg-haz-high/8 hover:bg-haz-high/14 mt-2.5 flex items-center gap-2 rounded-xl border px-2.5 py-1.5 transition"
-      activeProps={{ className: "!bg-haz-high/16" }}
+      className="group border-haz-high/35 bg-haz-high/10 hover:bg-haz-high/16 mt-3 flex items-center gap-2.5 rounded-xl border py-2 pr-2 pl-2.5 transition"
+      activeProps={{ className: "!bg-haz-high/18" }}
     >
-      <Phone className="text-haz-high size-3.5 shrink-0" aria-hidden="true" />
-      <span className="text-ink text-[11.5px] font-semibold">
+      <span className="bg-haz-high/15 flex size-6 shrink-0 items-center justify-center rounded-lg">
+        <Phone className="text-haz-high size-3.5" aria-hidden="true" />
+      </span>
+      <span className="text-ink text-[12.5px] font-semibold">
         Emergency hotlines
       </span>
       <span
         data-numeric
-        className="text-haz-high ml-auto text-[11.5px] font-bold"
+        className="bg-haz-high text-abyss ml-auto rounded-md px-2 py-0.5 text-[12px] font-bold tracking-wide"
       >
         911
       </span>
@@ -179,7 +181,7 @@ export function VersionChip() {
           : "Release notes on GitHub"
       }
       title="Release notes on GitHub"
-      className="border-hairline text-ink-dim hover:text-ink hover:border-tide rounded-pill flex shrink-0 items-center gap-1 border px-2 py-[3px] text-[10.5px] font-semibold whitespace-nowrap transition"
+      className="text-ink-dim hover:text-ink flex shrink-0 items-center gap-0.5 px-1 text-[10.5px] font-medium whitespace-nowrap transition"
       data-numeric={currentVersion ? "" : undefined}
     >
       {label}
@@ -213,8 +215,8 @@ export function ThemeToggle() {
  */
 function NavBlock() {
   return (
-    <div className="px-5 py-4">
-      <div className="flex items-center gap-2">
+    <div className="px-4 pt-4 pb-3.5">
+      <div className="flex items-center gap-1.5">
         <Link to="/" aria-label="DavFlood — home" className="min-w-0 flex-1">
           <Wordmark />
         </Link>
@@ -224,16 +226,16 @@ function NavBlock() {
         <ThemeToggle />
       </div>
 
-      <nav aria-label="Main" className="mt-3.5">
-        <ul className="flex items-center gap-0.5">
+      <nav aria-label="Main" className="mt-4">
+        <ul className="bg-raised/60 border-hairline/60 grid grid-cols-5 gap-0.5 rounded-xl border p-0.5">
           {NAV.map(({ to, short, label, exact }) => (
             <li key={to}>
               <Link
                 to={to}
                 aria-label={label}
                 activeOptions={{ exact }}
-                className="rounded-pill text-ink-dim hover:text-ink hover:bg-raised/60 block px-2 py-1 text-[11.5px] font-medium whitespace-nowrap transition"
-                activeProps={{ className: "!text-ink !bg-raised" }}
+                className="text-ink-dim hover:text-ink block rounded-[9px] py-1.5 text-center text-[11.5px] font-medium whitespace-nowrap transition"
+                activeProps={{ className: "!text-ink bg-deep font-semibold shadow-sm ring-1 ring-hairline/80" }}
               >
                 {short}
               </Link>
@@ -256,7 +258,7 @@ function NavBlock() {
  */
 export function SidebarNav() {
   return (
-    <div className="border-hairline hidden shrink-0 border-b lg:block">
+    <div className="border-hairline/70 hidden shrink-0 border-b lg:block">
       <NavBlock />
     </div>
   );

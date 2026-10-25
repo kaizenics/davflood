@@ -24,7 +24,7 @@ export function LocaleToggle() {
       onClick={() => set(next.id)}
       aria-label={label}
       title={label}
-      className="border-hairline text-ink-dim hover:text-ink hover:border-tide rounded-pill flex h-8 shrink-0 items-center gap-1 border px-2 text-[10.5px] font-semibold transition"
+      className="border-hairline/80 bg-deep text-ink-dim hover:text-ink hover:border-tide/60 flex h-8 shrink-0 items-center gap-1 rounded-[10px] border px-2 text-[10.5px] font-semibold transition active:scale-95"
     >
       <Languages className="size-3.5 shrink-0" aria-hidden="true" />
       {meta.short}
