@@ -1,4 +1,4 @@
-import { NEWS_RETENTION_DAYS, ageInDays } from "@davflood/hazard/news";
+import { NEWS_RETENTION_DAYS, NEWS_SWEEP_URL, ageInDays } from "@davflood/hazard/news";
 import type { NewsFile, NewsItem } from "@davflood/hazard/news";
 import { useQuery } from "@tanstack/react-query";
 import { gcTime } from "@/lib/query";
@@ -34,7 +34,7 @@ export function useNewsFile() {
     queryKey: ["flood-news"],
     queryFn: async ({ signal }) => {
       /**
-       * The function first, the committed file second.
+       * The function first, the published sweep second, the bundled file last.
        *
        * /api/news re-fetches the sources behind a CDN cache, so it is current
        * without anything being committed. The static file is what answers on
@@ -44,7 +44,11 @@ export function useNewsFile() {
        * current.
        */
       const file =
-        (await read("/api/news", signal)) ?? (await read("/flood-news.json", signal));
+        (await read("/api/news", signal)) ??
+        // the sweep is refreshed every six hours without a deploy; the
+        // bundled copy only changes when the site does
+        (await read(NEWS_SWEEP_URL, signal)) ??
+        (await read("/flood-news.json", signal));
       if (!file) return null; // nothing published yet — not an error
 
       return {

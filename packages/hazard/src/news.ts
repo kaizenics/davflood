@@ -192,3 +192,12 @@ export function newsOpacity(iso: string, now = new Date()): number {
   if (days >= NEWS_RETENTION_DAYS) return 0.45;
   return 1 - 0.55 * (days / NEWS_RETENTION_DAYS);
 }
+
+/**
+ * The deep sweep the News workflow publishes to the news-data branch. Served
+ * with `Access-Control-Allow-Origin: *`, so the browser can read it directly
+ * when /api/news is down — and it is never older than six hours, unlike the
+ * copy bundled into the last deploy.
+ */
+export const NEWS_SWEEP_URL =
+  "https://raw.githubusercontent.com/kaizenics/davflood/news-data/flood-news.json";

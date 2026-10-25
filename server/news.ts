@@ -1,4 +1,5 @@
 import { collectNews, mergeNews } from "@davflood/hazard/news-sources";
+import { NEWS_SWEEP_URL } from "@davflood/hazard/news";
 import type { NewsItem } from "@davflood/hazard/news";
 
 /**
@@ -95,12 +96,9 @@ export default async function handler(req: Request) {
  * a refresh needs no deploy. The copy bundled with the site is the fallback:
  * older, but always there.
  */
-const SWEEP_URL =
-  "https://raw.githubusercontent.com/kaizenics/davflood/news-data/flood-news.json";
-
 async function loadSeed(req: Request) {
   return (
-    (await readItems(SWEEP_URL)) ??
+    (await readItems(NEWS_SWEEP_URL)) ??
     (await readItems(new URL("/flood-news.json", req.url))) ??
     []
   );
