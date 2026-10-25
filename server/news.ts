@@ -52,7 +52,7 @@ import type { NewsItem } from "@davflood/hazard/news";
  * The two numbers have to move together: raising SOURCE_TIMEOUT_MS in
  * news-sources.ts without raising maxDuration puts the ceiling back.
  */
-export default async function handler(req: Request) {
+async function handler(req: Request): Promise<Response> {
   // Concurrently: the seed is a fetch of our own origin and has no reason to
   // spend any of the budget the sources need.
   const [seed, collected] = await Promise.all([
@@ -114,3 +114,36 @@ async function readItems(url: string | URL): Promise<NewsItem[] | null> {
     return null;
   }
 }
+
+/**
+ * Vercel's Node runtime calls a default export as `(req, res)` with Node's
+ * IncomingMessage and ServerResponse, and ignores the return value — so a
+ * handler that only returned a Response never answered, and every request
+ * hit the 20s limit as a 504. This adapts the Node pair to the web handler
+ * above, and still accepts a plain Request (local scripts, other runtimes).
+ */
+export default async function entry(
+  req: Request | NodeRequest,
+  res?: NodeResponse,
+): Promise<Response | void> {
+  if (!res) return handler(req as Request);
+
+  const node = req as NodeRequest;
+  const host = node.headers["x-forwarded-host"] ?? node.headers.host ?? "localhost";
+  const response = await handler(
+    new Request(`https://${String(host)}${node.url ?? "/"}`),
+  );
+  res.statusCode = response.status;
+  response.headers.forEach((value, key) => res.setHeader(key, value));
+  res.end(await response.text());
+}
+
+type NodeRequest = {
+  url?: string;
+  headers: Record<string, string | string[] | undefined>;
+};
+type NodeResponse = {
+  statusCode: number;
+  setHeader(name: string, value: string): void;
+  end(body: string): void;
+};

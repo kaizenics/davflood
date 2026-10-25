@@ -562,6 +562,17 @@ async function readItems(url) {
     return null;
   }
 }
+async function entry(req, res) {
+  if (!res) return handler(req);
+  const node = req;
+  const host = node.headers["x-forwarded-host"] ?? node.headers.host ?? "localhost";
+  const response = await handler(
+    new Request(`https://${String(host)}${node.url ?? "/"}`)
+  );
+  res.statusCode = response.status;
+  response.headers.forEach((value, key) => res.setHeader(key, value));
+  res.end(await response.text());
+}
 export {
-  handler as default
+  entry as default
 };
