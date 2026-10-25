@@ -6,7 +6,7 @@
   "outputDirectory": "apps/web/dist/client",
   "crons": [{ "path": "/api/news", "schedule": "0 0 * * *" }],
 
-  "functions": { "api/news.ts": { "maxDuration": 20 } },
+  "functions": { "api/news.js": { "maxDuration": 20 } },
 
   "trailingSlash": false,
 

@@ -114,7 +114,7 @@ pnpm --filter @davflood/hazard exec tsx scripts/build-flood-news.ts apps/web/pub
 ```
 
 Seeds or repairs the committed file by hand. The deployed site does not need it: `/api/news`
-([api/news.ts](api/news.ts)) fetches the same
+([server/news.ts](server/news.ts), bundled to `api/news.js` by `pnpm build:api`) fetches the same
 sources when someone asks, behind a half-hour CDN cache, so nothing has to be committed to keep
 the news current.
 
