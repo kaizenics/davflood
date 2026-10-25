@@ -7,6 +7,7 @@ import { useNow } from "@/hooks/use-now";
 import { useMounted } from "@/lib/query";
 import { seo } from "@/lib/seo";
 
+import { Skeleton } from "@/components/ui/skeleton";
 import { useNewsFile } from "@/hooks/use-news-pins";
 
 export const Route = createFileRoute("/news")({
@@ -63,7 +64,19 @@ function NewsScreen() {
 
       <div className="px-5">
         {pending ? (
-          <p className="text-ink-dim py-16 text-center text-[13.5px]">Loading…</p>
+          // the shape of the list it is standing in for, so nothing jumps
+          <ul aria-busy="true" aria-label="Loading reports" className="divide-hairline/60 divide-y">
+            {Array.from({ length: 6 }, (_, i) => (
+              <li key={i} className="flex gap-3 py-3.5">
+                <Skeleton className="size-16 shrink-0 rounded-lg" />
+                <div className="min-w-0 flex-1 space-y-2 pt-0.5">
+                  <Skeleton className="h-3.5 w-full" />
+                  <Skeleton className="h-3.5 w-4/5" />
+                  <Skeleton className="mt-3 h-2.5 w-1/3" />
+                </div>
+              </li>
+            ))}
+          </ul>
         ) : items.length === 0 ? (
           <div className="py-16 text-center">
             <Newspaper
