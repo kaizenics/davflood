@@ -142,32 +142,51 @@ function plural(n: number, unit: string): string {
  * still describing the current storm needs the difference between "an hour
  * ago" and "on Tuesday", and a bare date cannot tell them.
  */
-export function describeAge(iso: string, now = new Date()): string {
+export function describeAge(iso: string, now = new Date(), tag = "en"): string {
+  const age = ageOf(iso, now);
+  if (!age) return "";
+  const [n, unit] = age;
+
+  // The English wording below predates this and is kept word for word; the
+  // other languages come from the platform, which knows their grammar.
+  if (!tag.startsWith("en")) {
+    return new Intl.RelativeTimeFormat(tag, { numeric: "auto" }).format(-n, unit);
+  }
+  if (unit === "second" && n < 10) return "just now";
+  if (unit === "day") {
+    if (n === 0) return "today";
+    if (n === 1) return "yesterday";
+    return `${n} days ago`;
+  }
+  if (unit === "week" || unit === "month") return `${n} ${unit}s ago`;
+  return plural(n, unit);
+}
+
+type AgeUnit = "second" | "minute" | "hour" | "day" | "week" | "month";
+
+function ageOf(iso: string, now: Date): [number, AgeUnit] | null {
   if (hasClock(iso)) {
     const then = new Date(iso);
-    if (Number.isNaN(then.getTime())) return "";
+    if (Number.isNaN(then.getTime())) return null;
 
     /* Clamp at zero. A publisher's clock running ahead of the reader's would
        otherwise produce "in 3 minutes", which reads as a bug in a feed of
        things that have already happened. */
     const seconds = Math.max(0, Math.floor((now.getTime() - then.getTime()) / 1000));
-    if (seconds < 10) return "just now";
-    if (seconds < 60) return plural(seconds, "second");
+    if (seconds < 60) return [seconds < 10 ? 0 : seconds, "second"];
 
     const minutes = Math.floor(seconds / 60);
-    if (minutes < 60) return plural(minutes, "minute");
+    if (minutes < 60) return [minutes, "minute"];
 
     const hours = Math.floor(minutes / 60);
-    if (hours < 24) return plural(hours, "hour");
+    if (hours < 24) return [hours, "hour"];
   }
 
   const days = ageInDays(iso, now);
-  if (!Number.isFinite(days)) return "";
-  if (days === 0) return "today";
-  if (days === 1) return "yesterday";
-  if (days < 14) return `${days} days ago`;
-  if (days < 60) return `${Math.round(days / 7)} weeks ago`;
-  return `${Math.round(days / 30)} months ago`;
+  if (!Number.isFinite(days)) return null;
+  if (days < 14) return [days, "day"];
+  if (days < 60) return [Math.round(days / 7), "week"];
+  return [Math.round(days / 30), "month"];
 }
 
 /** The calendar part, for wherever the exact day is wanted alongside the age. */
