@@ -5,6 +5,7 @@ import type { LngLat } from "@davflood/hazard/geo";
 import { formatDepth } from "@davflood/hazard/schema";
 import type { HazardProperties } from "@davflood/hazard/schema";
 import { DEFAULT_SCENARIO, scenarioByYears } from "@davflood/hazard/scenarios";
+import { fill } from "@davflood/hazard/strings";
 import type { ScenarioYears } from "@davflood/hazard/scenarios";
 import { nearestEvacuation } from "@davflood/hazard/evacuation";
 import type { OutlookPlace } from "@davflood/hazard/outlook";
@@ -389,7 +390,7 @@ export function MapShell({ children }: { children: ReactNode }) {
               aria-hidden="true"
             />
           </span>
-          Tap a coloured zone for the expected depth at that spot.
+          {strings.ui.tapHint}
         </p>
       </ReadingSlot>
     </>
@@ -403,7 +404,7 @@ export function MapShell({ children }: { children: ReactNode }) {
         <button
           type="button"
           tabIndex={-1}
-          aria-label="Collapse the panel"
+          aria-label={strings.ui.collapsePanel}
           onClick={() => sheet.setOpen(false)}
           className="fixed inset-0 z-20 cursor-default bg-black/40 lg:hidden"
         />
@@ -442,7 +443,7 @@ export function MapShell({ children }: { children: ReactNode }) {
             type="button"
             {...sheet.handleProps}
             aria-expanded={sheet.open}
-            aria-label={sheet.open ? "Collapse the panel" : "Expand the panel"}
+            aria-label={sheet.open ? strings.ui.collapsePanel : strings.ui.expandPanel}
             className="flex h-[60px] w-full shrink-0 cursor-grab touch-none flex-col items-center justify-center gap-1.5 px-5 active:cursor-grabbing lg:hidden"
           >
             <span
@@ -454,8 +455,11 @@ export function MapShell({ children }: { children: ReactNode }) {
                 {selected
                   ? `Brgy. ${selected.barangay} · ${formatDepth(selected)}`
                   : footprint.zones > 0
-                    ? `About ${formatArea(footprint.totalKm2)} km² floods · ${activeScenario.label}`
-                    : `${activeScenario.label} storm`}
+                    ? fill(strings.ui.handleFloods, {
+                        km: formatArea(footprint.totalKm2),
+                        storm: fill(strings.ui.stormYr, { n: activeScenario.years }),
+                      })
+                    : fill(strings.ui.stormYr, { n: activeScenario.years })}
               </span>
               <ChevronUp
                 className={cn(
@@ -521,7 +525,7 @@ export function MapShell({ children }: { children: ReactNode }) {
 
               {/* The scenario governs the whole map, so it states what it is
                   rather than being three bare numbers. */}
-              <PanelSection title="Flood map" note="Modelled, not live">
+              <PanelSection title={strings.ui.floodMap} note={strings.ui.modelledNotLive}>
                 <ScenarioToggle value={scenario} onChange={setScenario} />
               </PanelSection>
 
@@ -552,10 +556,10 @@ export function MapShell({ children }: { children: ReactNode }) {
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="text-ink block text-[13px] font-semibold">
-                      Find your barangay
+                      {strings.ui.findBarangay}
                     </span>
                     <span className="text-ink-dim block text-[11.5px]">
-                      Search all {BARANGAYS_MAPPED} and fly straight to it
+                      {fill(strings.ui.findBarangaySub, { n: BARANGAYS_MAPPED })}
                     </span>
                   </span>
                   <ChevronRight

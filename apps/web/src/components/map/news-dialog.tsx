@@ -2,6 +2,7 @@ import { describeAge, newsDay } from "@davflood/hazard/news";
 import { ExternalLink } from "lucide-react";
 
 import { useNow } from "@/hooks/use-now";
+import { useLocale } from "@/lib/locale";
 import type { NewsPin } from "@/components/map/news-pin";
 import {
   Dialog,
@@ -30,6 +31,7 @@ export function NewsDialog({ pin, onClose }: Props) {
      open during a storm — which is when it is open — froze at whatever "2
      hours ago" was true when it was tapped. */
   const now = useNow();
+  const { meta } = useLocale();
 
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
@@ -80,7 +82,7 @@ export function NewsDialog({ pin, onClose }: Props) {
                         put "2026-08-28T00:08:31.000Z" in front of the reader.
                         /news has always used the calendar part here. */}
                     {item.source} · {newsDay(item.date)}
-                    {now && ` · ${describeAge(item.date, now)}`}
+                    {now && ` · ${describeAge(item.date, now, meta.tag)}`}
                   </span>
                 </span>
               </a>

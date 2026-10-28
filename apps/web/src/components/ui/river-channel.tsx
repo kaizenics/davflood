@@ -1,6 +1,9 @@
 import { RIVER_NORMAL } from "@davflood/hazard/river";
 import type { River } from "@davflood/hazard/river";
+import { fill } from "@davflood/hazard/strings";
 import { useId, useState } from "react";
+
+import { useLocale } from "@/lib/locale";
 
 /**
  * The river as a cross-section: a channel, filled to the day's flow.
@@ -28,8 +31,8 @@ const bankX = (y: number, side: "l" | "r") => {
 };
 
 const MARKS = [
-  { q: RIVER_NORMAL.p50, label: "usual" },
-  { q: RIVER_NORMAL.p90, label: "elevated" },
+  { q: RIVER_NORMAL.p50, key: "channelUsual" },
+  { q: RIVER_NORMAL.p90, key: "channelElevated" },
 ] as const;
 
 export function RiverChannel({ river }: { river: River }) {
@@ -39,22 +42,28 @@ export function RiverChannel({ river }: { river: River }) {
     river.days.findIndex((d) => d.date === river.todayDate),
   );
   const [index, setIndex] = useState(todayIndex);
+  const { strings, meta } = useLocale();
+  const { ui } = strings;
   const day = river.days[index] ?? river.days[todayIndex];
   if (!day) return null;
 
   const y = surfaceY(day.discharge);
   const when =
     day.date === river.todayDate
-      ? "Today"
+      ? ui.today
       : day.date > river.todayDate
-        ? `${longDay(day.date)} · forecast`
-        : longDay(day.date);
+        ? `${longDay(day.date, meta.tag)} · ${ui.forecastLower}`
+        : longDay(day.date, meta.tag);
 
   return (
     <div className="mt-3">
       <div
         role="img"
-        aria-label={`Cross-section of the Davao River, ${when}: ${day.discharge.toFixed(0)} cubic metres per second, ${Math.round(lift(day.discharge) * 100)} percent of the way to its five-year high.`}
+        aria-label={fill(ui.channelAria, {
+          when,
+          q: day.discharge.toFixed(0),
+          pct: Math.round(lift(day.discharge) * 100),
+        })}
         className="relative"
       >
         <svg viewBox="0 0 320 124" className="h-auto w-full" aria-hidden="true">
@@ -92,7 +101,7 @@ export function RiverChannel({ river }: { river: River }) {
           {MARKS.map((m) => {
             const my = surfaceY(m.q);
             return (
-              <g key={m.label}>
+              <g key={m.key}>
                 <line
                   x1={bankX(my, "l")}
                   x2={bankX(my, "r")}
@@ -108,14 +117,14 @@ export function RiverChannel({ river }: { river: River }) {
                   className="fill-ink-dim"
                   fontSize="9"
                 >
-                  {m.label}
+                  {ui[m.key]}
                 </text>
               </g>
             );
           })}
 
           <text x="300" y={TOP - 4} textAnchor="end" className="fill-ink-dim" fontSize="9">
-            5-yr high
+            {ui.channelHigh}
           </text>
           <line x1="24" x2="296" y1={TOP} y2={TOP} className="stroke-hairline" />
         </svg>
@@ -130,38 +139,38 @@ export function RiverChannel({ river }: { river: River }) {
       </div>
 
       <label className="mt-2 block">
-        <span className="sr-only">Day</span>
+        <span className="sr-only">{ui.day}</span>
         <input
           type="range"
           min={0}
           max={river.days.length - 1}
           value={index}
           onChange={(e) => setIndex(Number(e.target.value))}
-          aria-valuetext={`${when}, ${day.discharge.toFixed(0)} cubic metres per second`}
+          aria-valuetext={`${when}, ${day.discharge.toFixed(0)} m³/s`}
           className="accent-tide w-full"
         />
       </label>
       <div className="text-ink-dim flex justify-between text-[10px]">
-        <span>{shortDay(river.days[0]!.date)}</span>
+        <span>{shortDay(river.days[0]!.date, meta.tag)}</span>
         <button
           type="button"
           onClick={() => setIndex(todayIndex)}
           className="hover:text-tide font-semibold transition"
         >
-          Today
+          {ui.today}
         </button>
-        <span>{shortDay(river.days.at(-1)!.date)}</span>
+        <span>{shortDay(river.days.at(-1)!.date, meta.tag)}</span>
       </div>
     </div>
   );
 }
 
-function shortDay(iso: string): string {
+function shortDay(iso: string, tag: string): string {
   const d = new Date(`${iso}T00:00:00`);
-  return Number.isNaN(d.getTime()) ? iso : d.toLocaleDateString("en-PH", { weekday: "short" });
+  return Number.isNaN(d.getTime()) ? iso : d.toLocaleDateString(tag, { weekday: "short" });
 }
 
-function longDay(iso: string): string {
+function longDay(iso: string, tag: string): string {
   const d = new Date(`${iso}T00:00:00`);
-  return Number.isNaN(d.getTime()) ? iso : d.toLocaleDateString("en-PH", { weekday: "short", month: "short", day: "numeric" });
+  return Number.isNaN(d.getTime()) ? iso : d.toLocaleDateString(tag, { weekday: "short", month: "short", day: "numeric" });
 }

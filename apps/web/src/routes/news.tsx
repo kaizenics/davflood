@@ -4,7 +4,9 @@ import { Link, createFileRoute } from "@tanstack/react-router";
 import { ExternalLink, MapPin, Newspaper } from "lucide-react";
 
 import { useNow } from "@/hooks/use-now";
+import { useLocale } from "@/lib/locale";
 import { useMounted } from "@/lib/query";
+import { fill } from "@davflood/hazard/strings";
 import { seo } from "@/lib/seo";
 
 import { Skeleton } from "@/components/ui/skeleton";
@@ -48,24 +50,23 @@ function NewsScreen() {
    * render after.
    */
   const pending = !useMounted() || isLoading;
+  const { ui } = useLocale().strings;
 
   return (
     <div className="pb-8">
       <header className="px-5 pt-7 pb-2">
         <h1 className="text-ink text-[1.7rem] leading-[1.15] font-semibold tracking-tight">
-          Flood reports
+          {ui.reportsTitle}
         </h1>
         <p className="text-ink-dim mt-2.5 text-[13.5px] leading-relaxed">
-          What the news has carried about flooding in Davao City over the last
-          two months, newest first. Reported by others — not verified by
-          DavFlood, and not a statement about conditions right now.
+          {ui.reportsIntro}
         </p>
       </header>
 
       <div className="px-5">
         {pending ? (
           // the shape of the list it is standing in for, so nothing jumps
-          <ul aria-busy="true" aria-label="Loading reports" className="divide-hairline/60 divide-y">
+          <ul aria-busy="true" aria-label={ui.loadingReports} className="divide-hairline/60 divide-y">
             {Array.from({ length: 6 }, (_, i) => (
               <li key={i} className="flex gap-3 py-3.5">
                 <Skeleton className="size-16 shrink-0 rounded-lg" />
@@ -84,11 +85,10 @@ function NewsScreen() {
               aria-hidden="true"
             />
             <p className="text-ink mt-3 text-[13.5px] font-semibold">
-              No reports on record.
+              {ui.noReports}
             </p>
             <p className="text-ink-dim mt-1.5 text-[12.5px] leading-relaxed">
-              Nothing has been published in the window we keep, or the feed has
-              not run yet. The hazard map does not depend on this.
+              {ui.noReportsBody}
             </p>
           </div>
         ) : (
@@ -106,9 +106,7 @@ function NewsScreen() {
 
         {items.length > 0 && (
           <p className="text-ink-dim mt-5 text-[10.5px] leading-relaxed">
-            {items.length} reports, refreshed automatically. Headlines and
-            pictures are shown as published, and link back to the publisher.
-            Reports older than two months are dropped.
+            {fill(ui.reportsFooter, { n: items.length })}
           </p>
         )}
       </div>
@@ -122,6 +120,7 @@ function Report({ item }: { item: NewsItem }) {
      hoisted: the interval is shared by React's scheduler anyway, and the
      alternative is threading a clock through a presentational component. */
   const now = useNow();
+  const { strings, meta } = useLocale();
 
   return (
     <li className="py-3.5">
@@ -168,7 +167,7 @@ function Report({ item }: { item: NewsItem }) {
 
           <p className="text-ink-dim mt-1.5 text-[11px]">
             {item.source} · {newsDay(item.date)}
-            {now && ` · ${describeAge(item.date, now)}`}
+            {now && ` · ${describeAge(item.date, now, meta.tag)}`}
           </p>
 
           {/* The bridge back to the map, which is right there — the report
@@ -185,7 +184,7 @@ function Report({ item }: { item: NewsItem }) {
               className="border-hairline text-ink-dim hover:text-ink hover:border-tide rounded-pill mt-2 inline-flex items-center gap-1.5 border px-2.5 py-1 text-[10.5px] font-medium transition"
             >
               <MapPin className="size-3" aria-hidden="true" />
-              {item.barangay} on the map
+              {fill(strings.ui.onTheMap, { name: item.barangay })}
             </Link>
           )}
         </div>

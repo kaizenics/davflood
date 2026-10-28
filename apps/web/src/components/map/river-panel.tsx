@@ -1,4 +1,4 @@
-import { RIVER_GAUGE, RIVER_NORMAL } from "@davflood/hazard/river";
+import { RIVER_NORMAL } from "@davflood/hazard/river";
 import type { River } from "@davflood/hazard/river";
 import { colorsFor } from "@davflood/hazard/tokens";
 import { useQuery } from "@tanstack/react-query";
@@ -8,7 +8,9 @@ import { gcTime } from "@/lib/query";
 import { fetchRiver } from "@davflood/hazard/river";
 import { RiverChannel } from "@/components/ui/river-channel";
 import { RiverTrendChart } from "@/components/ui/river-trend-chart";
+import { useLocale } from "@/lib/locale";
 import { useTheme } from "@/lib/theme";
+import { fill, type Strings } from "@davflood/hazard/strings";
 
 /**
  * The river, forecast from rainfall over the whole catchment.
@@ -44,27 +46,43 @@ export function riverIsNotable(river: River): boolean {
   return river.level.id !== "low" && river.level.id !== "normal";
 }
 
+const LEVEL_KEYS = {
+  low: ["riverLowLabel", "riverLowBlurb"],
+  normal: ["riverNormalLabel", "riverNormalBlurb"],
+  elevated: ["riverElevatedLabel", "riverElevatedBlurb"],
+  high: ["riverHighLabel", "riverHighBlurb"],
+  "very-high": ["riverVeryHighLabel", "riverVeryHighBlurb"],
+} as const satisfies Record<River["level"]["id"], readonly [keyof Strings["ui"], keyof Strings["ui"]]>;
+
+/** The level's name and meaning in the reader's language. */
+export function riverLevelText(river: River, ui: Strings["ui"]) {
+  const [label, blurb] = LEVEL_KEYS[river.level.id];
+  return { label: ui[label], blurb: ui[blurb] };
+}
+
 /** The expanded half of the river tile: what it means, and the two-week trend. */
 export function RiverDetail({ river }: { river: River }) {
   const { theme } = useTheme();
   const palette = colorsFor(theme);
   const [view, setView] = useState<"chart" | "channel">("chart");
+  const { strings, meta } = useLocale();
+  const { ui } = strings;
 
   return (
     <div>
       <p className="text-ink text-[12.5px] leading-relaxed">
-        {river.level.blurb}
+        {riverLevelText(river, ui).blurb}
         {river.peak
-          ? ` Forecast to peak around ${river.peak.discharge.toFixed(0)} m³/s on ${weekday(river.peak.date)}.`
+          ? ` ${fill(ui.riverPeak, { q: river.peak.discharge.toFixed(0), day: weekday(river.peak.date, meta.tag) })}`
           : ""}
       </p>
 
       <section aria-labelledby="river-trend-heading">
         <div className="mt-3.5 flex items-center justify-between gap-3">
           <h3 id="river-trend-heading" className="text-ink text-[11.5px] font-semibold">
-            {view === "chart" ? "Recent flow and outlook" : "How full the river is"}
+            {view === "chart" ? ui.trendTitle : ui.channelTitle}
           </h3>
-          <div role="radiogroup" aria-label="River view" className="bg-raised/60 border-hairline/60 flex gap-0.5 rounded-lg border p-0.5">
+          <div role="radiogroup" aria-label={ui.riverView} className="bg-raised/60 border-hairline/60 flex gap-0.5 rounded-lg border p-0.5">
             {(["chart", "channel"] as const).map((v) => (
               <button
                 key={v}
@@ -76,7 +94,7 @@ export function RiverDetail({ river }: { river: River }) {
                   view === v ? "bg-deep text-ink shadow-sm" : "text-ink-dim hover:text-ink"
                 }`}
               >
-                {v === "chart" ? "Chart" : "River"}
+                {v === "chart" ? ui.viewChart : ui.viewRiver}
               </button>
             ))}
           </div>
@@ -84,8 +102,8 @@ export function RiverDetail({ river }: { river: River }) {
         {view === "chart" ? (
           <>
             <div className="text-ink-dim mt-2 flex items-center justify-end gap-2.5 text-[10px]">
-              <span className="flex items-center gap-1"><i className="bg-tide block h-0.5 w-3" />Recent</span>
-              <span className="flex items-center gap-1"><i className="border-ink-dim block w-3 border-t border-dashed" />Forecast</span>
+              <span className="flex items-center gap-1"><i className="bg-tide block h-0.5 w-3" />{ui.recent}</span>
+              <span className="flex items-center gap-1"><i className="border-ink-dim block w-3 border-t border-dashed" />{ui.forecast}</span>
             </div>
             <RiverTrendChart river={river} palette={palette} />
           </>
@@ -95,18 +113,19 @@ export function RiverDetail({ river }: { river: River }) {
       </section>
 
       <p className="text-ink-dim mt-1 text-[10.5px] leading-relaxed">
-        Modelled flow {RIVER_GAUGE.where}. Dashed line: elevated above{" "}
-        <span data-numeric>{RIVER_NORMAL.p90.toFixed(0)} m³/s</span>, from
-        its {RIVER_NORMAL.from}–{RIVER_NORMAL.to} range. It shows how hard
-        the river is running, not that anywhere is flooded.
+        {fill(ui.riverNote, {
+          p90: RIVER_NORMAL.p90.toFixed(0),
+          from: RIVER_NORMAL.from,
+          to: RIVER_NORMAL.to,
+        })}
       </p>
     </div>
   );
 }
 
-function weekday(iso: string): string {
+function weekday(iso: string, tag: string): string {
   const d = new Date(`${iso}T00:00:00`);
   return Number.isNaN(d.getTime())
     ? iso
-    : d.toLocaleDateString("en-PH", { weekday: "long" });
+    : d.toLocaleDateString(tag, { weekday: "long" });
 }

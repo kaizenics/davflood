@@ -1,5 +1,8 @@
 import { Check, Download, Loader2, WifiOff } from "lucide-react";
 
+import { fill } from "@davflood/hazard/strings";
+
+import { useStrings } from "@/lib/locale";
 import { PACK_MB, useOfflinePack } from "@/lib/offline";
 
 /**
@@ -15,6 +18,7 @@ import { PACK_MB, useOfflinePack } from "@/lib/offline";
  */
 export function OfflinePanel() {
   const { state, progress, save, clear } = useOfflinePack();
+  const { ui } = useStrings();
 
   if (state === "unsupported") return null;
 
@@ -40,14 +44,14 @@ export function OfflinePanel() {
 
         <span className="min-w-0 flex-1">
           <span className="text-ink block text-[12.5px] font-semibold">
-            {state === "saved" ? "Saved for offline" : "Use without a signal"}
+            {state === "saved" ? ui.savedOffline : ui.useWithoutSignal}
           </span>
           <span className="text-ink-dim block text-[11px]" data-numeric>
             {state === "saving"
-              ? `Saving… ${pct}%`
+              ? fill(ui.savingPct, { pct })
               : state === "saved"
-                ? "The map opens with no connection"
-                : `Davao City and all three scenarios · ~${PACK_MB} MB`}
+                ? ui.opensNoConnection
+                : fill(ui.packSize, { mb: PACK_MB })}
           </span>
         </span>
 
@@ -58,7 +62,7 @@ export function OfflinePanel() {
             className="border-hairline text-ink hover:border-tide rounded-pill flex shrink-0 items-center gap-1.5 border px-2.5 py-1 text-[11px] font-semibold transition"
           >
             <Download className="size-3.5" aria-hidden="true" />
-            Save
+            {ui.save}
           </button>
         )}
 
@@ -68,7 +72,7 @@ export function OfflinePanel() {
             onClick={clear}
             className="text-ink-dim hover:text-ink shrink-0 text-[11px] font-medium transition"
           >
-            Remove
+            {ui.remove}
           </button>
         )}
       </div>
@@ -90,16 +94,12 @@ export function OfflinePanel() {
 
       {state === "saved" && progress.failed > 0 && (
         <p className="text-ink-dim mt-2 text-[10px] leading-relaxed">
-          {progress.failed} of {progress.total} tiles did not save. Those areas
-          fall back to the network, so the rest of the map still works without
-          one.
+          {fill(ui.tilesFailed, { failed: progress.failed, total: progress.total })}
         </p>
       )}
 
       <p className="text-ink-dim mt-2 text-[10px] leading-relaxed">
-        Saves the hazard map itself. Rain, the river and the news still need a
-        connection — they describe right now, and a stored copy of “right now”
-        would be worse than nothing.
+        {ui.offlineNote}
       </p>
     </div>
   );

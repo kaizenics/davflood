@@ -1,5 +1,5 @@
 import { soakBand } from "@davflood/hazard/rainfall";
-import type { RainfallDay } from "@davflood/hazard/rainfall";
+import { fill, type Strings } from "@davflood/hazard/strings";
 import {
   Cloud,
   CloudDrizzle,
@@ -14,6 +14,7 @@ import {
 import { lazy, Suspense, useState } from "react";
 
 import { useRainfall } from "@/hooks/use-rainfall";
+import { useLocale } from "@/lib/locale";
 
 /**
  * recharts is ~400 KB and only ever renders inside this dialog. Lazy so the
@@ -40,6 +41,9 @@ const RainfallDayDialog = lazy(() =>
 export function RainDetail() {
   const [openDay, setOpenDay] = useState<number | null>(null);
   const { data } = useRainfall();
+  const { strings, meta } = useLocale();
+  const { ui } = strings;
+  const weekday = (iso: string) => dayName(iso, meta.tag);
   const days = data?.days.slice(0, 4) ?? [];
 
   const peakMm = days.reduce((m, d) => Math.max(m, d.precipitation), 0);
@@ -95,10 +99,10 @@ export function RainDetail() {
                 <div className="border-hairline/60 mb-3 border-b pb-3">
                   <div className="text-ink-dim mb-1.5 flex items-baseline justify-between text-[10px]">
                     <span className="font-semibold tracking-[0.1em] uppercase">
-                      Last {past.length} days
+                      {fill(ui.lastDays, { n: past.length })}
                     </span>
                     <span data-numeric>
-                      {fmt(recentMm)} mm already fallen
+                      {fill(ui.alreadyFallen, { mm: fmt(recentMm) })}
                     </span>
                   </div>
 
@@ -134,8 +138,7 @@ export function RainDetail() {
                       matters. */}
                   {(soak === "wet" || soak === "saturated") && (
                     <p className="text-ink-dim mt-2 text-[10px] leading-relaxed">
-                      Rain forecast below lands on ground that has already
-                      taken this much.
+                      {ui.soakNote}
                     </p>
                   )}
                 </div>
@@ -143,11 +146,13 @@ export function RainDetail() {
 
               <div className="text-ink-dim mb-2 flex items-baseline justify-between text-[10px]">
                 <span className="font-semibold tracking-[0.1em] uppercase">
-                  Next 4 days
+                  {ui.next4Days}
                 </span>
                 <span data-numeric>
-                  {fmt(totalMm)} mm total
-                  {peak && !dry ? ` · wettest ${dayLabel(peak, days)}` : ""}
+                  {fill(ui.mmTotal, { mm: fmt(totalMm) })}
+                  {peak && !dry
+                    ? ` · ${fill(ui.wettest, { day: days.indexOf(peak) === 0 ? ui.todayLower : weekday(peak.date) })}`
+                    : ""}
                 </span>
               </div>
 
@@ -163,7 +168,11 @@ export function RainDetail() {
                       <button
                         type="button"
                         onClick={() => setOpenDay(i)}
-                        aria-label={`${i === 0 ? "Today" : weekday(day.date)}: ${fmt(day.precipitation)} mm, ${Math.round(day.probability)} percent chance. Open hourly detail.`}
+                        aria-label={fill(ui.dayAria, {
+                          day: i === 0 ? ui.today : weekday(day.date),
+                          mm: fmt(day.precipitation),
+                          p: Math.round(day.probability),
+                        })}
                         className="hover:bg-raised/50 focus-visible:bg-raised/50 flex w-full flex-col items-center gap-1.5 rounded-lg px-1 py-1.5 transition"
                       >
                       <span
@@ -190,7 +199,7 @@ export function RainDetail() {
                         aria-hidden="true"
                       />
                       <span className="text-ink-dim text-[10px] font-medium">
-                        {i === 0 ? "Today" : weekday(day.date)}
+                        {i === 0 ? ui.today : weekday(day.date)}
                       </span>
                       <span
                         className="text-ink-dim flex items-center gap-0.5 text-[9.5px] opacity-80"
@@ -206,15 +215,12 @@ export function RainDetail() {
               </ol>
 
               <p className="text-ink-dim mt-2 text-center text-[10px]">
-                {dry
-                  ? "No meaningful rain in the next four days — select a day for the hours"
-                  : "Select a day for its hour-by-hour forecast"}
+                {dry ? ui.dryHint : ui.selectDay}
               </p>
             </>
 
             <p className="text-ink-dim mt-3 text-[10px] leading-relaxed">
-              Rain is context, not a flood warning — follow PAGASA for
-              advisories.
+              {ui.rainContext}
             </p>
           </div>
 
@@ -246,15 +252,25 @@ export function fmt(mm: number): string {
   return Math.round(mm).toString();
 }
 
-function weekday(iso: string): string {
+function dayName(iso: string, tag: string): string {
   const d = new Date(`${iso}T00:00:00`);
   return Number.isNaN(d.getTime())
     ? "—"
-    : d.toLocaleDateString("en-PH", { weekday: "short" });
+    : d.toLocaleDateString(tag, { weekday: "short" });
 }
 
-function dayLabel(day: RainfallDay, days: RainfallDay[]): string {
-  return days.indexOf(day) === 0 ? "today" : weekday(day.date);
+
+/** The same WMO bands as describeWeather, in the reader's language. */
+export function weatherLabel(code: number, ui: Strings["ui"]): string {
+  if (code === 0) return ui.weatherClear;
+  if (code <= 3) return ui.weatherPartlyCloudy;
+  if (code <= 48) return ui.weatherFog;
+  if (code <= 57) return ui.weatherDrizzle;
+  if (code <= 67) return ui.weatherRain;
+  if (code <= 77) return ui.weatherShowers;
+  if (code <= 82) return ui.weatherHeavyShowers;
+  if (code <= 86) return ui.weatherSqualls;
+  return ui.weatherThunderstorm;
 }
 
 /** WMO weather interpretation codes — the same bands describeWeather uses. */

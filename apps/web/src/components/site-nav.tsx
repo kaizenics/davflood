@@ -4,6 +4,7 @@ import { useId } from "react";
 
 import { LocaleToggle } from "@/components/locale-controls";
 import { currentVersion } from "@/lib/changelog";
+import { useStrings } from "@/lib/locale";
 import { useTheme } from "@/lib/theme";
 
 /**
@@ -27,11 +28,11 @@ export const RELEASES_URL = `${REPO_URL}/releases`;
  * screen together — the header is hidden wherever the panel nav is shown.
  */
 export const NAV = [
-  { to: "/", label: "Map", short: "Map", exact: true },
-  { to: "/barangays", label: "Barangays", short: "Barangays", exact: false },
-  { to: "/news", label: "Reports", short: "Reports", exact: false },
-  { to: "/learn", label: "Hazard levels", short: "Hazard", exact: false },
-  { to: "/about", label: "The data", short: "Data", exact: false },
+  { to: "/", label: "navMap", short: "navMap", exact: true },
+  { to: "/barangays", label: "navBarangays", short: "navBarangays", exact: false },
+  { to: "/news", label: "navReports", short: "navReports", exact: false },
+  { to: "/learn", label: "navHazardLong", short: "navHazard", exact: false },
+  { to: "/about", label: "navDataLong", short: "navData", exact: false },
 ] as const;
 
 export function Wordmark() {
@@ -132,6 +133,7 @@ export function GithubLink() {
  * its own row, its own colour, and the word "911" visible without a tap.
  */
 export function EmergencyLink() {
+  const { ui } = useStrings();
   return (
     <Link
       to="/emergency"
@@ -142,7 +144,7 @@ export function EmergencyLink() {
         <Phone className="text-haz-high size-3.5" aria-hidden="true" />
       </span>
       <span className="text-ink text-[12.5px] font-semibold">
-        Emergency hotlines
+        {ui.emergencyHotlines}
       </span>
       <span
         data-numeric
@@ -192,8 +194,8 @@ export function VersionChip() {
 
 export function ThemeToggle() {
   const { theme, toggle } = useTheme();
-  const label =
-    theme === "dark" ? "Switch to light theme" : "Switch to dark theme";
+  const { ui } = useStrings();
+  const label = theme === "dark" ? ui.toLightTheme : ui.toDarkTheme;
   return (
     <button type="button" onClick={toggle} aria-label={label} title={label} className={ROUND_BUTTON}>
       {theme === "dark" ? (
@@ -214,6 +216,7 @@ export function ThemeToggle() {
  * thing the page is actually about.
  */
 function NavBlock() {
+  const { ui } = useStrings();
   return (
     <div className="px-4 pt-4 pb-3.5">
       <div className="flex items-center gap-1.5">
@@ -232,12 +235,12 @@ function NavBlock() {
             <li key={to}>
               <Link
                 to={to}
-                aria-label={label}
+                aria-label={ui[label]}
                 activeOptions={{ exact }}
                 className="text-ink-dim hover:text-ink block rounded-[9px] py-1.5 text-center text-[11.5px] font-medium whitespace-nowrap transition"
                 activeProps={{ className: "!text-ink bg-deep font-semibold shadow-sm ring-1 ring-hairline/80" }}
               >
-                {short}
+                {ui[short]}
               </Link>
             </li>
           ))}

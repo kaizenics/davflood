@@ -4,6 +4,8 @@ import { ChevronRight, ExternalLink, Newspaper } from "lucide-react";
 
 import { useNow } from "@/hooks/use-now";
 import { useNewsFile } from "@/hooks/use-news-pins";
+import { useLocale } from "@/lib/locale";
+import { fill } from "@davflood/hazard/strings";
 
 /** The panel is a summary; the rest live on /news. */
 const SHOWN = 4;
@@ -31,7 +33,9 @@ export function FloodNews() {
      right now", and 2026-08-08 makes the reader do that subtraction. Null
      until mount, so prerender and hydration agree — see use-now.ts. */
   const now = useNow();
-  const age = (iso: string) => (now ? describeAge(iso, now) : "");
+  const { strings, meta } = useLocale();
+  const { ui } = strings;
+  const age = (iso: string) => (now ? describeAge(iso, now, meta.tag) : "");
 
   const items = data?.items ?? [];
   if (items.length === 0) return null;
@@ -41,7 +45,7 @@ export function FloodNews() {
       <div className="flex items-center gap-2.5">
         <Newspaper className="text-ink-dim size-4 shrink-0" aria-hidden="true" />
         <h2 className="text-ink flex-1 text-[12.5px] font-semibold">
-          In the news
+          {ui.inTheNews}
         </h2>
       </div>
 
@@ -78,14 +82,13 @@ export function FloodNews() {
           to="/news"
           className="border-hairline text-ink-dim hover:text-ink hover:border-tide rounded-pill mt-3 flex items-center justify-center gap-1.5 border px-3 py-1.5 text-[11px] font-medium transition"
         >
-          Show all {items.length} reports
+          {fill(ui.showAllReports, { n: items.length })}
           <ChevronRight className="size-3.5" aria-hidden="true" />
         </Link>
       )}
 
       <p className="text-ink-dim mt-2.5 text-[10px] leading-relaxed">
-        Reported by others, not verified by DavFlood. Headlines and pictures
-        are shown as published.
+        {ui.newsNote}
       </p>
     </div>
   );

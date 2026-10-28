@@ -3,7 +3,10 @@ import type { Footprint } from "@davflood/hazard/footprint";
 import type { Scenario } from "@davflood/hazard/scenarios";
 import { hazardTiers } from "@davflood/hazard/tiers";
 
+import { fill } from "@davflood/hazard/strings";
+
 import { hazardBg } from "@/lib/hazard-classes";
+import { useStrings } from "@/lib/locale";
 
 type Props = {
   /** measured once by the route — the collapsed mobile sheet reports it too */
@@ -28,16 +31,18 @@ type Props = {
  */
 export function CityReading({ footprint: fp, scenario, dimmed = false }: Props) {
   const ready = fp.zones > 0;
+  const { ui, tiers } = useStrings();
+  const storm = fill(ui.yearStorm, { n: scenario.years });
 
   return (
     <section
-      aria-label="Flooded area in this scenario"
+      aria-label={ui.cityAria}
       className={`px-5 pt-4.5 pb-5 transition-opacity ${dimmed ? "opacity-45" : ""}`}
     >
       <p className="text-ink-dim flex items-center gap-2 text-[10.5px] font-semibold tracking-[0.12em] uppercase">
-        {scenario.label} storm
+        {storm}
         <span className="bg-hairline size-1 rounded-full" aria-hidden="true" />
-        <span data-numeric>{scenario.annualChance} chance a year</span>
+        <span data-numeric>{fill(ui.chanceAYear, { p: scenario.annualChance })}</span>
       </p>
 
       {/* The headline is the number. The sentence is still all there for a
@@ -45,7 +50,6 @@ export function CityReading({ footprint: fp, scenario, dimmed = false }: Props) 
       <p className="mt-2">
         {ready ? (
           <>
-            <span className="sr-only">About </span>
             <span
               data-numeric
               className="text-ink text-[40px] leading-none font-semibold tracking-[-0.04em]"
@@ -54,13 +58,13 @@ export function CityReading({ footprint: fp, scenario, dimmed = false }: Props) 
             </span>
             <span className="text-tide ml-1 text-[17px] font-semibold">km²</span>
             <span className="text-ink-dim mt-1.5 block text-[13px]">
-              of Davao City floods
-              <span className="sr-only"> in a {scenario.label} storm</span>
+              {ui.cityFloods}
+              <span className="sr-only"> · {storm}</span>
             </span>
           </>
         ) : (
           <span className="text-ink-dim text-[13px]">
-            Measuring the {scenario.label} footprint…
+            {fill(ui.measuring, { n: scenario.years })}
           </span>
         )}
       </p>
@@ -75,7 +79,7 @@ export function CityReading({ footprint: fp, scenario, dimmed = false }: Props) 
           <div key={tier.id}>
             <div className="flex items-baseline gap-2">
               <dt className="text-ink min-w-0 flex-1 truncate text-[12.5px] font-medium">
-                {tier.summary.replace(/\.$/, "")}
+                {tiers[tier.id].summary.replace(/\.$/, "")}
                 <span className="text-ink-dim ml-1.5 text-[11px]" data-numeric>
                   {tier.depthShort}
                 </span>
@@ -110,7 +114,7 @@ export function CityReading({ footprint: fp, scenario, dimmed = false }: Props) 
 
       {dimmed && (
         <p className="text-ink-dim mt-4 text-[11px]">
-          The overlay is switched off — the map is showing the basemap only.
+          {ui.overlayOff}
         </p>
       )}
     </section>

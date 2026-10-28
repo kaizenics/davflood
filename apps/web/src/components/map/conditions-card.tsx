@@ -1,5 +1,5 @@
-import { RIVER_GAUGE } from "@davflood/hazard/river";
-import { describeWeather, rainBand } from "@davflood/hazard/rainfall";
+import { rainBand } from "@davflood/hazard/rainfall";
+import { fill } from "@davflood/hazard/strings";
 import { ChevronDown, CloudRain, Waves, type LucideIcon } from "lucide-react";
 import { useState, type ReactNode } from "react";
 
@@ -7,8 +7,15 @@ import {
   fmt,
   RainDetail,
   weatherIcon,
+  weatherLabel,
 } from "@/components/map/rainfall-panel";
-import { RiverDetail, riverIsNotable, useRiver } from "@/components/map/river-panel";
+import {
+  RiverDetail,
+  riverIsNotable,
+  riverLevelText,
+  useRiver,
+} from "@/components/map/river-panel";
+import { useStrings } from "@/lib/locale";
 import { useRainfall } from "@/hooks/use-rainfall";
 import { useMounted } from "@/lib/query";
 import { cn } from "@/lib/utils";
@@ -30,6 +37,7 @@ type Open = "rain" | "river" | null;
  * standing, and the reverse.
  */
 export function ConditionsCard() {
+  const { ui } = useStrings();
   const rain = useRainfall();
   const river = useRiver();
 
@@ -60,9 +68,9 @@ export function ConditionsCard() {
               <span className="bg-tide absolute inset-0 rounded-full motion-safe:animate-ping motion-safe:opacity-60" />
               <span className="bg-tide relative size-1.5 rounded-full" />
             </span>
-            Right now
+            {ui.rightNow}
           </h2>
-          <span className="text-ink-dim/80 text-[10.5px]">Live forecasts</span>
+          <span className="text-ink-dim/80 text-[10.5px]">{ui.liveForecasts}</span>
         </div>
 
         <div className="grid grid-cols-2 gap-2">
@@ -72,17 +80,25 @@ export function ConditionsCard() {
             onToggle={() => toggle("rain")}
             disabled={!rainData}
             icon={rainData ? weatherIcon(rainData.current.weatherCode) : CloudRain}
-            label={rainData ? describeWeather(rainData.current.weatherCode) : "Rain"}
+            label={rainData ? weatherLabel(rainData.current.weatherCode, ui) : ui.rain}
             value={rainPending ? "…" : today ? fmt(today.precipitation) : "—"}
-            unit={today ? "mm today" : undefined}
+            unit={today ? ui.mmToday : undefined}
             sub={
               rainPending
-                ? "Checking…"
+                ? ui.checking
                 : today
-                  ? `${Math.round(today.probability)}% chance of rain`
-                  : "Unavailable — map still works"
+                  ? fill(ui.rainChance, { n: Math.round(today.probability) })
+                  : ui.unavailable
             }
-            badge={band !== "none" ? band : undefined}
+            badge={
+              band === "light"
+                ? ui.bandLight
+                : band === "moderate"
+                  ? ui.bandModerate
+                  : band === "heavy"
+                    ? ui.bandHeavy
+                    : undefined
+            }
           />
           <Tile
             id="river"
@@ -90,17 +106,17 @@ export function ConditionsCard() {
             onToggle={() => toggle("river")}
             disabled={!riverData}
             icon={Waves}
-            label={RIVER_GAUGE.name}
+            label={ui.riverName}
             value={riverPending ? "…" : riverData ? riverData.today.toFixed(0) : "—"}
             unit={riverData ? "m³/s" : undefined}
             sub={
               riverPending
-                ? "Checking…"
+                ? ui.checking
                 : riverData
-                  ? `${riverData.timesNormal.toFixed(1)}× the usual flow`
-                  : "Unavailable — map still works"
+                  ? fill(ui.timesUsual, { n: riverData.timesNormal.toFixed(1) })
+                  : ui.unavailable
             }
-            badge={riverData ? riverData.level.label : undefined}
+            badge={riverData ? riverLevelText(riverData, ui).label : undefined}
             loud={notable}
           />
         </div>

@@ -12,6 +12,7 @@ import {
 } from "@/components/site-nav";
 import { LocaleToggle } from "@/components/locale-controls";
 import { currentVersion } from "@/lib/changelog";
+import { useStrings } from "@/lib/locale";
 
 /**
  * The navigation for phones.
@@ -24,6 +25,7 @@ import { currentVersion } from "@/lib/changelog";
 export function AppHeader() {
   const [menuOpen, setMenuOpen] = useState(false);
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const { ui } = useStrings();
 
   // a tapped link navigates without unmounting the header, so the menu has to
   // be told the journey is over
@@ -53,7 +55,7 @@ export function AppHeader() {
         <button
           type="button"
           onClick={() => setMenuOpen((v) => !v)}
-          aria-label={menuOpen ? "Close menu" : "Open menu"}
+          aria-label={menuOpen ? ui.closeMenu : ui.openMenu}
           aria-expanded={menuOpen}
           aria-controls="mobile-nav"
           className="border-hairline text-ink-dim hover:text-ink flex size-8 shrink-0 items-center justify-center rounded-full border transition"
@@ -97,7 +99,7 @@ export function AppHeader() {
                     aria-hidden="true"
                   />
                   <span className="text-ink text-[15px] font-semibold">
-                    Emergency hotlines
+                    {ui.emergencyHotlines}
                   </span>
                   <span
                     data-numeric
@@ -116,7 +118,7 @@ export function AppHeader() {
                     className="text-ink-dim hover:text-ink hover:bg-raised/60 block rounded-xl px-3 py-3 text-[15px] font-medium transition"
                     activeProps={{ className: "!text-ink !bg-raised" }}
                   >
-                    {label}
+                    {ui[label]}
                   </Link>
                 </li>
               ))}
@@ -129,7 +131,7 @@ export function AppHeader() {
                   rel="noopener noreferrer"
                   className="text-ink-dim border-hairline/60 mt-1 flex items-baseline justify-between gap-3 border-t px-3 py-3 text-[13px]"
                 >
-                  What&apos;s new ↗
+                  {ui.whatsNew} ↗
                   {currentVersion && (
                     <span data-numeric className="text-[11.5px]">
                       v{currentVersion}
@@ -144,7 +146,7 @@ export function AppHeader() {
                   rel="noopener noreferrer"
                   className="text-ink-dim block px-3 py-3 text-[13px]"
                 >
-                  Source on GitHub ↗
+                  {ui.sourceOnGithub} ↗
                 </a>
               </li>
               <li>
